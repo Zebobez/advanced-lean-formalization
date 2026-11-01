@@ -1,0 +1,22 @@
+# Lake and Lean generated artifacts
+.lake/
+.build/
+lake-packages/
+*.olean
+*.ilean
+*.trace
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.out
+*.synctex.gz
+
+# OS/editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
