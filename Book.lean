@@ -1,4 +1,6 @@
-import Book.Chapter01
+module
+
+public import Book.Chapter01
 
 /-!
 # Book

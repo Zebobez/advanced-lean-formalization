@@ -1,10 +1,12 @@
-import Mathlib
+module
+
+import Mathlib.Data.Nat.Basic
 
 /-!
 # Smoke-test module
 
-This file confirms that the project can import Mathlib and compile a Lean proof.
-It is **not** content for Chapter 1 of the textbook.
+This is a small compilation check, not the textbook's actual first chapter.
+Use a focused Mathlib import to avoid loading the entire library into memory.
 -/
 
 namespace Book.Chapter01
