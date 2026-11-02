@@ -179,6 +179,44 @@ This keeps the proof at the highest useful abstraction. Element calculations est
 6. Formalize the regular left action of a group on itself. Identify the orbit and stabilizer of the identity element.
 7. Consider the conjugation action of a group on itself. Explain why its orbits are conjugacy classes and its stabilizers are centralizers.
 
+## 11. Formalized exercise patterns
+
+The following results make two action interfaces explicit: subgroup fixed-point conditions are subgroup inclusions, and the regular action has one orbit with trivial stabilizer at the identity.
+
+### A subgroup fixes a point exactly when it lies below the stabilizer
+
+```lean
+theorem exercise_28_3_subgroup_fixes_iff_le_stabilizer
+    {G X : Type*} [Group G] [MulAction G X]
+    (H : Subgroup G) (a : X) :
+    (∀ g ∈ H, g • a = a) ↔ H ≤ MulAction.stabilizer G a := by
+  constructor
+  · intro h g hg
+    rw [MulAction.mem_stabilizer_iff]
+    exact h g hg
+  · intro h g hg
+    exact MulAction.mem_stabilizer_iff.mp (h hg)
+```
+
+The proof changes only the membership representation of the stabilizer. The subgroup order packages the pointwise fixed condition for later lattice arguments.
+
+### The regular action's orbit and stabilizer at the identity
+
+```lean
+theorem exercise_28_6_regular_orbit_one (G : Type*) [Group G] :
+    MulAction.orbit G (1 : G) = Set.univ := by
+  ext x
+  rw [MulAction.mem_orbit_iff]
+  simp
+
+theorem exercise_28_6_regular_stabilizer_one (G : Type*) [Group G] :
+    MulAction.stabilizer G (1 : G) = ⊥ := by
+  ext g
+  simp
+```
+
+Every group element is reached from the identity by acting with that same element, while only the identity fixes it. These two facts reduce orbit–stabilizer for the regular action to the group cardinality identity.
+
 ## Summary
 
 `MulAction G X` packages the action laws. Orbits are sets with an existential membership theorem, and stabilizers are subgroups defined by fixed-point equations. The orbit is equivalent to the group quotient by a point's stabilizer; in finite settings this yields the orbit–stabilizer cardinality identity. Use equivariance for maps between actions, pretransitivity for reachability, and the action API for conjugation and quotient arguments.

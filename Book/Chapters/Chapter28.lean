@@ -35,4 +35,28 @@ example {G X : Type*} [Group G] [MulAction G X] (a : X)
       Fintype.card ↥(MulAction.stabilizer G a) = Fintype.card G := by
   exact MulAction.card_orbit_mul_card_stabilizer_eq_card_group G a
 
+-- Source Lean fence 5
+theorem exercise_28_3_subgroup_fixes_iff_le_stabilizer
+    {G X : Type*} [Group G] [MulAction G X]
+    (H : Subgroup G) (a : X) :
+    (∀ g ∈ H, g • a = a) ↔ H ≤ MulAction.stabilizer G a := by
+  constructor
+  · intro h g hg
+    rw [MulAction.mem_stabilizer_iff]
+    exact h g hg
+  · intro h g hg
+    exact MulAction.mem_stabilizer_iff.mp (h hg)
+
+-- Source Lean fence 6
+theorem exercise_28_6_regular_orbit_one (G : Type*) [Group G] :
+    MulAction.orbit G (1 : G) = Set.univ := by
+  ext x
+  rw [MulAction.mem_orbit_iff]
+  simp
+
+theorem exercise_28_6_regular_stabilizer_one (G : Type*) [Group G] :
+    MulAction.stabilizer G (1 : G) = ⊥ := by
+  ext g
+  simp
+
 end Book.Chapters.Chapter28
