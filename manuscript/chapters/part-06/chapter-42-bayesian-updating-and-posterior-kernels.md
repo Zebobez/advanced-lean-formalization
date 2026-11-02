@@ -110,6 +110,21 @@ The posterior probabilities over `θ=0` and `θ=1` sum to one for either observa
 
 In Lean, represent both finite spaces with discrete measurable structures. Define the prior as a probability measure and the likelihood as a kernel whose two rows are Bernoulli measures. The posterior construction supplies a kernel from observations to parameters. To derive the numeric result, use the measure reconstruction identity on singleton rectangles and simplify the positive evidence denominator. This approach checks the model and Bayes calculation against the same general theorem.
 
+The shared integer-weight model gives a small exact check of multiplying prior and likelihood weights before normalization:
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def prior : Weight := uniformWeight
+def likelihood : Weight := fun s => if s = zero then 2 else 1
+def posteriorWeight : Weight := fun s => prior s * likelihood s
+
+theorem bayesNormalizer : totalWeight posteriorWeight = 3 := by decide
+theorem posteriorFavorsZero : posteriorWeight zero = 2 := by decide
+```
+
 ## 4. The finite Bayes formula from disintegration
 
 Suppose both parameter and data spaces are finite, and let `x` be an observation with positive evidence probability. Applying the reconstruction identity to `{x} × {θ}` yields
@@ -232,6 +247,112 @@ The posterior is unique only almost everywhere with respect to the evidence meas
 8. Explain what posterior inference does for a deterministic many-to-one observation.
 9. Locate `posterior_comp_self` and identify why it requires a Markov likelihood.
 10. List the standard Borel, finiteness, and nonemptiness assumptions of `posterior` in the current Mathlib API.
+
+### Compiled posterior patterns
+
+The numerical calculation in the binary example is exact rational arithmetic. The posterior API then packages the general measure reconstruction, uniqueness, and composition laws. A posterior kernel is only a version-independent conditional distribution up to equality almost everywhere under the evidence measure.
+
+```lean
+import Mathlib.Probability.Kernel.Posterior
+
+theorem exercise_42_1_binary_evidence :
+    (1 / 3 : ℚ) * (3 / 4) + (2 / 3) * (1 / 4) = 5 / 12 := by
+  norm_num
+
+theorem exercise_42_2_binary_posterior :
+    ((1 / 3 : ℚ) * (3 / 4)) / (5 / 12) = 3 / 5 := by
+  norm_num
+
+theorem exercise_42_3_binary_posterior_after_zero :
+    ((1 / 3 : ℚ) * (1 / 4)) / (7 / 12) = 1 / 7 := by
+  norm_num
+```
+
+For a finite prior and finite likelihood kernel, the posterior reconstructs the parameter-data joint law with its coordinates swapped. The standard Borel and nonempty hypotheses belong to the parameter space.
+
+```lean
+open MeasureTheory ProbabilityTheory
+
+theorem exercise_42_4_posterior_reconstruction
+    {Ω 𝓧 : Type*} [MeasurableSpace Ω] [MeasurableSpace 𝓧]
+    [StandardBorelSpace Ω] [Nonempty Ω]
+    (κ : Kernel Ω 𝓧) [IsFiniteKernel κ]
+    (μ : Measure Ω) [IsFiniteMeasure μ] :
+    (κ ∘ₘ μ) ⊗ₘ posterior κ μ = (μ ⊗ₘ κ).map Prod.swap := by
+  exact compProd_posterior_eq_map_swap
+```
+
+The posterior is a Markov kernel even when the input likelihood is only assumed finite. If a candidate kernel satisfies the same joint-law identity, uniqueness identifies it with the canonical posterior almost everywhere under the evidence law.
+
+```lean
+open MeasureTheory ProbabilityTheory
+
+theorem exercise_42_5_posterior_is_markov
+    {Ω 𝓧 : Type*} [MeasurableSpace Ω] [MeasurableSpace 𝓧]
+    [StandardBorelSpace Ω] [Nonempty Ω]
+    (κ : Kernel Ω 𝓧) [IsFiniteKernel κ]
+    (μ : Measure Ω) [IsFiniteMeasure μ] :
+    IsMarkovKernel (posterior κ μ) := by
+  infer_instance
+```
+
+```lean
+open MeasureTheory ProbabilityTheory
+
+theorem exercise_42_6_posterior_candidate_unique
+    {Ω 𝓧 : Type*} [MeasurableSpace Ω] [MeasurableSpace 𝓧]
+    [StandardBorelSpace Ω] [Nonempty Ω]
+    (κ : Kernel Ω 𝓧) [IsFiniteKernel κ]
+    (μ : Measure Ω) [IsFiniteMeasure μ]
+    (η : Kernel 𝓧 Ω) [IsFiniteKernel η]
+    (h : (κ ∘ₘ μ) ⊗ₘ η = (μ ⊗ₘ κ).map Prod.swap) :
+    η =ᵐ[κ ∘ₘ μ] posterior κ μ := by
+  exact ae_eq_posterior_of_compProd_eq h
+```
+
+For a Markov likelihood, drawing data from the prior predictive law and then drawing a parameter from the posterior recovers the prior. Sequential updating composes forward likelihood kernels and composes posterior kernels in reverse order, almost everywhere under the final evidence law.
+
+```lean
+open MeasureTheory ProbabilityTheory
+
+theorem exercise_42_7_posterior_comp_self
+    {Ω 𝓧 : Type*} [MeasurableSpace Ω] [MeasurableSpace 𝓧]
+    [StandardBorelSpace Ω] [Nonempty Ω]
+    (κ : Kernel Ω 𝓧) [IsFiniteKernel κ] [IsMarkovKernel κ]
+    (μ : Measure Ω) [IsFiniteMeasure μ] :
+    posterior κ μ ∘ₘ κ ∘ₘ μ = μ := by
+  exact posterior_comp_self
+```
+
+```lean
+open MeasureTheory ProbabilityTheory
+open scoped ProbabilityTheory
+
+theorem exercise_42_8_sequential_posterior_comp
+    {Ω 𝓧 𝓨 : Type*} [MeasurableSpace Ω] [MeasurableSpace 𝓧] [MeasurableSpace 𝓨]
+    [StandardBorelSpace Ω] [Nonempty Ω]
+    [StandardBorelSpace 𝓧] [Nonempty 𝓧]
+    (κ : Kernel Ω 𝓧) [IsFiniteKernel κ]
+    (μ : Measure Ω) [IsFiniteMeasure μ]
+    (η : Kernel 𝓧 𝓨) [IsFiniteKernel η] :
+    (η ∘ₖ κ)†μ =ᵐ[η ∘ₘ κ ∘ₘ μ] (κ†μ) ∘ₖ (η†(κ ∘ₘ μ)) := by
+  exact posterior_comp
+```
+
+For deterministic observations, the posterior followed by the same observation map recovers the observed value almost everywhere under the evidence law. This does not claim that the parameter itself can be recovered when the observation map is many-to-one.
+
+```lean
+open MeasureTheory ProbabilityTheory
+
+theorem exercise_42_9_deterministic_posterior_recovers_observation
+    {Ω 𝓧 : Type*} [MeasurableSpace Ω] [MeasurableSpace 𝓧]
+    [StandardBorelSpace Ω] [Nonempty Ω]
+    [MeasurableSpace.CountablyGenerated 𝓧]
+    (μ : Measure Ω) [IsFiniteMeasure μ] (f : Ω → 𝓧) (hf : Measurable f) :
+    Kernel.deterministic f hf ∘ₖ (Kernel.deterministic f hf)†μ
+      =ᵐ[μ.map f] Kernel.id := by
+  exact deterministic_comp_posterior hf
+```
 
 ## Summary
 
