@@ -228,6 +228,121 @@ The ratio formula requires a positive denominator. The abstract almost-everywher
 9. Describe the role of `condExpL1CLM` and why its domain is an L¹ space rather than arbitrary functions.
 10. Give an example where two representatives differ at a null point but represent the same conditional expectation.
 
+### 11.1 Compiled conditional-expectation patterns
+
+The small finite-state calculation used alongside this chapter is exact: weights and numerators are natural or integer values, so `decide` checks the results without floating-point approximation.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def eventMass : Weight := fun s => if s = zero then 1 else 0
+def observedPayoff : State → Int := fun s => if s = zero then 0 else 2
+
+theorem oneAtomPartition : totalWeight eventMass = 1 := by decide
+theorem conditionalPayoffNumerator :
+    expectationNumerator uniformWeight observedPayoff = 2 := by decide
+```
+
+The general API provides measurability and integrability of conditional expectation even though `condExp` is total outside its intended hypotheses:
+
+```lean
+open MeasureTheory
+
+theorem exercise_35_1_condExp_measurable
+    {α E : Type*} {m m₀ : MeasurableSpace α} {μ : Measure[m₀] α}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (f : α → E) :
+    StronglyMeasurable[m] (MeasureTheory.condExp m μ f) := by
+  exact MeasureTheory.stronglyMeasurable_condExp
+```
+
+Integrability is available independently of the intended-domain hypotheses because the total definition returns zero in the fallback branches:
+
+```lean
+open MeasureTheory
+
+theorem exercise_35_1_condExp_integrable
+    {α E : Type*} {m m₀ : MeasurableSpace α} {μ : Measure[m₀] α}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (f : α → E) : Integrable (MeasureTheory.condExp m μ f) μ := by
+  exact MeasureTheory.integrable_condExp
+```
+
+The defining integral identity requires the information structure to lie below the ambient measurable space, σ-finiteness of the trimmed measure, integrability, and measurability of the test event:
+
+```lean
+open MeasureTheory
+
+theorem exercise_35_1_condExp_setIntegral
+    {α E : Type*} {m m₀ : MeasurableSpace α} {μ : Measure[m₀] α}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (hm : m ≤ m₀) [SigmaFinite (μ.trim hm)]
+    (f : α → E) (hf : Integrable f μ) (s : Set α) (hs : MeasurableSet[m] s) :
+    ∫ x in s, (MeasureTheory.condExp m μ f) x ∂μ = ∫ x in s, f x ∂μ := by
+  exact MeasureTheory.setIntegral_condExp hm hf hs
+```
+
+Uniqueness uses almost-everywhere strong measurability and agreement of set integrals on every measurable set of finite measure:
+
+```lean
+open MeasureTheory
+open scoped ENNReal
+
+theorem exercise_35_2_condExp_unique_ae
+    {α E : Type*} {m m₀ : MeasurableSpace α} {μ : Measure[m₀] α}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (hm : m ≤ m₀) [SigmaFinite (μ.trim hm)]
+    {f g : α → E} (hf : Integrable f μ)
+    (hg_int_finite : ∀ s, MeasurableSet[m] s → μ s < ∞ → IntegrableOn g s μ)
+    (hg_eq : ∀ s : Set α, MeasurableSet[m] s → μ s < ∞ →
+      ∫ x in s, g x ∂μ = ∫ x in s, f x ∂μ)
+    (hgm : AEStronglyMeasurable[m] g μ) :
+    g =ᵐ[μ] MeasureTheory.condExp m μ f := by
+  exact MeasureTheory.ae_eq_condExp_of_forall_setIntegral_eq hm hf hg_int_finite hg_eq hgm
+```
+
+When the original function is already measurable with respect to the information structure, conditioning recovers that function pointwise:
+
+```lean
+open MeasureTheory
+
+theorem exercise_35_7_condExp_of_measurable
+    {α E : Type*} {m m₀ : MeasurableSpace α} {μ : Measure[m₀] α}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (hm : m ≤ m₀) [SigmaFinite (μ.trim hm)]
+    (f : α → E) (hf : StronglyMeasurable[m] f) (hfi : Integrable f μ) :
+    MeasureTheory.condExp m μ f = f := by
+  exact MeasureTheory.condExp_of_stronglyMeasurable hm hf hfi
+```
+
+For nested information, conditioning on the finer structure and then on the coarser one agrees almost everywhere with conditioning directly on the coarser structure:
+
+```lean
+open MeasureTheory
+
+theorem exercise_35_5_tower
+    {α E : Type*} {m₁ m₂ m₀ : MeasurableSpace α} {μ : Measure[m₀] α}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (hm₁₂ : m₁ ≤ m₂) (hm₂ : m₂ ≤ m₀) [SigmaFinite (μ.trim hm₂)]
+    (f : α → E) :
+    MeasureTheory.condExp m₁ μ (MeasureTheory.condExp m₂ μ f) =ᵐ[μ]
+      MeasureTheory.condExp m₁ μ f := by
+  exact MeasureTheory.condExp_condExp_of_le hm₁₂ hm₂
+```
+
+Positivity is preserved almost everywhere. The total definition handles the nonintegrable branch as zero, while the nontrivial branch follows from monotonicity:
+
+```lean
+open MeasureTheory
+
+theorem exercise_35_8_condExp_nonneg
+    {α : Type*} {m m₀ : MeasurableSpace α} {μ : Measure[m₀] α} {f : α → ℝ}
+    (hf : 0 ≤ᵐ[μ] f) : 0 ≤ᵐ[μ] MeasureTheory.condExp m μ f := by
+  exact MeasureTheory.condExp_nonneg hf
+```
+
 ## Summary
 
 Conditional expectation is the integrable function measurable with respect to a chosen sub-σ-algebra whose set integrals agree with those of the original function on every observable event. The defining characterization yields uniqueness almost everywhere, the tower property, conditional probabilities, positivity, and linearity. In Lean, make information order, integrability, measurability, and almost-everywhere equality explicit. Remember that `condExp` is total by definition, while its intended mathematical properties require the assumptions documented by the corresponding theorems.
