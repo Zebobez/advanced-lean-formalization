@@ -155,6 +155,84 @@ Kernel powers represent repeated composition. Check the intermediate-state integ
 9. Outline how a positive-probability path gives a positive term in a kernel-power expansion.
 10. Locate `isIrreducible_iff` and `isIrreducible_of_le_measure` in Mathlib's documentation.
 
+## 10. Lean formalization
+
+The next examples preserve the small integer-weight transition calculation used
+earlier in the book, then connect the reachability definition to Mathlib's
+kernel API. The Boolean flip kernel is genuinely irreducible with respect to
+counting measure: every nonempty target contains either the current state or
+its unique successor, so one or two steps suffice. The proof intentionally
+lets the witness length depend on the start and target, as the definition does.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+theorem zeroCanReachOne : 0 < flipKernel zero one := by decide
+theorem oneCanReachZero : 0 < flipKernel one zero := by decide
+```
+
+We now prove irreducibility for the deterministic flip on `Bool`. A positive
+counting measure gives a nonempty target. If the target contains the starting
+state, the identity kernel witnesses reachability at time zero. Otherwise its
+only possible element is the flipped state, reached in one step.
+
+```lean
+import Mathlib.Probability.Kernel.Irreducible
+
+open MeasureTheory ProbabilityTheory
+
+theorem measurableBoolNot : Measurable (fun b : Bool => !b) := by
+  fun_prop
+
+noncomputable def boolFlipKernel : Kernel Bool Bool :=
+  Kernel.deterministic (fun b => !b) measurableBoolNot
+
+theorem boolFlipKernel_irreducible :
+    Kernel.IsIrreducible (Measure.count : Measure Bool) boolFlipKernel := by
+  constructor
+  intro A hA hφA a
+  have hA_nonempty : A.Nonempty :=
+    MeasureTheory.nonempty_of_measure_ne_zero (μ := Measure.count) (ne_of_gt hφA)
+  rcases hA_nonempty with ⟨b, hb⟩
+  by_cases hab : a = b
+  · subst b
+    refine ⟨0, ?_⟩
+    change 0 < Kernel.id a A
+    rw [Kernel.id_apply, Measure.dirac_apply' _ hA]
+    simp [hb]
+  · have hflip : (!a) = b := by
+      cases a <;> cases b <;> simp_all
+    have hflip_mem : (!a) ∈ A := by simpa [hflip] using hb
+    refine ⟨1, ?_⟩
+    rw [pow_one, boolFlipKernel, Kernel.deterministic_apply' measurableBoolNot a hA]
+    simp [hflip_mem]
+```
+
+The reference-measure monotonicity theorem is a direct application of the
+Mathlib result. The zero-measure instance illustrates the vacuous edge case:
+there are no positive-measure targets to check.
+
+```lean
+import Mathlib.Probability.Kernel.Irreducible
+
+open MeasureTheory ProbabilityTheory
+
+theorem irreducible_of_smaller_reference_measure
+    {α : Type*} [MeasurableSpace α] {φ₁ φ₂ : Measure α}
+    (hφ : φ₁ ≤ φ₂) {κ : Kernel α α}
+    [Kernel.IsIrreducible φ₂ κ] : Kernel.IsIrreducible φ₁ κ :=
+  Kernel.isIrreducible_of_le_measure hφ
+
+theorem zero_measure_is_irreducible
+    {α : Type*} [MeasurableSpace α] (κ : Kernel α α) :
+    Kernel.IsIrreducible (0 : Measure α) κ := by
+  constructor
+  intro A hA hφA a
+  simp at hφA
+```
+
 ## Summary
 
 Kernel irreducibility means every measurable target set of positive reference-measure mass is reachable from every state with positive probability in some finite number of steps. The property depends on the reference measure and is proved by combining finite-step kernel composition with reachability arguments. In finite chains it corresponds to strong connectivity of the transition graph. It is distinct from recurrence, stationarity, and convergence, which require additional hypotheses.
