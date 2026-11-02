@@ -208,6 +208,101 @@ L¹ boundedness and uniform integrability are integral conditions. They are ofte
 9. Explain why nonnegativity plus constant expectation yields L¹ boundedness but not necessarily uniform integrability.
 10. Locate Mathlib's `ae_tendsto_limitProcess` theorem and list its adaptation and boundedness assumptions.
 
+### 12.1 Compiled martingale-convergence patterns
+
+The finite-state prediction example is constant in time, so its value is checked by definitional reduction:
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+@[expose]
+def conditionalPrediction (_time : Nat) : Int := 3
+
+theorem predictionIsUniformlyIntegrableAtEveryFiniteTime (time : Nat) :
+    conditionalPrediction time = 3 := rfl
+```
+
+For a real submartingale on a finite-measure space, Mathlib's `ae_tendsto_limitProcess` records both the uniform L¹ norm bound and the almost-everywhere convergence conclusion:
+
+```lean
+open MeasureTheory
+open Filter
+open MeasureTheory.Filtration
+open scoped NNReal ENNReal MeasureTheory ProbabilityTheory Topology
+
+theorem exercise_38_10_ae_tendsto_limitProcess
+    {Ω : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    {ℱ : Filtration ℕ m₀} {f : ℕ → Ω → ℝ} [IsFiniteMeasure μ]
+    {R : ℝ≥0} (hf : Submartingale f ℱ μ)
+    (hbounded : ∀ n, eLpNorm (f n) 1 μ ≤ R) :
+    ∀ᵐ ω ∂μ, Tendsto (fun n => f n ω) atTop (𝓝 (ℱ.limitProcess f μ ω)) := by
+  exact hf.ae_tendsto_limitProcess hbounded
+```
+
+Uniform integrability strengthens this to convergence in L¹:
+
+```lean
+open MeasureTheory
+open Filter
+open MeasureTheory.Filtration
+open scoped NNReal ENNReal MeasureTheory ProbabilityTheory Topology
+
+theorem exercise_38_5_uniformIntegrable_l1_limit
+    {Ω : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    {ℱ : Filtration ℕ m₀} {f : ℕ → Ω → ℝ} [IsFiniteMeasure μ]
+    (hf : Submartingale f ℱ μ) (huniform : UniformIntegrable f 1 μ) :
+    Tendsto (fun n => eLpNorm (f n - ℱ.limitProcess f μ) 1 μ) atTop (𝓝 0) := by
+  exact hf.tendsto_eLpNorm_one_limitProcess huniform
+```
+
+For a uniformly integrable martingale, each time slice is almost everywhere the conditional expectation of its limiting process:
+
+```lean
+open MeasureTheory
+open Filter
+open MeasureTheory.Filtration
+open scoped NNReal ENNReal MeasureTheory ProbabilityTheory Topology
+
+theorem exercise_38_5_martingale_limit_condExp
+    {Ω : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    {ℱ : Filtration ℕ m₀} {f : ℕ → Ω → ℝ} [IsFiniteMeasure μ]
+    (hf : Martingale f ℱ μ) (huniform : UniformIntegrable f 1 μ) (n : ℕ) :
+    f n =ᵐ[μ] μ[ℱ.limitProcess f μ | ℱ n] := by
+  exact hf.ae_eq_condExp_limitProcess huniform n
+```
+
+Conversely, if an integrable terminal variable is measurable with respect to the supremum filtration, its conditional-expectation process converges to it almost everywhere and in L¹:
+
+```lean
+open MeasureTheory
+open Filter
+open MeasureTheory.Filtration
+open scoped NNReal ENNReal MeasureTheory ProbabilityTheory Topology
+
+theorem exercise_38_7_terminal_condExp_ae
+    {Ω : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    {ℱ : Filtration ℕ m₀} {g : Ω → ℝ} [IsFiniteMeasure μ]
+    (hg : Integrable g μ) (hgmeas : StronglyMeasurable[⨆ n, ℱ n] g) :
+    ∀ᵐ x ∂μ, Tendsto (fun n => (μ[g | ℱ n]) x) atTop (𝓝 (g x)) := by
+  exact hg.tendsto_ae_condExp hgmeas
+```
+
+```lean
+open MeasureTheory
+open Filter
+open MeasureTheory.Filtration
+open scoped NNReal ENNReal MeasureTheory ProbabilityTheory Topology
+
+theorem exercise_38_7_terminal_condExp_l1
+    {Ω : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    {ℱ : Filtration ℕ m₀} {g : Ω → ℝ} [IsFiniteMeasure μ]
+    (hg : Integrable g μ) (hgmeas : StronglyMeasurable[⨆ n, ℱ n] g) :
+    Tendsto (fun n => eLpNorm (μ[g | ℱ n] - g) 1 μ) atTop (𝓝 0) := by
+  exact hg.tendsto_eLpNorm_condExp hgmeas
+```
+
 ## Summary
 
 L¹ boundedness gives almost-everywhere convergence for strongly adapted submartingales through an upcrossing argument. Uniform integrability controls tails and upgrades this to L¹ convergence. The limit is measurable with respect to the filtration generated over all finite times. Conditional expectations of a terminal integrable variable form a uniformly integrable martingale that converges back to that variable when it is measurable with respect to the terminal filtration. Keep the convergence mode and its analytic hypotheses explicit.
