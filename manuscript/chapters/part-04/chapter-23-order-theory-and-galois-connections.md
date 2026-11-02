@@ -49,7 +49,7 @@ Many types in Mathlib have a partial order induced by inclusion. For sets, `s �
 One fundamental example comes from any function `f : α → β`. Sending a set to its image and a set to its preimage reverses direction in a precise way:
 
 ```lean
-example {α β : Type*} (f : α → β) :
+theorem imagePreimageGC {α β : Type*} (f : α → β) :
     GaloisConnection
       (fun s : Set α => f '' s)
       (fun t : Set β => f ⁻¹' t) := by
@@ -199,6 +199,93 @@ This workflow is effective because it separates the construction-specific proof 
 5. Prove that a left adjoint preserves a binary supremum by comparing least upper bounds. Identify where the adjunction equivalence is used.
 6. Find a proof where a monotonicity hypothesis is used repeatedly. Rewrite the API with an `OrderHom` and explain whether bundling improves its clients.
 7. Give an example of a map that preserves joins but not meets, or vice versa, and explain why this is consistent with being one side of an adjunction.
+
+## 10. Formalized exercise patterns
+
+The following proofs turn several exercises into reusable statements. They show where an abstraction saves work: first package monotonicity or the adjunction, then apply the resulting interface to later goals.
+
+### Doubling as a bundled monotone map
+
+```lean
+def doubleOrderHom : Nat →o Nat where
+  toFun n := 2 * n
+  monotone' := by
+    intro a b hab
+    exact Nat.mul_le_mul_left 2 hab
+
+theorem exercise_23_1_unbundled {a b : Nat} (hab : a ≤ b) :
+    2 * a ≤ 2 * b := by
+  exact doubleOrderHom.monotone hab
+```
+
+The final theorem states the same consequence with an unbundled input inequality. The bundled map is useful when its monotonicity is reused across several results; a one-off proof can instead apply `Nat.mul_le_mul_left` directly.
+
+### Moving an inclusion through image and preimage
+
+```lean
+theorem exercise_23_2_image_subset_preimage
+    {α β : Type*} (f : α → β) (s : Set α) (t : Set β)
+    (h : f '' s ⊆ t) : s ⊆ f ⁻¹' t := by
+  exact (imagePreimageGC f s t).mp h
+```
+
+The witness reasoning is confined to `imagePreimageGC`. Once the connection is named, the inclusion follows by applying one direction of its equivalence.
+
+### Unit and counit for image and preimage
+
+```lean
+theorem exercise_23_3_unit
+    {α β : Type*} (f : α → β) (s : Set α) :
+    s ⊆ f ⁻¹' (f '' s) := by
+  exact (imagePreimageGC f s (f '' s)).mp Set.Subset.rfl
+
+theorem exercise_23_3_counit
+    {α β : Type*} (f : α → β) (t : Set β) :
+    f '' (f ⁻¹' t) ⊆ t := by
+  exact (imagePreimageGC f (f ⁻¹' t) t).mpr Set.Subset.rfl
+```
+
+The unit says every source point belongs to the preimage of its image. The counit says that mapping back the preimage of a target set cannot add target points.
+
+### A left adjoint preserves binary suprema
+
+```lean
+theorem exercise_23_5_left_adjoint_preserves_sup
+    {α β : Type*} [SemilatticeSup α] [SemilatticeSup β]
+    {l : α → β} {u : β → α} (gc : GaloisConnection l u)
+    (a b : α) : l (a ⊔ b) = l a ⊔ l b := by
+  apply le_antisymm
+  · apply gc.l_le
+    apply sup_le
+    · exact (gc a (l a ⊔ l b)).mp le_sup_left
+    · exact (gc b (l a ⊔ l b)).mp le_sup_right
+  · exact sup_le (gc.monotone_l le_sup_left) (gc.monotone_l le_sup_right)
+```
+
+For the first inequality, the adjunction turns the desired target bound into two source bounds, which the supremum property proves. For the reverse inequality, monotonicity sends each input bound through the lower map.
+
+### A join-preserving map need not preserve meets
+
+The direct-image map on sets induced by the constant function from `Nat` to `Unit` is a left adjoint, so it preserves joins. It does not preserve the intersection of the distinct singleton sets below: their intersection is empty, while both images are the singleton of `()`.
+
+```lean
+example (s t : Set Nat) :
+    (fun _ : Nat => ()) '' (s ∪ t) =
+      ((fun _ : Nat => ()) '' s ∪ (fun _ : Nat => ()) '' t) := by
+  exact Set.image_union _ _ _
+
+example :
+    (fun _ : Nat => ()) '' ({0} ∩ {1} : Set Nat) ≠
+      ((fun _ : Nat => ()) '' ({0} : Set Nat) ∩
+       (fun _ : Nat => ()) '' ({1} : Set Nat)) := by
+  intro h
+  have hmem : () ∈
+      ((fun _ : Nat => ()) '' ({0} : Set Nat) ∩
+       (fun _ : Nat => ()) '' ({1} : Set Nat)) := by
+    simp
+  rw [← h] at hmem
+  simp at hmem
+```
 
 ## Summary
 
