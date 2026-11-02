@@ -229,6 +229,82 @@ This workflow leaves the proof at the highest useful abstraction level. It is ea
 6. Show how continuity at a point is a `Tendsto` statement. Then use continuity to transport a sequence limit through a function.
 7. Find a theorem requiring `NeBot` and explain why the conclusion can fail for the bottom filter.
 
+### Selected exercises, formalized
+
+The first proof of Exercise 2 uses Mathlib's convergence theorem. The second proves the same result from the preimage characterization of `Tendsto` and the fact that every neighborhood contains its center:
+
+```lean
+theorem exercise_24_2_via_library
+    {X : Type*} [TopologicalSpace X] {u : Nat → X} {x : X}
+    (h : ∀ᶠ n in atTop, u n = x) :
+    Tendsto u atTop (𝓝 x) := by
+  exact tendsto_nhds_of_eventually_eq h
+
+theorem exercise_24_2_via_neighborhoods
+    {X : Type*} [TopologicalSpace X] {u : Nat → X} {x : X}
+    (h : ∀ᶠ n in atTop, u n = x) :
+    Tendsto u atTop (𝓝 x) := by
+  rw [Filter.tendsto_def]
+  intro s hs
+  have hx : x ∈ s := mem_of_mem_nhds hs
+  filter_upwards [h] with n hn
+  change u n ∈ s
+  rw [hn]
+  exact hx
+```
+
+Exercise 3 is the transitivity of an eventual inequality. Combining the two eventual hypotheses gives a pointwise proof context, where ordinary transitivity closes the goal:
+
+```lean
+theorem exercise_24_3_eventually_le_trans
+    {α β : Type*} {l : Filter α} [Preorder β]
+    {f g h : α → β}
+    (hfg : ∀ᶠ x in l, f x ≤ g x)
+    (hgh : ∀ᶠ x in l, g x ≤ h x) :
+    ∀ᶠ x in l, f x ≤ h x := by
+  filter_upwards [hfg, hgh] with x hxfg hxgh
+  exact le_trans hxfg hxgh
+```
+
+For Exercise 4, the Mathlib order on filters records that restricting neighborhoods to a set gives a finer filter. Taking the set to be the strict right ray gives the one-sided case. Exercise 5 is the preimage characterization of `Tendsto`:
+
+```lean
+theorem exercise_24_4_right_neighborhood_is_finer (x : ℝ) :
+    𝓝[Set.Ioi x] x ≤ 𝓝 x := by
+  exact nhdsWithin_le_nhds
+
+theorem exercise_24_5_tendsto_preimage
+    {α β : Type*} {f : α → β}
+    {l₁ : Filter α} {l₂ : Filter β} :
+    Tendsto f l₁ l₂ ↔ ∀ s ∈ l₂, f ⁻¹' s ∈ l₁ :=
+  Filter.tendsto_def
+```
+
+For Exercise 6, compose the sequence's limit with continuity at its limit point:
+
+```lean
+theorem exercise_24_6_continuous_map_of_sequence_limit
+    {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    {f : X → Y} {x : X} {u : Nat → X}
+    (hlim : Tendsto u atTop (𝓝 x)) (hcont : ContinuousAt f x) :
+    Tendsto (f ∘ u) atTop (𝓝 (f x)) := by
+  have hmap : Tendsto f (𝓝 x) (𝓝 (f x)) := hcont
+  exact hmap.comp hlim
+```
+
+Exercise 7 uses a theorem whose nontrivial-filter assumption is essential. Every filter-large set is nonempty for a `NeBot` filter. The bottom filter contains the empty set, so the implication is false there:
+
+```lean
+theorem exercise_24_7_mem_of_neBot_is_nonempty
+    {α : Type*} {l : Filter α} [NeBot l] {s : Set α}
+    (hs : s ∈ l) : s.Nonempty :=
+  Filter.nonempty_of_mem hs
+
+example : (∅ : Set Nat) ∈ (⊥ : Filter Nat) := by simp
+
+example : ¬ (∅ : Set Nat).Nonempty := by simp
+```
+
 ## Summary
 
 Filters encode which sets are large for a limiting question. `Eventually` states that a property holds on a filter-large set, and `Tendsto` says target neighborhoods pull back to source-large sets. The order `l₁ ≤ l₂` means `l₁` is finer. Use `atTop` for sequences, `𝓝 x` for neighborhoods, and `filter_upwards` to combine eventual hypotheses. Filter `map` and `comap` expose the order-theoretic structure behind convergence, while continuity is a special case of `Tendsto`.
