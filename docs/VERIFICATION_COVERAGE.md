@@ -1,50 +1,27 @@
 # Chapter verification coverage
 
-The book has 120 numbered manuscript chapters. On 2026-11-01, only **37** numbered
-`Book/Chapters/ChapterNN.lean` modules existed; the other **83** lacked such a module.
-The initial extraction script selected only fenced Lean examples that began with
-standalone top-level commands. Several later chapters contain mostly prose,
-inline identifiers, mathematics, or illustrative text, and supply **no executable
-Lean examples** to extract. This is an *editorial/formalization gap*, not evidence
-that 83 external Lean packages are missing.
+The manuscript lists **120 numbered chapters**. Every chapter now has a corresponding `Book/Chapters/ChapterNN.lean` module imported by `Book.lean`, and the strict structural audit passes. The initial extraction produced 37 modules containing **198 complete Lean command blocks**. For the remaining 83 chapters, supplemental finite-model examples were added; the [manual model index](../Book/Chapters/MANUAL_MODEL_INDEX.md) maps each to its chapter source.
 
-## Status categories
+## What the checks establish
 
-1. **Manuscript only** — chapter exists, but no verified Lean module is present.
-2. **Module exists** — a corresponding source file is present and imported in `Book.lean`.
-3. **Compiles** — automated Lean CI builds the module with pinned Lean/Mathlib.
-4. **Proof-audited** — all relevant statements, assumptions, `sorry` / `admit`
-   usage, and displayed examples have been independently checked.
-5. **Chapter-reviewed** — a mathematically qualified reviewer confirms the
-   exposition and the formalization agree.
+- **Structural coverage:** all 120 manuscript chapters have a Lean source module and root import.
+- **Compilation:** `lake build` compiles the root library with the pinned Lean and Mathlib versions. The chapter CI uses the same root build.
+- **Executable examples:** extracted commands and the supplemental finite examples compile. The extractor still records **5 contextual fragments** in Chapters 1 and 26 that are not standalone Lean commands.
 
-Only statuses 2–3 are currently covered by automated tests. In particular,
-**a green build never means that all 120 chapters are verified**.
+Compilation does not certify every mathematical claim, every prose exercise, or every displayed fragment in the manuscript. In particular, supplemental finite examples check selected computations and invariants; they do not establish general probability, queueing, or optimization theorems. No independent mathematical proof audit or chapter review is claimed here.
 
-## Monitoring
+## Toolchain and packages
 
-`python scripts/check_chapter_coverage.py` prints a coverage report.
-GitHub Actions runs it on each push and displays the missing chapter numbers
-as an informational warning, without failing the build while work is ongoing.
-Once every chapter has a genuine source module and a root import,
-`python scripts/check_chapter_coverage.py --strict` can be made a required gate.
+- Lean: `leanprover/lean4:v4.35.0` (`lean-toolchain`)
+- Mathlib: `v4.35.0` (`lakefile.lean` and `lake-manifest.json`)
+- Transitive Lake dependencies: pinned by `lake-manifest.json`
 
-## Closing a chapter gap
+The root `Book` library is the build target, so all imported chapter modules participate in CI. `scripts/check_chapter_coverage.py --strict` fails if a listed manuscript chapter lacks a module or root import.
 
-For each chapter without a source module:
+## Maintaining coverage
 
-1. Inspect the mathematical claims and example references in its Markdown source.
-2. Create `Book/Chapters/ChapterNN.lean` with **substantive, executable** examples
-   or theorems *relevant to that chapter*; do not produce empty placeholder files.
-3. Use focused Mathlib imports when feasible, explicitly naming dependencies and
-   avoiding unnecessary full-library imports.
-4. Add `public import Book.Chapters.ChapterNN` in `Book.lean`.
-5. Build with the pinned toolchain; verify the intended theorem statements, not
-   just that some code compiles.
-6. Keep an index mapping the manuscript's displayed code to the verified source,
-   noting any fragments or conceptual claims that have not been formalized.
-7. Record independent mathematical review separately from compilation status.
-
-The existing extractor, `scripts/extract_lean_examples.py`, is a starting point,
-not a complete guarantee of code coverage. It ignores Markdown snippets that are
-not standalone commands, so missing modules require manual formalization.
+1. Add complete displayed Lean commands to the extracted module or a focused, chapter-specific module.
+2. Keep contextual proof-state snippets in the manuscript labeled as illustrations unless converted to complete Lean commands.
+3. Add each chapter module to `Book.lean` and update the appropriate extraction or supplemental index.
+4. Run `python scripts/check_chapter_coverage.py --strict` and `lake build` with the pinned toolchain.
+5. Record proof auditing and chapter review separately from compilation.

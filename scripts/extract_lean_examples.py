@@ -176,7 +176,9 @@ def main() -> int:
         "",
         f"Source: manuscript/SUMMARY.md; compiler pin: {toolchain}; Mathlib ref: {mathlib_ref}.",
         "",
-        "The generator copies only Lean fences that begin with a complete top-level command. Interactive fragments, proof-state illustrations, and blocks containing literal placeholders such as ellipses or sorry stay in the Markdown source until they are incorporated into a complete executable example.",
+        "The generator copies only Lean fences that begin with a complete top-level command. Type-expression illustrations, interactive tactic fragments, proof-state illustrations, and blocks containing literal placeholders such as ellipses or sorry stay in the Markdown source until they are incorporated into a complete executable example.",
+        "",
+        "Supplemental finite-model modules authored for chapters without extracted commands are listed in [MANUAL_MODEL_INDEX.md](MANUAL_MODEL_INDEX.md). These examples illustrate selected calculations and are not complete formalizations of the chapters.",
         "",
         *index_rows,
         "",
@@ -200,6 +202,8 @@ def main() -> int:
         if existing:
             raise SystemExit("Refusing to replace generated files without --force: " + ", ".join(str(p.relative_to(root)) for p in existing))
     for path, content in outputs:
+        if path.exists() and path.read_text(encoding="utf-8") == content:
+            continue
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8", newline="\n")
     print(f"Wrote {len(module_outputs)} modules, extracting {total_selected} Lean command blocks; left {total_skipped} contextual fragments in Markdown.")

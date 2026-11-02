@@ -29,7 +29,7 @@ A filter on a type `α` is a collection of subsets of `α` that is closed under 
 The notation `s ∈ l` means that the set `s` is large according to filter `l`. A proposition is eventually true along `l` when the set of inputs where it holds belongs to the filter:
 
 ```lean
-∀ᶠ x in l, P x
+#check fun {α : Type*} (l : Filter α) (P : α → Prop) => ∀ᶠ x in l, P x
 ```
 
 This notation can represent “for all sufficiently large `n`,” “for all points sufficiently close to `x`,” or “for all points in a chosen region,” depending on the filter. The quantifier stays uniform while the filter changes.
@@ -133,7 +133,11 @@ example {α : Type*} {l : Filter α} {P Q : α → Prop}
 The tactic selects an input satisfying the eventual hypotheses, then the proof continues pointwise. Multiple eventual facts can be combined in one call:
 
 ```lean
-filter_upwards [h₁, h₂] with x hx₁ hx₂
+example {α : Type*} {l : Filter α} {P Q : α → Prop}
+    (h₁ : ∀ᶠ x in l, P x) (h₂ : ∀ᶠ x in l, Q x) :
+    ∀ᶠ x in l, P x ∧ Q x := by
+  filter_upwards [h₁, h₂] with x hx₁ hx₂
+  exact ⟨hx₁, hx₂⟩
 ```
 
 This is analogous to taking the intersection of the large sets on which each hypothesis holds. Filters are closed under finite intersections, so the combined context is available eventually.

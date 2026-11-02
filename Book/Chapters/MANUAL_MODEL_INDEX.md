@@ -1,0 +1,87 @@
+# Supplemental finite-model examples
+
+These 83 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+
+- Chapter 35: [Conditional Expectation and Information](Chapter35.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-35-conditional-expectation.md).
+- Chapter 36: [Filtrations and Martingales](Chapter36.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-36-filtrations-and-martingales.md).
+- Chapter 37: [Stopping Times and Optional Sampling](Chapter37.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-37-stopping-times-and-optional-sampling.md).
+- Chapter 38: [Martingale Convergence and Uniform Integrability](Chapter38.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-38-martingale-convergence.md).
+- Chapter 39: [Predictable Processes and Doob Decomposition](Chapter39.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-39-predictable-processes-and-doob-decomposition.md).
+- Chapter 40: [Markov Kernels and Transition Systems](Chapter40.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-40-markov-kernels-and-transition-systems.md).
+- Chapter 41: [Disintegration and Conditional Kernels](Chapter41.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-41-disintegration-and-conditional-kernels.md).
+- Chapter 42: [Bayesian Updating and Posterior Kernels](Chapter42.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-42-bayesian-updating-and-posterior-kernels.md).
+- Chapter 43: [Conditional Independence](Chapter43.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-43-conditional-independence.md).
+- Chapter 44: [Irreducible Markov Kernels](Chapter44.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-44-irreducible-markov-kernels.md).
+- Chapter 45: [Invariant and Reversible Markov Kernels](Chapter45.lean) — manuscript: [source](../../manuscript/chapters/part-07/chapter-45-invariant-and-reversible-markov-kernels.md).
+- Chapter 46: [Measure-Preserving Dynamics and Ergodicity](Chapter46.lean) — manuscript: [source](../../manuscript/chapters/part-07/chapter-46-measure-preserving-dynamics-and-ergodicity.md).
+- Chapter 47: [Ergodic Averages and Empirical Measures](Chapter47.lean) — manuscript: [source](../../manuscript/chapters/part-07/chapter-47-ergodic-averages-and-empirical-measures.md).
+- Chapter 48: [Total Variation and Markov Chain Convergence](Chapter48.lean) — manuscript: [source](../../manuscript/chapters/part-08/chapter-48-total-variation-and-markov-chain-convergence.md).
+- Chapter 49: [Metropolis–Hastings and Detailed Balance](Chapter49.lean) — manuscript: [source](../../manuscript/chapters/part-09/chapter-49-metropolis-hastings-and-detailed-balance.md).
+- Chapter 50: [Gibbs Sampling and Conditional Kernels](Chapter50.lean) — manuscript: [source](../../manuscript/chapters/part-09/chapter-50-gibbs-sampling-and-conditional-kernels.md).
+- Chapter 51: [Importance Sampling and Change of Measure](Chapter51.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-51-importance-sampling-and-change-of-measure.md).
+- Chapter 52: [Variance and Monte Carlo Error Bounds](Chapter52.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-52-variance-and-monte-carlo-error.md).
+- Chapter 53: [Sequential Importance Sampling and Filtering](Chapter53.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-53-sequential-importance-sampling-and-filtering.md).
+- Chapter 54: [Resampling and Particle Systems](Chapter54.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-54-resampling-and-particle-systems.md).
+- Chapter 55: [Finite-State Continuous-Time Markov Chains](Chapter55.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-55-finite-state-continuous-time-markov-chains.md).
+- Chapter 57: [Sample Paths and Non-Explosion](Chapter57.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-57-sample-paths-and-non-explosion.md).
+- Chapter 58: [Dynkin’s Formula and Generator Martingales](Chapter58.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-58-dynkins-formula-and-generator-martingales.md).
+- Chapter 59: [Feynman–Kac Semigroups and Killing](Chapter59.lean) — manuscript: [source](../../manuscript/chapters/part-12/chapter-59-feynman-kac-semigroups-and-killing.md).
+- Chapter 60: [Spectral Gaps and Continuous-Time Mixing](Chapter60.lean) — manuscript: [source](../../manuscript/chapters/part-12/chapter-60-spectral-gaps-and-continuous-time-mixing.md).
+- Chapter 61: [Time-Inhomogeneous Chains and Evolution Families](Chapter61.lean) — manuscript: [source](../../manuscript/chapters/part-13/chapter-61-time-inhomogeneous-chains-and-evolution-families.md).
+- Chapter 62: [Coupling and Continuous-Time Mixing](Chapter62.lean) — manuscript: [source](../../manuscript/chapters/part-13/chapter-62-coupling-and-continuous-time-mixing.md).
+- Chapter 63: [Birth–Death Chains and Hitting Problems](Chapter63.lean) — manuscript: [source](../../manuscript/chapters/part-14/chapter-63-birth-death-chains-and-hitting-problems.md).
+- Chapter 64: [Product Generators and Local Interactions](Chapter64.lean) — manuscript: [source](../../manuscript/chapters/part-14/chapter-64-product-generators-and-local-interactions.md).
+- Chapter 65: [Graph Laplacians and Effective Resistance](Chapter65.lean) — manuscript: [source](../../manuscript/chapters/part-14/chapter-65-graph-laplacians-and-effective-resistance.md).
+- Chapter 66: [Graphical Constructions for Finite Particle Systems](Chapter66.lean) — manuscript: [source](../../manuscript/chapters/part-15/chapter-66-graphical-constructions-for-particle-systems.md).
+- Chapter 67: [Exclusion, Conservation, and Duality](Chapter67.lean) — manuscript: [source](../../manuscript/chapters/part-15/chapter-67-exclusion-conservation-and-duality.md).
+- Chapter 68: [The Markov Chain Tree Theorem](Chapter68.lean) — manuscript: [source](../../manuscript/chapters/part-16/chapter-68-markov-chain-tree-theorem.md).
+- Chapter 69: [Linear Response for Finite Markov Chains](Chapter69.lean) — manuscript: [source](../../manuscript/chapters/part-16/chapter-69-linear-response-for-finite-markov-chains.md).
+- Chapter 70: [Tilted Generators and Large Deviations](Chapter70.lean) — manuscript: [source](../../manuscript/chapters/part-17/chapter-70-tilted-generators-and-large-deviations.md).
+- Chapter 71: [Quasi-Stationary Laws and Doob Transforms](Chapter71.lean) — manuscript: [source](../../manuscript/chapters/part-17/chapter-71-quasi-stationarity-and-doob-transforms.md).
+- Chapter 72: [Resolvents and Green Kernels](Chapter72.lean) — manuscript: [source](../../manuscript/chapters/part-18/chapter-72-resolvents-and-green-kernels.md).
+- Chapter 73: [Regeneration and Renewal Rewards](Chapter73.lean) — manuscript: [source](../../manuscript/chapters/part-18/chapter-73-regeneration-and-renewal-rewards.md).
+- Chapter 74: [Martingale Approximations for Additive Functionals](Chapter74.lean) — manuscript: [source](../../manuscript/chapters/part-19/chapter-74-martingale-approximations-and-additive-functionals.md).
+- Chapter 75: [Functional Central Limit Theorems](Chapter75.lean) — manuscript: [source](../../manuscript/chapters/part-19/chapter-75-functional-central-limit-theorems.md).
+- Chapter 76: [Population Scaling and Diffusion Limits](Chapter76.lean) — manuscript: [source](../../manuscript/chapters/part-20/chapter-76-population-scaling-and-diffusion-limits.md).
+- Chapter 77: [Averaging for Fast–Slow Markov Chains](Chapter77.lean) — manuscript: [source](../../manuscript/chapters/part-21/chapter-77-averaging-fast-slow-markov-chains.md).
+- Chapter 78: [Aggregation and Singular Perturbation of Markov Chains](Chapter78.lean) — manuscript: [source](../../manuscript/chapters/part-21/chapter-78-aggregation-singular-perturbation-markov-chains.md).
+- Chapter 79: [Quasi-Birth–Death Processes and Matrix-Analytic Methods](Chapter79.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-79-quasi-birth-death-processes.md).
+- Chapter 80: [Certified Computation for Matrix-Geometric Tails](Chapter80.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-80-certified-computation-qbd.md).
+- Chapter 81: [Markovian Arrival Processes and MAP/M/1 Queues](Chapter81.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-81-markovian-arrivals-map-m1.md).
+- Chapter 82: [Phase-Type Service and MAP/PH/1 Queues](Chapter82.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-82-phase-type-service-map-ph1.md).
+- Chapter 83: [M/G/1-Type Chains and Batch Arrivals](Chapter83.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-83-mg1-type-chains-and-batch-arrivals.md).
+- Chapter 84: [GI/M/1-Type Chains and Geometric Stationary Tails](Chapter84.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-84-gi-m1-type-chains-and-geometric-tails.md).
+- Chapter 85: [Performance Measures from Matrix-Geometric Tails](Chapter85.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-85-performance-measures-from-matrix-geometric-tails.md).
+- Chapter 86: [Spectral Asymptotics of Matrix-Geometric Tails](Chapter86.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-86-spectral-asymptotics-of-matrix-geometric-tails.md).
+- Chapter 87: [Monotone Construction of the Rate Matrix](Chapter87.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-87-monotone-rate-matrix-iteration.md).
+- Chapter 88: [Newton Linearization for Matrix Rate Equations](Chapter88.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-88-newton-methods-for-matrix-rate-equations.md).
+- Chapter 89: [Certified Enclosures for Rate Matrices](Chapter89.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-89-certified-rate-matrix-enclosures.md).
+- Chapter 90: [Convexity, Subgradients, and Optimality Certificates](Chapter90.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-90-convexity-subgradients-and-optimality-certificates.md).
+- Chapter 91: [Smooth Convex Optimization and Gradient Descent](Chapter91.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-91-smooth-convex-optimization-and-gradient-descent.md).
+- Chapter 92: [Projected Gradient and Proximal Methods](Chapter92.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-92-projected-gradient-and-proximal-methods.md).
+- Chapter 93: [Estimate Sequences and Accelerated Gradient](Chapter93.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-93-estimate-sequences-and-accelerated-gradient.md).
+- Chapter 94: [Mirror Descent and Bregman Geometry](Chapter94.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-94-mirror-descent-and-bregman-geometry.md).
+- Chapter 95: [Stochastic Gradient Methods and Expected Guarantees](Chapter95.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-95-stochastic-gradient-methods-and-expected-guarantees.md).
+- Chapter 96: [Control Variates and Finite-Sum Variance Reduction](Chapter96.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-96-control-variates-and-finite-sum-variance-reduction.md).
+- Chapter 97: [Adaptive Subgradients and AdaGrad](Chapter97.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-97-adaptive-subgradients-and-adagrad.md).
+- Chapter 98: [Frank–Wolfe and Projection-Free Optimization](Chapter98.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-98-frank-wolfe-and-projection-free-optimization.md).
+- Chapter 99: [Away-Step Frank–Wolfe and Linear Convergence](Chapter99.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-99-away-step-frank-wolfe.md).
+- Chapter 100: [Fully Corrective Frank–Wolfe and Active-Set Optimization](Chapter100.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-100-fully-corrective-frank-wolfe.md).
+- Chapter 101: [Pairwise Frank–Wolfe and Sparse Support Transfers](Chapter101.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-101-pairwise-frank-wolfe.md).
+- Chapter 102: [Frank–Wolfe over Strongly Convex Sets](Chapter102.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-102-frank-wolfe-strongly-convex-sets.md).
+- Chapter 103: [Nonconvex Frank–Wolfe and Stationarity Certificates](Chapter103.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-103-nonconvex-frank-wolfe.md).
+- Chapter 104: [Stochastic Frank–Wolfe and Noisy Linear Oracles](Chapter104.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-104-stochastic-frank-wolfe.md).
+- Chapter 105: [Finite-Sum Frank–Wolfe: Variance Reduction and Gap Estimation](Chapter105.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-105-finite-sum-frank-wolfe.md).
+- Chapter 106: [Structured Gap Estimation for Generalized Linear Frank–Wolfe](Chapter106.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-106-structured-frank-wolfe-gap-estimation.md).
+- Chapter 107: [Nonconvex Stationarity with Cached Frank–Wolfe Gradients](Chapter107.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-107-nonconvex-cached-frank-wolfe.md).
+- Chapter 108: [Frank–Wolfe, Fenchel Duality, and Saddle-Point Certificates](Chapter108.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-108-frank-wolfe-fenchel-duality.md).
+- Chapter 109: [Primal–Dual Hybrid Gradient and Proximal Splitting](Chapter109.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-109-primal-dual-hybrid-gradient.md).
+- Chapter 110: [ADMM, Augmented Lagrangians, and Residual Certificates](Chapter110.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-110-admm-and-augmented-lagrangians.md).
+- Chapter 111: [Dykstra’s Algorithm and Projection onto Intersections](Chapter111.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-111-dykstra-projection-algorithm.md).
+- Chapter 112: [Douglas–Rachford Splitting and Monotone Inclusions](Chapter112.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-112-douglas-rachford-splitting.md).
+- Chapter 114: [Backtracking Proximal Gradient and Local Curvature Certificates](Chapter114.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-114-backtracking-proximal-gradient.md).
+- Chapter 115: [Variable-Metric Forward–Backward Splitting](Chapter115.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-115-variable-metric-forward-backward.md).
+- Chapter 116: [Proximal Quasi-Newton Methods and Structured Metrics](Chapter116.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-116-proximal-quasi-newton.md).
+- Chapter 118: [Global Convergence of Proximal Newton Iterations](Chapter118.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-118-global-convergence-proximal-newton.md).
+- Chapter 119: [Local Superlinear Convergence and Forcing Terms](Chapter119.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-119-local-superlinear-proximal-newton.md).
+- Chapter 120: [Kurdyka–Łojasiewicz Convergence and Finite Length](Chapter120.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-120-kurdyka-lojasiewicz-convergence.md).

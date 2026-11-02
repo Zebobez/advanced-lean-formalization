@@ -25,6 +25,13 @@ inductive Tree (α : Type _) where
   | .leaf a => .leaf (f a)
   | .node left right => .node (mapTree f left) (mapTree f right)
 
+-- Source Lean fence 3
+example (f : α → β) (a : α) :
+    mapTree f (.leaf a) = .leaf (f a) := rfl
+
+example (f : α → β) (l r : Tree α) :
+    mapTree f (.node l r) = .node (mapTree f l) (mapTree f r) := rfl
+
 -- Source Lean fence 4
 example (f : α → β) (a : α) : mapTree f (.leaf a) = .leaf (f a) := rfl
 

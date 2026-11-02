@@ -77,14 +77,10 @@ Each line has a specific Lean counterpart. `Nat.add_succ` and `pow_succ` expose 
 The theorem's type is not just its conclusion. The bracketed assumption `[Monoid M]` says the proof requires an instance of the `Monoid` class for the type `M`.
 
 ```lean
-variable {M : Type u} [Monoid M]
-
-theorem power_add_induction (a : M) (m n : Nat) :
-    a ^ (m + n) = a ^ m * a ^ n := by
-  ...
+#check @Chapter03.power_add_induction
 ```
 
-The type variable `{M : Type u}` is an ordinary implicit argument: Lean can often infer it from the type of `a`. The instance argument `[Monoid M]` is also implicit, but Lean treats it specially. It asks typeclass synthesis to find a structure that supplies the operations and laws required by `Monoid`.
+The printed type shows that `{M : Type u}` is an ordinary implicit argument: Lean can often infer it from the type of `a`. The instance argument `[Monoid M]` is also implicit, but Lean treats it specially. It asks typeclass synthesis to find a structure that supplies the operations and laws required by `Monoid`.
 
 Square brackets in a binder are a deliberate signal to the reader. Compare the two conceptual inputs to the theorem:
 

@@ -147,8 +147,11 @@ When a proof goal involves pointwise order between maps, remember that the order
 For a Galois connection, resist the temptation to unfold the definition at every use. Name the connection and apply its equivalence. If the proof repeatedly changes direction, make the local facts visible:
 
 ```lean
-have h₁ : l a ≤ b := ...
-have h₂ : a ≤ u b := (gc a b).mp h₁
+example {α β : Type*} [Preorder α] [Preorder β]
+    {l : α → β} {u : β → α} (gc : GaloisConnection l u)
+    {a : α} {b : β} (h₁ : l a ≤ b) : a ≤ u b := by
+  have h₂ : a ≤ u b := (gc a b).mp h₁
+  exact h₂
 ```
 
 The exact syntax of the direction can vary with whether `gc` is written as a function or accessed through a named theorem. The important point is to let the adjunction provide the conversion, not a second hand-written set argument.

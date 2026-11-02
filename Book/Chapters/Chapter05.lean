@@ -12,6 +12,13 @@ Generated for leanprover/lean4:v4.35.0 and Mathlib ref v4.35.0.
 Only complete top-level Lean commands are included. Interactive tactic fragments and diagnostic states remain in the manuscript.
 -/
 
+-- Source Lean fence 1
+#check fun {α : Type*} (p : α → Prop) => {x : α // p x}
+
+-- Source Lean fence 2
+#check fun {α : Type*} (p : α → Prop) (x : α) (proofOfP : p x) =>
+  (⟨x, proofOfP⟩ : {y : α // p y})
+
 -- Source Lean fence 3
 namespace Chapter05
 

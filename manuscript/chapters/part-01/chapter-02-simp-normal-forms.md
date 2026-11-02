@@ -48,22 +48,18 @@ an expression in the public vocabulary
 
 This is why theorem attributes are part of proof architecture. A declaration tagged `[simp]` affects later proofs throughout the scope where that declaration is imported.
 
-The preceding chapter established a useful normal form for the accumulator helper: `reverseAcc xs acc` is represented by `xs.reverse ++ acc`. Because this law removes the helper call and exposes the standard list operations, it is a natural simplification rule:
+Chapter 1 proved the accumulator law and registered it as a simplification rule. Inspect the imported declaration:
 
 ```lean
-@[simp] theorem reverseAcc_eq_reverse_append
-    {α : Type _} (xs acc : List α) :
-    reverseAcc xs acc = xs.reverse ++ acc := by
-  -- proof from Chapter 1
-  ...
+#print Chapter01.reverseAcc_eq_reverse_append
 ```
 
-With the declaration from Chapter 1 in scope, a later proof can use the normal form directly:
+Because this law removes the helper call and exposes the standard list operations, a later proof can use the normal form directly:
 
 ```lean
 example {α : Type _} (xs acc : List α) :
     Chapter01.reverseAcc xs acc = xs.reverse ++ acc := by
-  simp
+  simpa only [Chapter01.reverseAcc_eq_reverse_append]
 ```
 
 The point is not that one line is better than the proof in Chapter 1. The attribute says that other theorems may rely on the same public simplification rule without knowing how `reverseAcc` is implemented.
@@ -208,7 +204,7 @@ def chooseFrom {α : Type _} (p : Prop) [Decidable p] (yes no : α) : α :=
 
 example {α : Type _} (p : Prop) [Decidable p] (hp : p) (yes no : α) :
     chooseFrom p yes no = yes := by
-  simp
+  exact chooseFrom_of_true p hp yes no
 
 end Chapter02
 ```

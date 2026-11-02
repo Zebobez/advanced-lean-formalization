@@ -37,6 +37,9 @@ theorem power_add_induction (a : M) (m n : Nat) :
 
 end Chapter03
 
+-- Source Lean fence 2
+#check @Chapter03.power_add_induction
+
 -- Source Lean fence 5
 example (a m n : Nat) : a ^ (m + n) = a ^ m * a ^ n := by
   exact Chapter03.power_add_induction a m n

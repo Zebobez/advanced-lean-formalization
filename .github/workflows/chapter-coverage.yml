@@ -1,4 +1,4 @@
-name: Audit textbook chapter coverage
+name: Verify textbook chapter coverage
 
 on:
   push:
@@ -15,5 +15,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Report missing Lean chapter modules
-        run: python3 scripts/check_chapter_coverage.py
+      - name: Require every manuscript chapter to have a Lean module
+        run: python3 scripts/check_chapter_coverage.py --strict

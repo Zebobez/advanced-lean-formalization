@@ -23,13 +23,14 @@ The Lean declarations in this chapter are grouped in `Chapter05`; the namespace 
 For a type `α` and predicate `p : α → Prop`, the subtype
 
 ```lean
-{x : α // p x}
+#check fun {α : Type*} (p : α → Prop) => {x : α // p x}
 ```
 
 contains values `x : α` together with a proof of `p x`. A value is constructed with angle-bracket notation:
 
 ```lean
-⟨x, proofOfP⟩
+#check fun {α : Type*} (p : α → Prop) (x : α) (proofOfP : p x) =>
+  (⟨x, proofOfP⟩ : {y : α // p y})
 ```
 
 and inspected through its `.val` and `.property` fields. Here is the type of positive natural numbers:

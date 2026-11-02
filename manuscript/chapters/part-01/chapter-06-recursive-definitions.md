@@ -42,8 +42,11 @@ The two constructors describe two shapes. A leaf carries one value; a node carri
 The recursive calls receive `left` and `right`, which are direct subtrees of the input node. This is the structural decrease that makes the definition safe. The recursive equations mirror the constructors:
 
 ```lean
-mapTree f (.leaf a) = .leaf (f a)
-mapTree f (.node l r) = .node (mapTree f l) (mapTree f r)
+example (f : α → β) (a : α) :
+    mapTree f (.leaf a) = .leaf (f a) := rfl
+
+example (f : α → β) (l r : Tree α) :
+    mapTree f (.node l r) = .node (mapTree f l) (mapTree f r) := rfl
 ```
 
 The equations can often be used directly by `rfl` or `simp`. For example, the following computations reduce without a separate theorem:

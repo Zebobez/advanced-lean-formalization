@@ -77,17 +77,15 @@ This behavior is stronger than ordinary case splitting on an unindexed datatype.
 
 ## 3. Defining functions that change indices
 
-Appending two vectors adds their lengths. The result type states this relationship directly:
+Appending two vectors adds their lengths. We put the second vector's length first so the index follows the recursive structure of the first vector:
 
 ```lean
-@[expose] def vappend {m n : Nat} : Vec α m → Vec α n → Vec α (m + n)
-  | .nil, ys => by
-      simpa using ys
-  | .cons x xs, ys => by
-      simpa [Nat.succ_add] using Vec.cons x (vappend xs ys)
+@[expose] def vappend {m n : Nat} : Vec α m → Vec α n → Vec α (n + m)
+  | .nil, ys => ys
+  | .cons x xs, ys => Vec.cons x (vappend xs ys)
 ```
 
-Natural-number addition is recursive in its second argument, so the index equations in these branches are not both definitional. In the empty case, `Nat.zero_add` transports the second vector to index `0 + n`. In the cons case, the recursive result has index `m + n`; adding a head gives `Nat.succ (m + n)`, while the target is `Nat.succ m + n`. The theorem `Nat.succ_add` aligns those indices. The definition makes the required transports explicit with `simpa`.
+Natural-number addition computes by recursion on its second argument. Here that argument is the first vector's length: `n + 0` reduces to `n`, and `n + Nat.succ m` reduces to `Nat.succ (n + m)`. The constructor branches therefore match by computation, without explicit casts. Since addition is commutative on `Nat`, `n + m` is the same total length as `m + n`; this order is chosen to fit the definition's recursion.
 
 The two equations can be exposed as named lemmas:
 
@@ -99,7 +97,7 @@ The two equations can be exposed as named lemmas:
 @[simp] theorem vappend_cons {m n : Nat} (x : α)
     (xs : Vec α m) (ys : Vec α n) :
     vappend (Vec.cons x xs) ys = Vec.cons x (vappend xs ys) := by
-  simp [vappend, Nat.succ_add]
+  simp [vappend]
 ```
 
 These equations are useful for calculation and proof. Their types also document the computational behavior without requiring a reader to inspect the definition.

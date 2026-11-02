@@ -45,7 +45,8 @@ This equation says that the helper's output is the ordinary reverse of its pendi
 Each recursive call removes the head of the first list and pushes that element onto the accumulator. The expected relationship to the standard reverse is:
 
 ```lean
-reverseAcc xs acc = xs.reverse ++ acc
+#check fun {α : Type u} (xs acc : List α) =>
+  reverseAcc xs acc = xs.reverse ++ acc
 ```
 
 The accumulator is part of the theorem because the helper is meant to work from *any* starting accumulator. That quantification will also be what makes the induction work.
@@ -97,7 +98,8 @@ This gives a reliable diagnostic: compare the arguments of the recursive call in
 The useful induction statement is not a claim about one fixed `acc`. It is a claim that works for every accumulator:
 
 ```lean
-∀ acc, reverseAcc xs acc = xs.reverse ++ acc
+#check fun {α : Type u} (xs : List α) =>
+  ∀ acc : List α, reverseAcc xs acc = xs.reverse ++ acc
 ```
 
 That is the motive we want induction to prove. In tactic mode, `generalizing acc` moves `acc` into the statement being proved by induction, then reintroduces it in each case. The induction hypothesis can therefore be instantiated at the changed accumulator.
@@ -162,7 +164,8 @@ induction xs generalizing acc
 can be understood as asking Lean to prove the motive
 
 ```lean
-fun xs => ∀ acc, reverseAcc xs acc = xs.reverse ++ acc
+#check fun {α : Type u} (xs : List α) =>
+  fun acc : List α => reverseAcc xs acc = xs.reverse ++ acc
 ```
 
 by induction on `xs`. This way of reading the proof is useful well beyond lists. When an induction hypothesis is too weak, write down the motive you actually need and identify the local variables that must move inside it.

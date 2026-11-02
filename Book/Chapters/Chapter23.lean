@@ -46,4 +46,11 @@ example {α β : Type*} [Preorder α] [Preorder β]
     l a ≤ b ↔ a ≤ u b := by
   exact gc a b
 
+-- Source Lean fence 8
+example {α β : Type*} [Preorder α] [Preorder β]
+    {l : α → β} {u : β → α} (gc : GaloisConnection l u)
+    {a : α} {b : β} (h₁ : l a ≤ b) : a ≤ u b := by
+  have h₂ : a ≤ u b := (gc a b).mp h₁
+  exact h₂
+
 end Book.Chapters.Chapter23

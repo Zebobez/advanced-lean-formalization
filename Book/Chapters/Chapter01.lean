@@ -21,6 +21,14 @@ def reverseAcc {α : Type u} : List α → List α → List α
   | [], acc => acc
   | x :: xs, acc => reverseAcc xs (x :: acc)
 
+-- Source Lean fence 2
+#check fun {α : Type u} (xs acc : List α) =>
+  reverseAcc xs acc = xs.reverse ++ acc
+
+-- Source Lean fence 6
+#check fun {α : Type u} (xs : List α) =>
+  ∀ acc : List α, reverseAcc xs acc = xs.reverse ++ acc
+
 -- Source Lean fence 7
 @[simp] theorem reverseAcc_eq_reverse_append
     {α : Type u} (xs acc : List α) :
@@ -57,6 +65,10 @@ theorem reverseAcc_eq_reverse_append_revert
           exact (List.append_assoc _ _ _).symm
         _ = (x :: xs).reverse ++ acc := by
           rw [List.reverse_cons]
+
+-- Source Lean fence 10
+#check fun {α : Type u} (xs : List α) =>
+  fun acc : List α => reverseAcc xs acc = xs.reverse ++ acc
 
 -- Source Lean fence 12
 @[expose] def pushBackAcc {α : Type u} : List α → List α → List α

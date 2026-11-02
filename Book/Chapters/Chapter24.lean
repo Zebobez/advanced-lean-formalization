@@ -17,6 +17,9 @@ namespace Book.Chapters.Chapter24
 -- Source Lean fence 1
 open Filter Topology
 
+-- Source Lean fence 2
+#check fun {α : Type*} (l : Filter α) (P : α → Prop) => ∀ᶠ x in l, P x
+
 -- Source Lean fence 4
 example {α β : Type*} {f : α → β}
     {l₁ : Filter α} {l₂ : Filter β} :
@@ -41,6 +44,13 @@ example {α : Type*} {l : Filter α} {P Q : α → Prop}
     ∀ᶠ x in l, Q x := by
   filter_upwards [hP] with x hx
   exact hPQ x hx
+
+-- Source Lean fence 9
+example {α : Type*} {l : Filter α} {P Q : α → Prop}
+    (h₁ : ∀ᶠ x in l, P x) (h₂ : ∀ᶠ x in l, Q x) :
+    ∀ᶠ x in l, P x ∧ Q x := by
+  filter_upwards [h₁, h₂] with x hx₁ hx₂
+  exact ⟨hx₁, hx₂⟩
 
 -- Source Lean fence 12
 example {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]

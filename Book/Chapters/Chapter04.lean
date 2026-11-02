@@ -77,6 +77,9 @@ example {α β : Type _} (p q : α × β)
     (h₁ : p.1 = q.1) (h₂ : p.2 = q.2) : p = q := by
   ext <;> assumption
 
+-- Source Lean fence 13
+#check fun {α : Type*} (p : α → Prop) => {x : α // p x}
+
 -- Source Lean fence 14
 example {α : Type _} {p : α → Prop}
     (x y : {a // p a}) (h : x.val = y.val) : x = y := by
@@ -86,5 +89,11 @@ example {α : Type _} {p : α → Prop}
 -- Source Lean fence 15
 example (P Q : Prop) (h : P ↔ Q) : P = Q := by
   exact propext h
+
+-- Source Lean fence 16
+example {α β γ : Type*} (f g : α → β → γ)
+    (h : ∀ x y, f x y = g x y) : f = g := by
+  ext x y
+  exact h x y
 
 end Book.Chapters.Chapter04

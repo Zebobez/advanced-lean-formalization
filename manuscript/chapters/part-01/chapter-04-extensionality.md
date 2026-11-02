@@ -179,7 +179,7 @@ For custom structures, the library may already provide an extensionality theorem
 Subtypes and other dependent structures also contain proof fields. For a subtype
 
 ```lean
-{x : α // p x}
+#check fun {α : Type*} (p : α → Prop) => {x : α // p x}
 ```
 
 the value `x` is data and `p x` is evidence that the value satisfies a property. If two subtype values have equal underlying elements, their proof components do not create a new mathematical distinction. Proof irrelevance and the subtype extensionality theorem account for this:
@@ -228,7 +228,10 @@ Extensionality lemmas form an API just like simplification lemmas. A library may
 The tactic also accepts explicit names for the elements or indices it introduces. Naming them can improve a long proof:
 
 ```lean
-ext x y
+example {α β γ : Type*} (f g : α → β → γ)
+    (h : ∀ x y, f x y = g x y) : f = g := by
+  ext x y
+  exact h x y
 ```
 
 This is useful for relations, functions of several arguments, and nested collections. The names are ordinary local variables. They are not special placeholders; their order follows the successive extensionality steps, so inspect the resulting context before using them.
