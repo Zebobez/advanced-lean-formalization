@@ -74,7 +74,8 @@ Fubini's theorem applies to a function `f : α × β → E` that is integrable w
 ```lean
 open MeasureTheory
 
-example {α β E : Type*} [MeasurableSpace α] [MeasurableSpace β]
+theorem exercise_33_3_fubini
+    {α β E : Type*} [MeasurableSpace α] [MeasurableSpace β]
     {μ : Measure α} {ν : Measure β}
     [SFinite μ] [SFinite ν]
     [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -171,6 +172,50 @@ Use the section-integral measurability theorem or apply a Fubini result that sup
 6. Prove equality of the two orders of integration by comparing them with the product integral.
 7. Explain why a measurable function on a product does not automatically have a finite integral.
 8. Identify the finiteness assumptions in a Fubini theorem and determine whether σ-finiteness supplies them.
+
+### 10.1 Compiled solutions for product identities
+
+The first exercise asks for the measure of a rectangle. Under the s-finiteness hypothesis used by the product-measure API, Mathlib proves the identity even for sets that are not known to be measurable:
+
+```lean
+open MeasureTheory
+
+theorem exercise_33_1_product_rectangle
+    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    {μ : Measure α} {ν : Measure β} [SFinite ν]
+    (s : Set α) (t : Set β) :
+    μ.prod ν (s ×ˢ t) = μ s * ν t := by
+  simp
+```
+
+Tonelli's theorem uses `ℝ≥0∞`, so the iterated integral is allowed to be infinite. The measurability premise is almost-everywhere measurability with respect to the product measure:
+
+```lean
+open MeasureTheory
+open scoped ENNReal
+
+theorem exercise_33_2_tonelli
+    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    {μ : Measure α} {ν : Measure β} [SFinite ν]
+    (f : α × β → ℝ≥0∞) (hf : AEMeasurable f (μ.prod ν)) :
+    ∫⁻ z, f z ∂(μ.prod ν) = ∫⁻ x, ∫⁻ y, f (x, y) ∂ν ∂μ := by
+  exact lintegral_prod f hf
+```
+
+The Fubini theorem above formalizes the third exercise. Its symmetric form proves the change of order in Exercise 6 by identifying both iterated integrals with the product integral:
+
+```lean
+open MeasureTheory
+
+theorem exercise_33_6_change_order
+    {α β E : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    {μ : Measure α} {ν : Measure β}
+    [SFinite μ] [SFinite ν]
+    [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (f : α × β → E) (hf : Integrable f (μ.prod ν)) :
+    ∫ x, ∫ y, f (x, y) ∂ν ∂μ = ∫ y, ∫ x, f (x, y) ∂μ ∂ν := by
+  exact integral_integral_swap hf
+```
 
 ## Summary
 
