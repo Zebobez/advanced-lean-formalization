@@ -81,6 +81,19 @@ For a finite Lean model, define the joint law of `(Θ,X,Y)` by summing over the 
 
 For example, given `Θ=1`, the four conditional atom probabilities for `(X,Y)` are `0.81`, `0.09`, `0.09`, and `0.01`; they are the products of the Bernoulli factors `0.9` and `0.1`. Given `Θ=0`, the same table has `0.01`, `0.09`, `0.09`, and `0.81`. Checking these four atoms proves conditional independence for the Boolean-valued variables, and finite unions then give the event formulation for arbitrary subsets of the state space.
 
+The shared finite-state model also provides a small executable check for products of independent cell weights:
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def independentJoint : Kernel := resetKernel
+
+theorem everyIndependentCellHasUnitWeight : independentJoint zero zero = 1 := by decide
+theorem secondIndependentCellHasUnitWeight : independentJoint one zero = 1 := by decide
+```
+
 This example prevents a common modeling mistake: testing conditional independence by computing only the marginal joint law of `X` and `Y`. The condition must be evaluated after conditioning on the specified information.
 
 ## 4. Worked example: past and future given the present
@@ -212,6 +225,67 @@ The current function-level definitions use standard Borel and finite-measure ass
 8. Distinguish pairwise conditional independence from family conditional independence.
 9. Describe how `condExpKernel` represents conditional event probabilities.
 10. Locate `condIndepFun_iff_condExp_inter_preimage_eq_mul` and list its hypotheses.
+
+### Compiled conditional-independence statements
+
+The hidden-cause calculation can be checked without rounding by using rational probabilities. Each conditional success probability factors within a hidden-state row, while averaging over the hidden state creates a joint success probability different from the product of the marginals.
+
+```lean
+theorem exercise_43_1_hidden_row_zero_factors :
+    (1 / 10 : ℚ) * (1 / 10) = 1 / 100 := by
+  norm_num
+
+theorem exercise_43_2_hidden_row_one_factors :
+    (9 / 10 : ℚ) * (9 / 10) = 81 / 100 := by
+  norm_num
+
+theorem exercise_43_3_hidden_marginal_success :
+    (1 / 2 : ℚ) * (1 / 10) + (1 / 2) * (9 / 10) = 1 / 2 := by
+  norm_num
+
+theorem exercise_43_4_hidden_joint_success :
+    (1 / 2 : ℚ) * (1 / 10) * (1 / 10) +
+        (1 / 2) * (9 / 10) * (9 / 10) = 41 / 100 := by
+  norm_num
+
+theorem exercise_43_5_hidden_variables_not_independent :
+    (41 / 100 : ℚ) ≠ (1 / 2) * (1 / 2) := by
+  norm_num
+```
+
+On the finite Boolean state space, conditional independence given the hidden state can be checked by verifying the factorization on each pair of atoms. The next model builds the conditional row from Bernoulli atom probabilities, derives both marginals by summing out the other coordinate, and proves the cell factorization for every hidden state and pair of outcomes.
+
+```lean
+def bernoulliAtom (p : ℚ) (x : Bool) : ℚ := if x then p else 1 - p
+
+def hiddenSuccessProb (θ : Bool) : ℚ := if θ then 9 / 10 else 1 / 10
+
+def hiddenJointAtom (θ x y : Bool) : ℚ :=
+  bernoulliAtom (hiddenSuccessProb θ) x * bernoulliAtom (hiddenSuccessProb θ) y
+
+def hiddenXMarginal (θ x : Bool) : ℚ := ∑ y : Bool, hiddenJointAtom θ x y
+
+def hiddenYMarginal (θ y : Bool) : ℚ := ∑ x : Bool, hiddenJointAtom θ x y
+
+theorem bernoulliAtom_total (p : ℚ) : ∑ x : Bool, bernoulliAtom p x = 1 := by
+  simp [bernoulliAtom]
+
+theorem hiddenXMarginal_eq (θ x : Bool) :
+    hiddenXMarginal θ x = bernoulliAtom (hiddenSuccessProb θ) x := by
+  unfold hiddenXMarginal hiddenJointAtom
+  rw [← Finset.mul_sum, bernoulliAtom_total]
+  ring
+
+theorem hiddenYMarginal_eq (θ y : Bool) :
+    hiddenYMarginal θ y = bernoulliAtom (hiddenSuccessProb θ) y := by
+  unfold hiddenYMarginal hiddenJointAtom
+  rw [← Finset.sum_mul, bernoulliAtom_total]
+  ring
+
+theorem hiddenJoint_conditional_independence (θ x y : Bool) :
+    hiddenJointAtom θ x y = hiddenXMarginal θ x * hiddenYMarginal θ y := by
+  rw [hiddenXMarginal_eq, hiddenYMarginal_eq, hiddenJointAtom]
+```
 
 ## Summary
 
