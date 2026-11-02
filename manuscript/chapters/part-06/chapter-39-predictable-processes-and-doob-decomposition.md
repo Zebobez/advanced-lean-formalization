@@ -254,6 +254,80 @@ The construction and predictable σ-algebra are index-sensitive. Check the theor
 9. Compare the discrete-time decomposition in this chapter with the continuous-time Doob–Meyer theorem.
 10. Identify an index shift that would make an adaptedness proof insufficient to establish predictability.
 
+### 13.1 Compiled Doob-decomposition patterns
+
+The finite-state example computes the residual after subtracting the proposed predictable drift using exact integer arithmetic:
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def rawIncrement : State → Int := fun s => if s = zero then -1 else 1
+def predictableDrift : State → Int := rawIncrement
+def martingaleResidual (s : State) : Int := rawIncrement s - predictableDrift s
+
+theorem residualAtZero : martingaleResidual zero = 0 := by decide
+theorem residualAtOne : martingaleResidual one = 0 := by decide
+```
+
+The predictable component satisfies a one-step recurrence: its next value adds the conditional mean of the process increment.
+
+```lean
+open MeasureTheory
+open scoped MeasureTheory ProbabilityTheory
+
+theorem exercise_39_3_predictablePart_recurrence
+    {Ω E : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (ℱ : Filtration ℕ m₀) (f : ℕ → Ω → E) (n : ℕ) :
+    predictablePart f ℱ μ (n + 1) =
+      predictablePart f ℱ μ n + μ[f (n + 1) - f n | ℱ n] := by
+  exact predictablePart_add_one n
+```
+
+The two constructed parts sum to the original process by definition:
+
+```lean
+open MeasureTheory
+
+theorem exercise_39_8_doob_decomposition_identity
+    {Ω E : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (ℱ : Filtration ℕ m₀) (f : ℕ → Ω → E) :
+    martingalePart f ℱ μ + predictablePart f ℱ μ = f := by
+  exact martingalePart_add_predictablePart ℱ μ f
+```
+
+If the original process is strongly adapted, each time slice is integrable, and the filtration is σ-finite under the measure, Mathlib proves that the martingale component is a martingale:
+
+```lean
+open MeasureTheory
+
+theorem exercise_39_8_martingalePart_is_martingale
+    {Ω E : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (ℱ : Filtration ℕ m₀) (f : ℕ → Ω → E)
+    (hadapted : StronglyAdapted ℱ f) (hint : ∀ n, Integrable (f n) μ)
+    [SigmaFiniteFiltration μ ℱ] :
+    Martingale (martingalePart f ℱ μ) ℱ μ := by
+  exact martingale_martingalePart hadapted hint
+```
+
+For an existing martingale, the predictable component is zero almost everywhere at every time:
+
+```lean
+open MeasureTheory
+
+theorem exercise_39_7_predictablePart_of_martingale
+    {Ω E : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    {ℱ : Filtration ℕ m₀} {f : ℕ → Ω → E}
+    (hf : Martingale f ℱ μ) (n : ℕ) :
+    predictablePart f ℱ μ n =ᵐ[μ] (0 : Ω → E) := by
+  exact hf.predictablePart_eq_zero n
+```
+
 ## Summary
 
 In discrete time, predictability means that the next process value is measurable using current information. The conditional expectation of each increment is the predictable drift; subtracting it leaves a martingale difference. Summing these parts yields Mathlib's `predictablePart` and `martingalePart`, whose sum recovers the original process. For a submartingale, the predictable part is increasing almost surely; for a martingale, it vanishes almost surely. Keep the time shift, integrability, and a.e. status explicit.
