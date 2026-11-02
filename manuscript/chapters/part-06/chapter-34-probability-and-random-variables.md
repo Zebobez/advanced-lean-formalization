@@ -67,7 +67,8 @@ The `PMF` interface handles discrete distributions. On a countable type with mea
 ```lean
 open MeasureTheory
 
-example {α E : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]
+theorem exercise_34_3_pmf_expectation
+    {α E : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (p : PMF α) (f : α → E) (hf : Integrable f p.toMeasure) :
     ∫ a, f a ∂p.toMeasure = ∑' a, (p a).toReal • f a := by
@@ -185,6 +186,46 @@ For convergence in distribution, compare laws or bounded continuous expectations
 6. State the conditions needed to factor the moment-generating function of a sum of independent variables.
 7. Compare almost-sure convergence on one space with convergence in distribution of laws.
 8. Find the Mathlib characterization of weak convergence using bounded continuous test functions.
+
+### 11.1 Compiled probability patterns
+
+The first exercise is the defining total-mass property of a probability measure. The typeclass lets `simp` discharge the identity directly:
+
+```lean
+open MeasureTheory
+
+theorem exercise_34_1_probability_univ
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] :
+    P Set.univ = 1 := by
+  simp
+```
+
+The law of a measurable random variable is the pushforward measure. Evaluating it on a measurable event pulls that event back to the sample space:
+
+```lean
+open MeasureTheory
+
+theorem exercise_34_2_law_preimage
+    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
+    (P : Measure Ω) (X : Ω → E) (hX : Measurable X)
+    (s : Set E) (hs : MeasurableSet s) :
+    Measure.map X P s = P (X ⁻¹' s) := by
+  exact Measure.map_apply hX hs
+```
+
+Exercise 4 is the measurable-event characterization of independence. It exposes the exact preimage events whose measures must factor:
+
+```lean
+open MeasureTheory
+
+theorem exercise_34_4_indepFun_events
+    {Ω E F : Type*} [MeasurableSpace Ω] [MeasurableSpace E] [MeasurableSpace F]
+    (P : Measure Ω) (X : Ω → E) (Y : Ω → F) :
+    ProbabilityTheory.IndepFun X Y P ↔
+      ∀ s t, MeasurableSet s → MeasurableSet t →
+        P (X ⁻¹' s ∩ Y ⁻¹' t) = P (X ⁻¹' s) * P (Y ⁻¹' t) := by
+  exact ProbabilityTheory.indepFun_iff_measure_inter_preimage_eq_mul
+```
 
 ## Summary
 
