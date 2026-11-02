@@ -209,6 +209,74 @@ Pointwise probabilistic convergence and L¹ convergence are different conclusion
 9. Distinguish almost-everywhere convergence from convergence in L¹.
 10. Locate Mathlib's definitions of `Filtration`, `Adapted`, and `Martingale`, and identify the integrability assumptions in the convergence theorem you choose.
 
+### 11.1 Compiled filtration and martingale patterns
+
+The finite-state example checks a centered increment using exact integer arithmetic:
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def martingaleDifference : State → Int := fun s => if s = zero then -1 else 1
+
+theorem fairDifferenceHasZeroMean :
+    expectationNumerator uniformWeight martingaleDifference = 0 := by decide
+```
+
+A filtration is monotone in its time index: later information contains the earlier σ-algebra.
+
+```lean
+open MeasureTheory
+
+theorem exercise_36_1_filtration_mono
+    {Ω ι : Type*} [Preorder ι] {m₀ : MeasurableSpace Ω}
+    (ℱ : Filtration ι m₀) {i j : ι} (hij : i ≤ j) :
+    ℱ i ≤ ℱ j := by
+  exact ℱ.mono hij
+```
+
+Mathlib's martingale predicate packages adaptedness and the conditional-expectation identity. Its identity is an almost-everywhere equality for every ordered pair of times:
+
+```lean
+open MeasureTheory
+
+theorem exercise_36_3_martingale_condExp_identity
+    {Ω E ι : Type*} [Preorder ι] {m₀ : MeasurableSpace Ω}
+    [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {μ : Measure Ω} {ℱ : Filtration ι m₀} {f : ι → Ω → E}
+    (hf : Martingale f ℱ μ) {i j : ι} (hij : i ≤ j) :
+    μ[f j | ℱ i] =ᵐ[μ] f i := by
+  exact hf.2 i j hij
+```
+
+On a complete target space, the martingale API also exposes integrability of every time slice:
+
+```lean
+open MeasureTheory
+
+theorem exercise_36_3_martingale_integrable
+    {Ω E ι : Type*} [Preorder ι] {m₀ : MeasurableSpace Ω}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    {μ : Measure Ω} {ℱ : Filtration ι m₀} {f : ι → Ω → E}
+    (hf : Martingale f ℱ μ) (i : ι) : Integrable (f i) μ := by
+  exact hf.integrable i
+```
+
+Finally, an integrable random variable conditioned on each filtration level defines a martingale when the filtration is σ-finite with respect to the measure:
+
+```lean
+open MeasureTheory
+
+theorem exercise_36_4_condExp_is_martingale
+    {Ω E ι : Type*} [Preorder ι] {m₀ : MeasurableSpace Ω}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (X : Ω → E) (ℱ : Filtration ι m₀) (μ : Measure Ω)
+    [SigmaFiniteFiltration μ ℱ] :
+    Martingale (fun i => μ[X | ℱ i]) ℱ μ := by
+  exact martingale_condExp X ℱ μ
+```
+
 ## Summary
 
 A filtration is an increasing family of information σ-algebras. An adapted process is measurable at each time using the information available then. A martingale is an integrable adapted process whose conditional future value equals its current value almost surely; submartingales and supermartingales replace equality with an inequality. Conditional expectations of a fixed integrable variable form a martingale by the tower property. Stopping and convergence theorems require additional hypotheses, so formal proofs should establish adaptation, integrability, time bounds, and convergence control explicitly.

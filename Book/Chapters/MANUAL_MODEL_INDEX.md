@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 82 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 81 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 36: [Filtrations and Martingales](Chapter36.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-36-filtrations-and-martingales.md).
 - Chapter 37: [Stopping Times and Optional Sampling](Chapter37.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-37-stopping-times-and-optional-sampling.md).
 - Chapter 38: [Martingale Convergence and Uniform Integrability](Chapter38.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-38-martingale-convergence.md).
 - Chapter 39: [Predictable Processes and Doob Decomposition](Chapter39.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-39-predictable-processes-and-doob-decomposition.md).
