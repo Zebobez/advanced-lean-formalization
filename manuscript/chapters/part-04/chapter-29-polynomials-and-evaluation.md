@@ -121,7 +121,8 @@ The second direction often follows by evaluating both sides at `a`, after simpli
 As a small example of keeping the interfaces separate, a root of one factor is automatically a root of a product:
 
 ```lean
-example {R : Type*} [CommRing R] (p q : Polynomial R) (a : R)
+theorem exercise_29_3_root_mul {R : Type*} [CommRing R]
+    (p q : Polynomial R) (a : R)
     (hp : p.IsRoot a) : (p * q).IsRoot a := by
   rw [Polynomial.IsRoot.def] at hp ⊢
   simp [hp]
@@ -186,6 +187,42 @@ Rewrite with `Polynomial.IsRoot.def`, then simplify evaluation. Keep the unfoldi
 6. Find the Mathlib theorem bounding the cardinality of a finite subset of the roots of a nonzero polynomial. Explain each typeclass assumption.
 7. Use a factor theorem to convert a root hypothesis into divisibility by a linear factor.
 8. Explain why a root predicate and a root multiset answer different questions about the zero polynomial.
+
+## 12. Formalized exercise patterns
+
+These results keep evaluation and factorization at the public API level. Routine constant evaluation is discharged by simplification, coefficient transport uses the evaluation theorem, and the factor theorem supplies both directions between a root and a linear divisor.
+
+### Evaluate a constant polynomial
+
+```lean
+theorem exercise_29_1_eval_constant
+    {R : Type*} [Semiring R] (a x : R) :
+    (Polynomial.C a : Polynomial R).eval x = a := by
+  simp
+```
+
+### Transport evaluation along a ring homomorphism
+
+```lean
+theorem exercise_29_4_eval₂_at_mapped_point
+    {R S : Type*} [Semiring R] [Semiring S]
+    (f : R →+* S) (p : Polynomial R) (a : R) :
+    p.eval₂ f (f a) = f (p.eval a) := by
+  exact Polynomial.eval₂_at_apply f a
+```
+
+This states the compatibility needed when coefficients and the evaluation point are both transported by the same ring homomorphism.
+
+### Roots and linear divisibility
+
+```lean
+theorem exercise_29_7_factor_iff_root
+    {R : Type*} [CommRing R] (p : Polynomial R) (a : R) :
+    (Polynomial.X - Polynomial.C a) ∣ p ↔ p.IsRoot a := by
+  exact Polynomial.dvd_iff_isRoot
+```
+
+The forward direction evaluates a factorization at `a`; the reverse direction is the factor theorem. Mathlib packages the quotient construction and well-definedness in this equivalence.
 
 ## Summary
 
