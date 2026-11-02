@@ -1,0 +1,19 @@
+name: Audit textbook chapter coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report missing Lean chapter modules
+        run: python3 scripts/check_chapter_coverage.py
