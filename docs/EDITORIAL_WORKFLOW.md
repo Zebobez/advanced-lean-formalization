@@ -2,11 +2,12 @@
 
 ## Development
 
-1. Draft mathematical exposition in `manuscript/` (only after the repository is confirmed private).
-2. Put all executable chapter examples in `Book/ChapterNN.lean`, and import them from `Book.lean`.
-3. Run `lake update`, `lake exe cache get`, and `lake build`. Commit the resulting `lake-manifest.json` when dependency resolution is complete.
-4. Push changes and inspect the **Verify Lean examples** GitHub Actions check.
-5. Periodically evaluate Lean/Mathlib upgrades in a separate branch; never silently change versions halfway through an edition.
+1. Draft exposition in `manuscript/chapters/part-NN/` and maintain the order in `manuscript/SUMMARY.md`. Recheck repository visibility before adding unpublished material.
+2. Run `python scripts/extract_lean_examples.py` to check whether generated modules match the Markdown. To regenerate them after an intentional manuscript edit, use `python scripts/extract_lean_examples.py --write --force`; this replaces only generated files in `Book/Chapters/`.
+3. Review the extracted modules and update `Book.lean` imports when the generator adds chapter modules. Interactive fragments and proof-state illustrations stay in Markdown unless rewritten as complete Lean examples.
+4. Run `lake exe cache get` if pinned Mathlib artifacts are missing, then `lake build`. Do not run `lake update` unless intentionally changing dependency versions; review the manifest diff.
+5. Review the changes with the author before committing or pushing, then inspect the **Verify Lean examples** GitHub Actions check.
+6. Periodically evaluate Lean/Mathlib upgrades in a separate branch; never silently change versions halfway through an edition.
 
 ## Verification before release
 
