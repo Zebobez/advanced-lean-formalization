@@ -165,6 +165,65 @@ Prove invariance under the quotient relation and use the quotient lift. The univ
 6. State the factorization problem for a map that vanishes on a submodule. Identify the quotient relation and the proof needed for well-definedness.
 7. Find Mathlib's first isomorphism theorem for linear maps and explain which objects play the roles of quotient by kernel and range.
 
+## 10. Formalized exercise patterns
+
+These solutions show how kernel membership, the map–comap adjunction, and the injectivity criterion fit together. The algebraic details remain available when needed, while the standard submodule API handles statements about entire subspaces.
+
+### The kernel as a comap
+
+```lean
+theorem exercise_25_2_kernel_is_comap
+    {R M N : Type*} [Semiring R]
+    [AddCommMonoid M] [Module R M]
+    [AddCommMonoid N] [Module R N]
+    (f : M →ₗ[R] N) :
+    LinearMap.ker f = Submodule.comap f ⊥ := by
+  rfl
+
+theorem exercise_25_2_kernel_membership
+    {R M N : Type*} [Semiring R]
+    [AddCommMonoid M] [Module R M]
+    [AddCommMonoid N] [Module R N]
+    (f : M →ₗ[R] N) (x : M) :
+    x ∈ LinearMap.ker f ↔ f x = 0 := by
+  change f x ∈ (⊥ : Submodule R N) ↔ f x = 0
+  simp
+```
+
+The kernel is definitionally the comap of the zero submodule. The second proof exposes that definition and then reduces membership in bottom to equality with zero.
+
+### Map–comap adjunction
+
+```lean
+theorem exercise_25_3_map_le_iff_comap
+    {R M N : Type*} [Semiring R]
+    [AddCommMonoid M] [Module R M]
+    [AddCommMonoid N] [Module R N]
+    (f : M →ₗ[R] N) (E : Submodule R M) (F : Submodule R N) :
+    Submodule.map f E ≤ F ↔ E ≤ Submodule.comap f F := by
+  simpa using
+    (Submodule.map_le_iff_le_comap
+      (f := (f : M →ₛₗ[RingHom.id R] N)) (p := E) (q := F))
+```
+
+The forward implication says every image of an element of `E` lies in `F`; the reverse implication says every element of `E` maps into `F`. Mathlib packages this equivalence so later proofs can change sides without opening membership witnesses.
+
+### Injectivity and a trivial kernel
+
+```lean
+theorem exercise_25_4_injective_iff_kernel_eq_bot
+    {R M N : Type*} [Ring R]
+    [AddCommGroup M] [Module R M]
+    [AddCommGroup N] [Module R N]
+    (f : M →ₗ[R] N) :
+    Function.Injective f ↔ LinearMap.ker f = ⊥ := by
+  simpa using
+    (LinearMap.ker_eq_bot
+      (f := (f : M →ₛₗ[RingHom.id R] N))).symm
+```
+
+This is the global version of kernel membership: an injective map has no nonzero input in its kernel, and a trivial kernel forces equal outputs to come from equal inputs.
+
 ## Summary
 
 Use `M →ₗ[R] N` for maps whose linearity is part of the interface and `Submodule R M` for closed subsets of a module. Kernels and ranges are submodules; `map` and `comap` push and pull subspaces and form an order adjunction. Open membership for local algebra, but keep whole-subspace statements at the lattice level. For quotient factorizations, use the universal property and the library's induced linear equivalences instead of choosing representatives by hand.
