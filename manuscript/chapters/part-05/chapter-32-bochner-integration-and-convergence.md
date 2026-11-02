@@ -41,7 +41,8 @@ When `f` and `g` are integrable, integration preserves addition. It also preserv
 ```lean
 open MeasureTheory
 
-example {α E : Type*} [MeasurableSpace α] {μ : Measure α}
+theorem exercise_32_1_integral_add
+    {α E : Type*} [MeasurableSpace α] {μ : Measure α}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (f g : α → E) (hf : Integrable f μ) (hg : Integrable g μ) :
     ∫ x, f x + g x ∂μ = (∫ x, f x ∂μ) + ∫ x, g x ∂μ := by
@@ -59,7 +60,8 @@ The Bochner integral depends only on the almost-everywhere equivalence class of 
 ```lean
 open MeasureTheory
 
-example {α E : Type*} [MeasurableSpace α] {μ : Measure α}
+theorem exercise_32_2_integral_congr_ae
+    {α E : Type*} [MeasurableSpace α] {μ : Measure α}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     {f g : α → E} (h : f =ᵐ[μ] g) :
     ∫ x, f x ∂μ = ∫ x, g x ∂μ := by
@@ -186,6 +188,41 @@ Use a continuous linear map. Boundedness is part of the analytic argument.
 6. Explain why pointwise convergence does not, by itself, justify passing a limit through an integral.
 7. Use a continuous linear functional to reduce a vector-valued integral identity to a scalar-valued one.
 8. Decide whether a proposed argument should use monotone convergence, Fatou's lemma, or dominated convergence, and list the needed conditions.
+
+## 12. Formalized exercise patterns
+
+These theorems connect the algebraic, almost-everywhere, and normed-space interfaces of the Bochner integral. Integrability supports additivity and continuous-linear-map transport; almost-everywhere equality supports representative changes.
+
+```lean
+open MeasureTheory
+```
+
+### The norm of an integral is bounded by the integral of the norm
+
+```lean
+theorem exercise_32_3_norm_integral_le_integral_norm
+    {α E : Type*} [MeasurableSpace α] {μ : Measure α}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    (f : α → E) :
+    ‖∫ x, f x ∂μ‖ ≤ ∫ x, ‖f x‖ ∂μ := by
+  exact norm_integral_le_integral_norm f
+```
+
+Because the integral is total, this bound does not require a separate `Integrable` argument; finiteness is needed when using it to establish a finite numerical error bound.
+
+### Continuous linear maps commute with integration
+
+```lean
+theorem exercise_32_7_continuous_linear_map_integral
+    {α E F : Type*} [MeasurableSpace α] {μ : Measure α}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    [NormedAddCommGroup F] [NormedSpace ℝ F] [CompleteSpace F]
+    (f : α → E) (L : E →L[ℝ] F) (hf : Integrable f μ) :
+    ∫ x, L (f x) ∂μ = L (∫ x, f x ∂μ) := by
+  exact L.integral_comp_comm hf
+```
+
+Continuity controls the norm of the image and allows integration to pass through the linear map. This is the correct interface for coordinate functionals and bounded linear transformations.
 
 ## Summary
 
