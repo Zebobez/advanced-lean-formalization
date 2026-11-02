@@ -200,6 +200,79 @@ Truncate first, then justify passage to the limit with an appropriate convergenc
 9. Explain why bounded optional sampling at every `N` does not alone justify sampling at an unbounded stopping time.
 10. Locate `submartingale_iff_expected_stoppedValue_mono` and list its filtration and process assumptions.
 
+### 11.1 Compiled stopping-time patterns
+
+The finite-state example is an exact deterministic calculation of the stopped position at either state:
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def stoppedPosition : State → Nat := fun s => if s = zero then 0 else 1
+
+theorem stopAtLowerState : stoppedPosition zero = 0 := by decide
+theorem stopAtUpperState : stoppedPosition one = 1 := by decide
+```
+
+For a stopping time, the event that it has occurred by time `n` is measurable with respect to the information available at `n`:
+
+```lean
+open MeasureTheory
+
+theorem exercise_37_1_stopping_event_measurable
+    {Ω : Type*} {m₀ : MeasurableSpace Ω} (ℱ : Filtration ℕ m₀)
+    {τ : Ω → WithTop ℕ} (hτ : IsStoppingTime ℱ τ) (n : ℕ) :
+    MeasurableSet[ℱ n] {ω | τ ω ≤ n} := by
+  exact hτ.measurableSet_le n
+```
+
+Stopping at a fixed deterministic time recovers the corresponding process value:
+
+```lean
+open MeasureTheory
+
+theorem exercise_37_3_stoppedValue_const
+    {Ω E : Type*} {f : ℕ → Ω → E} (N : ℕ) :
+    MeasureTheory.stoppedValue f (fun _ => (N : WithTop ℕ)) = f N := by
+  exact MeasureTheory.stoppedValue_const f N
+```
+
+For a real submartingale, optional sampling compares expectations at two ordered bounded stopping times:
+
+```lean
+open MeasureTheory
+open scoped MeasureTheory ProbabilityTheory
+
+theorem exercise_37_4_bounded_optional_sampling
+    {Ω : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    {ℱ : Filtration ℕ m₀} {f : ℕ → Ω → ℝ}
+    [SigmaFiniteFiltration μ ℱ] (hf : Submartingale f ℱ μ)
+    {τ π : Ω → WithTop ℕ}
+    (hτ : IsStoppingTime ℱ τ) (hπ : IsStoppingTime ℱ π) (hle : τ ≤ π)
+    {N : ℕ} (hbdd : ∀ ω, π ω ≤ N) :
+    μ[MeasureTheory.stoppedValue f τ] ≤ μ[MeasureTheory.stoppedValue f π] := by
+  exact hf.expected_stoppedValue_mono hτ hπ hle hbdd
+```
+
+The library's equivalence packages the hypotheses for both directions: strong adaptedness, integrability of every time slice, and σ-finiteness of the filtration under the measure.
+
+```lean
+open MeasureTheory
+open scoped MeasureTheory ProbabilityTheory
+
+theorem exercise_37_10_optional_stopping_characterization
+    {Ω : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure Ω}
+    {ℱ : Filtration ℕ m₀} {f : ℕ → Ω → ℝ}
+    [SigmaFiniteFiltration μ ℱ]
+    (hadapted : StronglyAdapted ℱ f) (hint : ∀ i, Integrable (f i) μ) :
+    Submartingale f ℱ μ ↔
+      ∀ τ π : Ω → WithTop ℕ, IsStoppingTime ℱ τ → IsStoppingTime ℱ π →
+        τ ≤ π → (∃ N : ℕ, ∀ ω, π ω ≤ N) →
+          μ[MeasureTheory.stoppedValue f τ] ≤ μ[MeasureTheory.stoppedValue f π] := by
+  exact submartingale_iff_expected_stoppedValue_mono hadapted hint
+```
+
 ## Summary
 
 A stopping time is a random time whose occurrence by each deterministic horizon is measurable using the information available by then. Stopped processes freeze at that time. Bounded optional sampling compares expected stopped values of ordered stopping times for submartingales and yields equality for martingales. Mathlib's API makes stopping-time measurability, bounds, adaptation, integrability, and filtration conditions explicit. Maximal inequalities extend the same machinery to control large excursions.
