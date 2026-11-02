@@ -179,6 +179,51 @@ Isolate the coordinate step using `Basis.repr` or a `LinearEquiv`, and state the
 6. Explain why `Module.finrank` alone does not prove finite-dimensionality for a general module. Contrast it with `Module.rank`.
 7. For a linear map between finite-dimensional spaces, describe how a choice of bases yields a matrix. Identify which parts of the formalization depend on those choices.
 
+## 11. Formalized exercise patterns
+
+These examples use the coordinate equivalence directly: finite support is carried by the `Finsupp` type, equality can be checked coordinatewise, and a finite basis computes `finrank` by its index cardinality.
+
+### A basis vector has one nonzero coordinate
+
+```lean
+theorem exercise_26_2_basis_vector_coordinates
+    {R M ι : Type*} [Semiring R]
+    [AddCommMonoid M] [Module R M]
+    (b : Basis ι R M) (i : ι) (a : R) :
+    b.repr (a • b i) = Finsupp.single i a := by
+  simp
+```
+
+The coordinate vector is a `Finsupp`, so its support is finite by construction. In this example its support is contained in the singleton index `{i}`.
+
+### Equality from all coordinates
+
+```lean
+theorem exercise_26_2_eq_of_basis_coordinates
+    {R M ι : Type*} [Semiring R]
+    [AddCommMonoid M] [Module R M]
+    (b : Basis ι R M) {x y : M}
+    (h : ∀ i, b.repr x i = b.repr y i) : x = y := by
+  apply b.repr.injective
+  ext i
+  exact h i
+```
+
+The representation map is a linear equivalence. Applying its injectivity reduces vector equality to equality of finitely supported coordinate functions, and `Finsupp.ext` reduces that to each coefficient.
+
+### Dimension from a finite basis
+
+```lean
+theorem exercise_26_4_finrank_eq_card_of_basis
+    {K V ι : Type*} [DivisionRing K]
+    [AddCommGroup V] [Module K V] [Fintype ι]
+    (b : Basis ι K V) :
+    Module.finrank K V = Fintype.card ι := by
+  exact Module.finrank_eq_card_basis b
+```
+
+This result needs a finite index type and a division ring. The basis supplies finite dimensionality; the equality is not inferred from `finrank` alone.
+
 ## Summary
 
 A basis identifies a module with finitely supported coordinate functions. Use `Basis.repr` for general index types and `Basis.equivFun` when the index is finite. Prove equality of linear maps by checking basis vectors, and compare vectors through their coordinates when that is the simpler representation. Use `FiniteDimensional` and `finrank` under the appropriate field or division-ring assumptions; switch to cardinal-valued rank for infinite-dimensional statements. Keep basis choices abstract unless a concrete coordinate calculation is the point of the theorem.
