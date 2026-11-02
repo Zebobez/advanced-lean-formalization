@@ -49,7 +49,8 @@ example {R : Type*} [CommRing R] (I : Ideal R) :
 Its kernel is exactly `I`. Equality in the quotient is therefore a congruence statement:
 
 ```lean
-example {R : Type*} [CommRing R] (I : Ideal R) (x y : R) :
+theorem exercise_30_2_quotient_eq_iff_sub_mem
+    {R : Type*} [CommRing R] (I : Ideal R) (x y : R) :
     Ideal.Quotient.mk I x = Ideal.Quotient.mk I y ↔ x - y ∈ I := by
   exact Ideal.Quotient.mk_eq_mk_iff_sub_mem x y
 ```
@@ -167,6 +168,55 @@ Intersection, product, and join encode different constructions. Check the exact 
 6. Explain how `Ideal.map` and `Ideal.comap` express the compatibility condition for a map of quotient rings.
 7. Compare an iterated quotient with a quotient by a join. Identify the image ideal that appears in the second quotient.
 8. Find the Chinese remainder theorem in the Mathlib quotient API and list its coprimality hypotheses.
+
+## 11. Formalized exercise patterns
+
+These results expose the core quotient interfaces as reusable theorems: the canonical map has kernel `I`, the lift acts on represented classes as intended, maximality characterizes a field quotient, and ideal map/comap form an adjunction.
+
+### Kernel of the quotient map
+
+```lean
+theorem exercise_30_1_quotient_map_kernel
+    {R : Type*} [CommRing R] (I : Ideal R) :
+    RingHom.ker (Ideal.Quotient.mk I) = I := by
+  simp
+```
+
+### The induced map on quotient classes
+
+```lean
+theorem exercise_30_3_lift_mk
+    {R S : Type*} [CommRing R] [CommRing S]
+    (I : Ideal R) (f : R →+* S)
+    (h : ∀ a : R, a ∈ I → f a = 0) (r : R) :
+    Ideal.Quotient.lift I f h (Ideal.Quotient.mk I r) = f r := by
+  exact Ideal.Quotient.lift_mk I f h
+```
+
+The quotient lift removes representative dependence from its definition; this theorem states its value on a canonical representative. The condition `I ≤ RingHom.ker f` in the construction example is the ideal-order form of this zero-on-`I` predicate.
+
+### Maximal ideals and field quotients
+
+```lean
+theorem exercise_30_5_maximal_iff_field_quotient
+    {R : Type*} [CommRing R] (I : Ideal R) :
+    I.IsMaximal ↔ IsField (R ⧸ I) := by
+  exact Ideal.Quotient.maximal_ideal_iff_isField_quotient I
+```
+
+This equivalence records the exact nontriviality conditions in the library statement instead of hiding them in a field-instance construction.
+
+### Ideal map–comap adjunction
+
+```lean
+theorem exercise_30_6_map_le_iff_comap
+    {R S : Type*} [CommRing R] [CommRing S]
+    (f : R →+* S) (I : Ideal R) (J : Ideal S) :
+    Ideal.map f I ≤ J ↔ I ≤ Ideal.comap f J := by
+  exact Ideal.map_le_iff_le_comap
+```
+
+This is the inclusion criterion used to descend maps between quotient rings: check the image of the source ideal lies in the target ideal, or equivalently check the source ideal lies in its preimage.
 
 ## Summary
 
