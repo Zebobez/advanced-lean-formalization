@@ -23,7 +23,8 @@ A `MeasurableSpace α` is a σ-algebra on a type `α`. It declares a collection 
 The measurable sets are propositions of type `MeasurableSet s`. Closure lemmas compose the basic operations: measurable complements, countable unions, and countable intersections. The countability requirement is represented by an instance such as `[Countable ι]` when taking a union indexed by `ι`.
 
 ```lean
-example {α ι : Type*} [MeasurableSpace α] [Countable ι]
+theorem exercise_31_2_countable_union_measurable
+    {α ι : Type*} [MeasurableSpace α] [Countable ι]
     (s : ι → Set α) (hs : ∀ i, MeasurableSet (s i)) :
     MeasurableSet (⋃ i, s i) := by
   exact MeasurableSet.iUnion hs
@@ -48,7 +49,8 @@ measurable set B in β  ── preimage under f ──▶  measurable set f ⁻�
 This definition supports composition. If `f` is measurable from `α` to `β` and `g` is measurable from `β` to `γ`, then `g ∘ f` is measurable:
 
 ```lean
-example {α β γ : Type*} [MeasurableSpace α] [MeasurableSpace β]
+theorem exercise_31_1_measurable_comp
+    {α β γ : Type*} [MeasurableSpace α] [MeasurableSpace β]
     [MeasurableSpace γ] {f : α → β} {g : β → γ}
     (hf : Measurable f) (hg : Measurable g) :
     Measurable (g ∘ f) := by
@@ -158,6 +160,40 @@ Use the almost-everywhere equivalence API. Most measure-theoretic conclusions ar
 5. Compare `AEMeasurable` and `AEStronglyMeasurable`. Give an example of why integration needs a target-aware notion.
 6. Prove measurability of a piecewise function from a measurable set and measurable branch functions.
 7. Explain the difference between restricting a measure and pushing it forward through a measurable map.
+
+## 11. Formalized exercise patterns
+
+Almost-everywhere equality behaves transitively because it is an eventual equality in the measure's `ae` filter. Measurable piecewise definitions use the measurability of the branch set and both branches.
+
+```lean
+open MeasureTheory
+```
+
+### Transitivity of almost-everywhere equality
+
+```lean
+theorem exercise_31_4_ae_eq_trans
+    {α β : Type*} [MeasurableSpace α] {μ : Measure α}
+    {f g h : α → β}
+    (hfg : f =ᵐ[μ] g) (hgh : g =ᵐ[μ] h) : f =ᵐ[μ] h := by
+  exact hfg.trans hgh
+```
+
+The filter combines the two exceptional null sets; the proof does not need to construct their union.
+
+### Measurability of a piecewise function
+
+```lean
+theorem exercise_31_6_measurable_ite
+    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    {p : α → Prop} [DecidablePred p] {f g : α → β}
+    (hp : MeasurableSet {x | p x})
+    (hf : Measurable f) (hg : Measurable g) :
+    Measurable (fun x => if p x then f x else g x) := by
+  exact Measurable.ite hp hf hg
+```
+
+The predicate’s measurable set and the two measurable branches are precisely the data required by the library theorem.
 
 ## Summary
 
