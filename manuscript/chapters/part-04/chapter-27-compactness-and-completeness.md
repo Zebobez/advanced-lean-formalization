@@ -171,6 +171,49 @@ Prove the subset is closed or use the correct completeness theorem for its struc
 6. Show that a Cauchy sequence in a complete space converges using the standard completeness theorem. Keep the Cauchy estimate separate from the limit argument.
 7. Prove completeness of a closed subtype of a complete metric space using the library interface.
 
+## 11. Formalized exercise patterns
+
+These wrappers make the topological and uniform-space assumptions explicit at the theorem boundary. The proofs then use the compactness and completeness interfaces directly.
+
+```lean
+open Filter Topology
+```
+
+### Closed subsets of compact sets
+
+```lean
+theorem exercise_27_3_closed_subset_compact
+    {X : Type*} [TopologicalSpace X] {s t : Set X}
+    (hs : IsCompact s) (ht : IsClosed t) (hts : t ⊆ s) :
+    IsCompact t := by
+  exact hs.of_isClosed_subset ht hts
+```
+
+The subspace needs no separate open-cover argument: compactness of the ambient set and closedness of the subset are the exact hypotheses of the library theorem.
+
+### Cauchy sequences converge in complete spaces
+
+```lean
+theorem exercise_27_6_cauchy_sequence_converges
+    {X : Type*} [UniformSpace X] [CompleteSpace X]
+    (u : Nat → X) (hu : CauchySeq u) :
+    ∃ x, Tendsto u atTop (𝓝 x) := by
+  exact cauchySeq_tendsto_of_complete hu
+```
+
+The estimate proving `CauchySeq u` stays separate from the limit-existence result. The same theorem applies to any complete uniform space, not only metric spaces.
+
+### Closed subtypes of complete spaces
+
+```lean
+theorem exercise_27_7_closed_subtype_complete
+    {X : Type*} [UniformSpace X] [CompleteSpace X]
+    {s : Set X} (hs : IsClosed s) : CompleteSpace s := by
+  exact hs.isComplete.completeSpace_coe
+```
+
+The subtype inherits its uniform structure from `X`; closedness supplies the instance that transfers completeness to the subtype.
+
 ## Summary
 
 Use `IsCompact` as the public interface and select the open-cover, sequence, or filter view according to the theorem. Continuous images and closed subsets preserve compactness; closed bounded sets are compact under proper-space hypotheses such as the usual real topology. Compactness yields bounds, extrema, and cluster points, with nonemptiness and nontriviality assumptions made explicit. To use completeness, first prove Cauchy behavior, then invoke `CompleteSpace`; for subtypes, establish the appropriate closedness condition.
