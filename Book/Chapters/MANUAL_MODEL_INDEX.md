@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 78 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 77 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 40: [Markov Kernels and Transition Systems](Chapter40.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-40-markov-kernels-and-transition-systems.md).
 - Chapter 41: [Disintegration and Conditional Kernels](Chapter41.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-41-disintegration-and-conditional-kernels.md).
 - Chapter 42: [Bayesian Updating and Posterior Kernels](Chapter42.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-42-bayesian-updating-and-posterior-kernels.md).
 - Chapter 43: [Conditional Independence](Chapter43.lean) — manuscript: [source](../../manuscript/chapters/part-06/chapter-43-conditional-independence.md).

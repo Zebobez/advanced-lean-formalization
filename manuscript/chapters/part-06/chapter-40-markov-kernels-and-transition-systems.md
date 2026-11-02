@@ -221,6 +221,85 @@ A kernel describes transitions. To reason about histories, stopping, or almost-s
 9. Distinguish a stationary distribution from an almost-surely constant process.
 10. Identify which proof obligations belong to the kernel, which to the initial measure, and which to the sample-path process.
 
+### 11.1 Compiled kernel patterns
+
+The finite-state identity transition has unit row mass at each state, checked by the shared exact model:
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+theorem transitionRowsHaveMassTwoAtZero : rowMass identityKernel zero = 2 :=
+  identity_zero_row
+theorem transitionRowsHaveMassTwoAtOne : rowMass identityKernel one = 2 :=
+  identity_one_row
+```
+
+An `IsMarkovKernel` hypothesis means every transition measure is a probability measure, so each row assigns mass one to the whole state space:
+
+```lean
+open MeasureTheory ProbabilityTheory
+
+theorem exercise_40_2_markov_kernel_row_mass
+    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    (κ : Kernel α β) [IsMarkovKernel κ] (a : α) :
+    κ a Set.univ = 1 := by
+  simp
+```
+
+A measurable map induces a deterministic kernel, and evolving a measure through it agrees with the usual pushforward:
+
+```lean
+open MeasureTheory ProbabilityTheory
+open scoped ProbabilityTheory
+
+theorem exercise_40_3_deterministic_kernel_map
+    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    (f : α → β) (hf : Measurable f) (μ : Measure α) :
+    Kernel.deterministic f hf ∘ₘ μ = Measure.map f μ := by
+  exact MeasureTheory.Measure.deterministic_comp_eq_map hf
+```
+
+Kernel composition evaluates a measurable target event by integrating its transition probability over the intermediate state:
+
+```lean
+open MeasureTheory ProbabilityTheory
+open scoped ENNReal ProbabilityTheory
+
+theorem exercise_40_4_kernel_comp_apply
+    {α β γ : Type*} [MeasurableSpace α] [MeasurableSpace β] [MeasurableSpace γ]
+    (κ : Kernel α β) (η : Kernel β γ) (a : α) (s : Set γ)
+    (hs : MeasurableSet s) :
+    (η ∘ₖ κ) a s = ∫⁻ b, η b s ∂κ a := by
+  exact Kernel.comp_apply' η κ a hs
+```
+
+Composing Markov kernels again gives a Markov kernel, and applying a Markov kernel to a probability measure preserves total mass one:
+
+```lean
+open MeasureTheory ProbabilityTheory
+open scoped ProbabilityTheory
+
+theorem exercise_40_8_markov_kernel_comp
+    {α β γ : Type*} [MeasurableSpace α] [MeasurableSpace β] [MeasurableSpace γ]
+    (κ : Kernel α β) (η : Kernel β γ)
+    [IsMarkovKernel κ] [IsMarkovKernel η] : IsMarkovKernel (η ∘ₖ κ) := by
+  infer_instance
+```
+
+```lean
+open MeasureTheory ProbabilityTheory
+open scoped ProbabilityTheory
+
+theorem exercise_40_5_evolve_probability_measure
+    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    (κ : Kernel α β) [IsMarkovKernel κ]
+    (μ : Measure α) [IsProbabilityMeasure μ] :
+    IsProbabilityMeasure (κ ∘ₘ μ) := by
+  infer_instance
+```
+
 ## Summary
 
 A kernel is a measurable state-indexed family of measures; a Markov kernel assigns a probability measure at every state. Binding a measure with a kernel evolves a law, and kernel composition models consecutive transitions. Finite transition matrices are special cases, while the same interfaces handle general measurable state spaces. A full Markov-process proof also needs a process, filtration, and conditional-expectation statement linking the observed process to its transition kernel.
