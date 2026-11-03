@@ -261,3 +261,72 @@ For a differentiable family of finite irreducible generators, the stationary law
 
 - Chapters 58, 60, and 68 for generator martingales, spectral gaps, and stationary tree weights.
 - Chapter 64 for the parameterized two-spin heat-bath model.
+
+## 11. Lean formalization: the two-state response identity
+
+We verify the response formula for a two-state chain using exact rational algebra. Let the rates be `a` from state 0 to 1 and `b` from 1 to 0. For the indicator of state 1, the stationary masses are `b/(a+b)` and `a/(a+b)`. A centered Poisson solution is `h₀ = -a/(a+b)²` and `h₁ = b/(a+b)²`. If the rate perturbations are `da` and `db`, then the stationary pairing with `Q̇h` is `(b da - a db)/(a+b)²`, the same expression obtained by differentiating `a/(a+b)`.
+
+The earlier natural-number calculation is retained as a finite executable example.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def stationaryMass (parameter : Nat) : Nat := parameter + 1
+def finiteResponse (base perturbation : Nat) : Nat :=
+  stationaryMass (base + perturbation) - stationaryMass base
+
+theorem unitPerturbationResponse : finiteResponse 1 1 = 1 := by decide
+```
+
+The following definitions record the stationary law and the centered Poisson solution. The nonzero-normalizer hypothesis is implied by the chapter’s positive-rate assumptions; retaining it explicitly keeps the algebraic identity valid over all rational inputs where its expressions are defined.
+
+```lean
+def responsePiZero (a b : ℚ) : ℚ := b / (a + b)
+def responsePiOne (a b : ℚ) : ℚ := a / (a + b)
+
+def poissonHZero (a b : ℚ) : ℚ := -a / (a + b) ^ 2
+def poissonHOne (a b : ℚ) : ℚ := b / (a + b) ^ 2
+
+theorem poisson_gap (a b : ℚ) (hab : a + b ≠ 0) :
+    poissonHOne a b - poissonHZero a b = 1 / (a + b) := by
+  unfold poissonHOne poissonHZero
+  field_simp [hab]
+  ring
+
+theorem poisson_centered (a b : ℚ) (hab : a + b ≠ 0) :
+    responsePiZero a b * poissonHZero a b +
+      responsePiOne a b * poissonHOne a b = 0 := by
+  unfold responsePiZero responsePiOne poissonHZero poissonHOne
+  field_simp [hab]
+  ring
+
+theorem poisson_equation_state_zero (a b : ℚ) (hab : a + b ≠ 0) :
+    a * (poissonHOne a b - poissonHZero a b) = a / (a + b) := by
+  unfold poissonHOne poissonHZero
+  field_simp [hab]
+  ring
+
+theorem poisson_equation_state_one (a b : ℚ) (hab : a + b ≠ 0) :
+    b * (poissonHZero a b - poissonHOne a b) = -b / (a + b) := by
+  unfold poissonHOne poissonHZero
+  field_simp [hab]
+  ring
+
+def responseFromPoisson (a b da db : ℚ) : ℚ :=
+  responsePiZero a b * da * (poissonHOne a b - poissonHZero a b) +
+    responsePiOne a b * db * (poissonHZero a b - poissonHOne a b)
+
+def responseClosedForm (a b da db : ℚ) : ℚ :=
+  (b * da - a * db) / (a + b) ^ 2
+
+theorem twoState_linear_response (a b da db : ℚ) (hab : a + b ≠ 0) :
+    responseFromPoisson a b da db = responseClosedForm a b da db := by
+  unfold responseFromPoisson responseClosedForm
+    responsePiZero responsePiOne poissonHZero poissonHOne
+  field_simp [hab]
+  ring
+```
+
+The two state-specific Poisson equations establish `Qh = -(g - πg)`, and `poisson_centered` fixes the additive constant by `πh = 0`. The final theorem is the response identity `π Q̇ h` in coordinates. It verifies the centering and sign conventions algebraically; differentiability of the rate family and the general finite-dimensional Poisson existence theorem remain separate analytic results.
