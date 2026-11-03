@@ -258,3 +258,78 @@ Weighting paths by the exponential of an integrated potential produces a new sem
 - [Mathlib: Bochner integration and measure theory](https://leanprover-community.github.io/mathlib4_docs/Mathlib/MeasureTheory/Integral/Bochner/Basic.html)
 - Chapters 32–33 for integration and product-measure arguments.
 - Chapters 55–58 for generators, sample paths, and martingale formulas.
+
+## 12. Lean formalization: the cemetery-state generator
+
+The first block preserves the original constant-potential finite example.
+The following blocks formalize the two-state killing calculation with
+symbolic rates. On the live state space, the modified generator loses row
+mass at rate `v` in state one. Adding the cemetery transition of rate `v`
+restores zero row sums, and the live block agrees entry by entry with the
+modified generator. These algebraic facts verify the killing construction;
+they do not yet identify the corresponding matrix exponential with the
+path-weighted expectation.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def killingPotential : State → Nat := fun _ => 1
+def killedFlipWeight (i j : State) : Nat := killingPotential i * flipKernel i j
+
+theorem constantKillingLeavesTheOffDiagonalWeight : killedFlipWeight zero one = 2 := by decide
+```
+
+The live-state generator `Q-D_V` has row sum zero at state zero and `-v` at
+state one.
+
+```lean
+def killedTwoStateGenerator (a b v : ℚ) (i j : State) : ℚ :=
+  if i = zero then (if j = zero then -a else a)
+  else if j = zero then b else -(b + v)
+
+def killedTwoStateRowSum (a b v : ℚ) (i : State) : ℚ :=
+  killedTwoStateGenerator a b v i zero + killedTwoStateGenerator a b v i one
+
+theorem killed_two_state_row_sums (a b v : ℚ) :
+    killedTwoStateRowSum a b v zero = 0 ∧
+      killedTwoStateRowSum a b v one = -v := by
+  constructor
+  · simp [killedTwoStateRowSum, killedTwoStateGenerator, zero, one]
+  · simp [killedTwoStateRowSum, killedTwoStateGenerator, zero, one]
+```
+
+Use the third state as the cemetery state. From state one the augmented chain
+keeps the original rate `b` to zero, changes its diagonal to `-(b+v)`, and
+sends mass to the cemetery at rate `v`.
+
+```lean
+def augmentedKillingGenerator (a b v : ℚ) (i j : Fin 3) : ℚ :=
+  if i = 0 then (if j = 0 then -a else if j = 1 then a else 0)
+  else if i = 1 then (if j = 0 then b else if j = 1 then -(b + v) else v)
+  else 0
+
+def augmentedKillingRowSum (a b v : ℚ) (i : Fin 3) : ℚ :=
+  augmentedKillingGenerator a b v i 0 +
+    augmentedKillingGenerator a b v i 1 +
+    augmentedKillingGenerator a b v i 2
+
+theorem augmented_killing_generator_row_sums (a b v : ℚ) (i : Fin 3) :
+    augmentedKillingRowSum a b v i = 0 := by
+  fin_cases i
+  · simp [augmentedKillingRowSum, augmentedKillingGenerator]
+  · simp [augmentedKillingRowSum, augmentedKillingGenerator]
+  · simp [augmentedKillingRowSum, augmentedKillingGenerator]
+
+theorem augmented_killing_live_block (a b v : ℚ) :
+    augmentedKillingGenerator a b v 0 0 = -a ∧
+      augmentedKillingGenerator a b v 0 1 = a ∧
+      augmentedKillingGenerator a b v 1 0 = b ∧
+      augmentedKillingGenerator a b v 1 1 = -(b + v) := by
+  norm_num [augmentedKillingGenerator]
+
+theorem augmented_killing_rate_to_cemetery (a b v : ℚ) :
+    augmentedKillingGenerator a b v 1 2 = v := by
+  norm_num [augmentedKillingGenerator]
+```
