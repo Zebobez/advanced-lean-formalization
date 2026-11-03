@@ -371,3 +371,100 @@ A finite-state continuous-time Markov chain is encoded by a generator with nonne
 - [Mathlib: Filtrations](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Probability/Process/Filtration.html)
 - Chapters 45 and 55 for invariance, detailed balance, and continuous-time generators.
 
+## 14. Lean formalization
+
+The first block keeps the repository's original two-state integer generator
+check. The following blocks make the chapter's finite-state claims executable:
+they prove row conservation for a symbolic two-state generator, normalize its
+stationary law and verify `πQ=0`, then check a directed three-cycle whose
+uniform law is stationary although one-way edge flows violate detailed
+balance. The examples formalize finite algebraic statements; identifying a
+transition semigroup with a matrix exponential and proving its stochasticity
+remain separate analytic tasks.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+theorem generatorConservesMassAtZero : generatorRowSum twoStateGenerator zero = 0 :=
+  generator_zero_row
+theorem generatorConservesMassAtOne : generatorRowSum twoStateGenerator one = 0 :=
+  generator_one_row
+```
+
+For symbolic jump rates `a` and `b`, the diagonal entries are their negative
+exit rates. The following functions use source states as the first argument
+and destination states as the second.
+
+```lean
+def rationalTwoStateGenerator (a b : ℚ) (i j : State) : ℚ :=
+  if i = zero then (if j = zero then -a else a)
+  else if j = zero then b else -b
+
+def rationalTwoStateRowSum (a b : ℚ) (i : State) : ℚ :=
+  rationalTwoStateGenerator a b i zero + rationalTwoStateGenerator a b i one
+
+def rationalTwoStateStationary (a b : ℚ) (i : State) : ℚ :=
+  if i = zero then b / (a + b) else a / (a + b)
+
+def rationalTwoStateStationaryAction (a b : ℚ) (j : State) : ℚ :=
+  rationalTwoStateStationary a b zero * rationalTwoStateGenerator a b zero j +
+    rationalTwoStateStationary a b one * rationalTwoStateGenerator a b one j
+
+theorem rational_two_state_generator_row_sum (a b : ℚ) (i : State) :
+    rationalTwoStateRowSum a b i = 0 := by
+  fin_cases i <;>
+    simp [rationalTwoStateRowSum, rationalTwoStateGenerator, zero, one]
+
+theorem rational_two_state_stationary_normalized (a b : ℚ) (h : a + b ≠ 0) :
+    rationalTwoStateStationary a b zero + rationalTwoStateStationary a b one = 1 := by
+  simp [rationalTwoStateStationary, zero, one]
+  field_simp [h]
+  exact add_comm b a
+
+theorem rational_two_state_stationary_equation (a b : ℚ) (h : a + b ≠ 0)
+    (j : State) : rationalTwoStateStationaryAction a b j = 0 := by
+  fin_cases j <;>
+    simp [rationalTwoStateStationaryAction, rationalTwoStateStationary,
+      rationalTwoStateGenerator, zero, one] <;>
+    field_simp [h] <;> ring
+```
+
+The directed cycle below has rate `c` from each state to its successor. Its
+row sums and column sums vanish, so the uniform distribution is stationary.
+The reverse rate on each directed edge is zero, demonstrating that stationarity
+does not imply detailed balance.
+
+```lean
+def threeCycleGenerator (c : ℚ) (i j : Fin 3) : ℚ :=
+  if i = 0 then (if j = 0 then -c else if j = 1 then c else 0)
+  else if i = 1 then (if j = 1 then -c else if j = 2 then c else 0)
+  else if j = 0 then c else if j = 2 then -c else 0
+
+def threeCycleRowSum (c : ℚ) (i : Fin 3) : ℚ :=
+  threeCycleGenerator c i 0 + threeCycleGenerator c i 1 + threeCycleGenerator c i 2
+
+def threeCycleColumnSum (c : ℚ) (j : Fin 3) : ℚ :=
+  threeCycleGenerator c 0 j + threeCycleGenerator c 1 j + threeCycleGenerator c 2 j
+
+theorem three_cycle_rows_sum_to_zero (c : ℚ) (i : Fin 3) :
+    threeCycleRowSum c i = 0 := by
+  fin_cases i <;> simp [threeCycleRowSum, threeCycleGenerator]
+
+theorem three_cycle_uniform_stationary (c : ℚ) (j : Fin 3) :
+    (1 / 3 : ℚ) * threeCycleGenerator c 0 j +
+      (1 / 3 : ℚ) * threeCycleGenerator c 1 j +
+      (1 / 3 : ℚ) * threeCycleGenerator c 2 j = 0 := by
+  fin_cases j <;> simp [threeCycleGenerator]
+
+theorem three_cycle_uniform_mass :
+    (1 / 3 : ℚ) + 1 / 3 + 1 / 3 = 1 := by norm_num
+
+theorem three_cycle_edge_flows_differ (c : ℚ) (hc : 0 < c) :
+    (1 / 3 : ℚ) * threeCycleGenerator c 0 1 ≠
+      (1 / 3 : ℚ) * threeCycleGenerator c 1 0 := by
+  simp [threeCycleGenerator]
+  positivity
+```
+
