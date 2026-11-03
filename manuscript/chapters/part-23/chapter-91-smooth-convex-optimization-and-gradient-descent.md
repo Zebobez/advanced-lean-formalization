@@ -129,6 +129,55 @@ The coefficient is positive for every \(0<\eta<2/L\); the more conservative rang
 
 An accepted step is not automatically feasible for a constrained problem. If the domain is a convex set \(C\), (91.5) can leave \(C\). The projected method replaces it by the nearest point in \(C\), which requires existence and optimality properties for projections. Chapter 90's variational inequality already signals the extra work: at a constrained optimum, the gradient need not vanish.
 
+### 2.2 Exact quadratic check
+
+For the scalar quadratic `fₐ(x) = (a/2)x²`, the gradient is `ax`. A step of size `1/L` sends `x` to `(1 − a/L)x`, so the objective is multiplied by `(1 − a/L)²`. The following rational Lean example proves that identity exactly and shows the objective is nonincreasing when `0 ≤ a ≤ L` and `L > 0`. This verifies the model calculation underlying (91.9); the general descent lemma still requires the analytic smoothness argument from Section 1.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+theorem gradient_step_decreases_from_first : loss (gradientStep first) < loss first := by decide
+
+theorem gradient_step_reaches_minimum_from_middle : gradientStep middle = last := by decide
+
+def scalarQuadratic91 (a x : ℚ) : ℚ := a * x ^ 2 / 2
+
+def scalarGradientStep91 (a L x : ℚ) : ℚ := x - (a * x) / L
+
+theorem scalarGradientStep91_factor (a L x : ℚ) :
+    scalarGradientStep91 a L x = (1 - a / L) * x := by
+  unfold scalarGradientStep91
+  simp only [div_eq_mul_inv]
+  ring
+
+theorem scalarQuadratic91_step_identity (a L x : ℚ) :
+    scalarQuadratic91 a (scalarGradientStep91 a L x) =
+      (1 - a / L) ^ 2 * scalarQuadratic91 a x := by
+  rw [scalarGradientStep91_factor]
+  unfold scalarQuadratic91
+  ring
+
+theorem scalarQuadratic91_step_nonincreasing {a L x : ℚ}
+    (ha : 0 ≤ a) (haL : a ≤ L) (hL : 0 < L) :
+    scalarQuadratic91 a (scalarGradientStep91 a L x) ≤ scalarQuadratic91 a x := by
+  rw [scalarQuadratic91_step_identity]
+  have hratio_nonneg : 0 ≤ a / L := div_nonneg ha (le_of_lt hL)
+  have hratio_le_one : a / L ≤ 1 := by
+    rw [div_le_iff₀ hL]
+    nlinarith
+  have hfactor : (1 - a / L) ^ 2 ≤ 1 := by
+    nlinarith [mul_nonneg hratio_nonneg (show 0 ≤ 1 - a / L by linarith)]
+  have hobjective : 0 ≤ scalarQuadratic91 a x := by
+    unfold scalarQuadratic91
+    positivity
+  calc
+    (1 - a / L) ^ 2 * scalarQuadratic91 a x ≤
+        1 * scalarQuadratic91 a x := mul_le_mul_of_nonneg_right hfactor hobjective
+    _ = scalarQuadratic91 a x := by ring
+```
+
 ## 3. Convexity turns descent into a finite-iteration error bound
 
 Assume now that \(f\) is convex and has a minimizer \(x_*\), with \(f_*=f(x_*)\). Convexity gives the first-order inequality

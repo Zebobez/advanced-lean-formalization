@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 28 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 27 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 91: [Smooth Convex Optimization and Gradient Descent](Chapter91.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-91-smooth-convex-optimization-and-gradient-descent.md).
 - Chapter 92: [Projected Gradient and Proximal Methods](Chapter92.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-92-projected-gradient-and-proximal-methods.md).
 - Chapter 93: [Estimate Sequences and Accelerated Gradient](Chapter93.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-93-estimate-sequences-and-accelerated-gradient.md).
 - Chapter 94: [Mirror Descent and Bregman Geometry](Chapter94.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-94-mirror-descent-and-bregman-geometry.md).
