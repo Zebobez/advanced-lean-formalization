@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 49 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 48 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 70: [Tilted Generators and Large Deviations](Chapter70.lean) — manuscript: [source](../../manuscript/chapters/part-17/chapter-70-tilted-generators-and-large-deviations.md).
 - Chapter 71: [Quasi-Stationary Laws and Doob Transforms](Chapter71.lean) — manuscript: [source](../../manuscript/chapters/part-17/chapter-71-quasi-stationarity-and-doob-transforms.md).
 - Chapter 72: [Resolvents and Green Kernels](Chapter72.lean) — manuscript: [source](../../manuscript/chapters/part-18/chapter-72-resolvents-and-green-kernels.md).
 - Chapter 73: [Regeneration and Renewal Rewards](Chapter73.lean) — manuscript: [source](../../manuscript/chapters/part-18/chapter-73-regeneration-and-renewal-rewards.md).

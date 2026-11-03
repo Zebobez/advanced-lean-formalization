@@ -230,3 +230,39 @@ Exponential path weights for finite continuous-time chains are encoded by tilted
 - Chapters 59 and 68 for Feynman–Kac semigroups, killing, and finite spectral structure.
 - [Mathlib’s finite Hermitian matrix spectral theory](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Analysis/Matrix/Spectrum.html).
 - [Mathlib’s finite-dimensional self-adjoint spectral theory](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Analysis/InnerProductSpace/Spectrum.html).
+
+## 10. Lean formalization: an occupation-tilted row sum
+
+An occupation tilt adds `θ V(i)` to the diagonal of the generator. The resulting operator is generally not a Markov generator: its row sum at state `i` is exactly `θ V(i)`. This two-state calculation checks the diagonal convention explicitly and guards against mistakenly renormalizing the tilted matrix to have zero row sums.
+
+The finite integer-valued example is retained from the supplemental module.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def potential (s : State) : Int := if s = zero then 0 else 1
+def tiltedRowAtOne : Int :=
+  twoStateGenerator one zero + (twoStateGenerator one one + potential one)
+
+theorem tiltAddsTheStatePotential : tiltedRowAtOne = 1 := by decide
+```
+
+We now let the tilt parameter range over all integers and add the state potential only on the diagonal. The row-sum theorem is uniform in the state and parameter.
+
+```lean
+def occupationTiltedEntry (θ : Int) (i j : State) : Int :=
+  twoStateGenerator i j + if i = j then θ * potential i else 0
+
+def occupationTiltedRowSum (θ : Int) (i : State) : Int :=
+  occupationTiltedEntry θ i zero + occupationTiltedEntry θ i one
+
+theorem occupationTiltedRowSum_eq (θ : Int) (i : State) :
+    occupationTiltedRowSum θ i = θ * potential i := by
+  fin_cases i <;>
+    simp [occupationTiltedRowSum, occupationTiltedEntry, potential,
+      twoStateGenerator, zero, one]
+```
+
+The off-diagonal entries remain the original jump rates, while the diagonal acquires the potential. The proof computes both rows and confirms that the tilted operator is conservative only at states where the potential vanishes. Spectral growth and the Feynman–Kac formula require additional semigroup results; this lemma formalizes the matrix convention on which those arguments depend.
