@@ -298,6 +298,66 @@ which holds because \(0.9+0.7/7=1\). Normalization gives \(\pi_0=1-r=6/7\), and 
 
 This small example is useful for proof development. Its rate equation is nonlinear even in one phase, but every sum has finite support, so one can first establish all algebraic identities without analytic machinery.
 
+### 6.1 An executable finite-support rate certificate
+
+For the scalar example in Section 6, the rate map is F(r) = 1/10 + r/5 + 7r²/10. Its residual factors as (7r − 1)(r − 1)/10, exposing both roots. The code selects the subunit root r = 1/7, checks the separate boundary balance with B0 = 9/10 and B−1 = 7/10, and proves the local stationary recurrence at level one and every level n ≥ 2 for candidate weights πₙ = (6/7)(1/7)ⁿ. It does not identify the infinite sum of these weights with one; that convergence and normalization step remains an analytic obligation.
+
+```lean
+def giRateMap (r : ℚ) : ℚ := 1 / 10 + (1 / 5) * r + (7 / 10) * r ^ 2
+
+def giGeometricWeight (n : Nat) : ℚ := (6 / 7) * (1 / 7 : ℚ) ^ n
+
+theorem giRateMap_factorization (r : ℚ) :
+    giRateMap r - r = ((7 * r - 1) * (r - 1)) / 10 := by
+  unfold giRateMap
+  ring
+
+theorem giRate_is_fixed_point : giRateMap (1 / 7) = 1 / 7 := by
+  norm_num [giRateMap]
+
+theorem giRate_one_is_fixed_point : giRateMap 1 = 1 := by
+  norm_num [giRateMap]
+
+theorem giBoundary_row_sum : 9 / 10 + 1 / 10 = (1 : ℚ) := by norm_num
+
+theorem giPositive_row_sum : 7 / 10 + 1 / 5 + 1 / 10 = (1 : ℚ) := by norm_num
+
+theorem giBoundary_local_balance :
+    (9 / 10 : ℚ) * giGeometricWeight 0 +
+      (7 / 10 : ℚ) * giGeometricWeight 1 = giGeometricWeight 0 := by
+  norm_num [giGeometricWeight]
+
+theorem giLevelOne_local_balance :
+    (1 / 10 : ℚ) * giGeometricWeight 0 +
+      (1 / 5 : ℚ) * giGeometricWeight 1 +
+      (7 / 10 : ℚ) * giGeometricWeight 2 = giGeometricWeight 1 := by
+  norm_num [giGeometricWeight]
+
+theorem giGeometricWeight_succ (n : Nat) :
+    giGeometricWeight (n + 1) = giGeometricWeight n / 7 := by
+  unfold giGeometricWeight
+  rw [pow_succ]
+  ring
+
+theorem giInterior_local_balance (n : Nat) (hn : 2 ≤ n) :
+    (1 / 10 : ℚ) * giGeometricWeight (n - 1) +
+      (1 / 5 : ℚ) * giGeometricWeight n +
+      (7 / 10 : ℚ) * giGeometricWeight (n + 1) = giGeometricWeight n := by
+  have hsub : n - 1 + 1 = n := Nat.sub_add_cancel (by omega)
+  have hprev := giGeometricWeight_succ (n - 1)
+  rw [hsub] at hprev
+  have hnext := giGeometricWeight_succ n
+  have hfactor : giGeometricWeight (n - 1) = 7 * giGeometricWeight n := by
+    nlinarith [hprev]
+  rw [hfactor, hnext]
+  norm_num
+  ring
+
+theorem giGeometricWeight_nonnegative (n : Nat) : 0 ≤ giGeometricWeight n := by
+  unfold giGeometricWeight
+  exact mul_nonneg (by norm_num) (pow_nonneg (by norm_num) n)
+```
+
 ## 7. A Lean architecture for skip-free structure
 
 ### 7.1 Index the blocks by increments
