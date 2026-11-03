@@ -226,6 +226,32 @@ v_i(x;\tilde x)
 
 The component-dependent center cancels exactly. In this example the control variate removes all sampling noise, not merely enough to obtain a bound.
 
+For a concrete two-component instance, take raw gradients 2 and 4, baseline gradients 1 and 3, and snapshot gradient 2. The raw mean is 3 with variance 1. The SVRG correction is constantly 3, so it preserves the mean and reduces the variance to zero.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def rawGradientSample : State → Int := fun s => if s = zero then 2 else 4
+def baselineGradientSample : State → Int := fun s => if s = zero then 1 else 3
+def snapshotGradient : Int := 2
+def correctedSample (s : State) : Int :=
+  rawGradientSample s - baselineGradientSample s + snapshotGradient
+
+theorem corrected_sample_is_constant : ∀ s, correctedSample s = 3 := by decide
+
+theorem corrected_sample_preserves_mean :
+    expectationNumerator uniformWeight correctedSample =
+      expectationNumerator uniformWeight rawGradientSample := by decide
+
+theorem raw_gradient_variance_numerator :
+    expectationNumerator uniformWeight (fun s => (rawGradientSample s - 3) ^ 2) = 2 := by decide
+
+theorem corrected_sample_variance_numerator :
+    expectationNumerator uniformWeight (fun s => (correctedSample s - 3) ^ 2) = 0 := by decide
+```
+
 ### 5.2 Regularized empirical risk
 
 Suppose \(\ell_i(w)\) is a convex smooth loss on example \(i\), and define component functions
