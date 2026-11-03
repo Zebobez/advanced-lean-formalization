@@ -334,3 +334,101 @@ For a reversible finite-state generator, detailed balance makes Q self-adjoint i
 - [Mathlib: Matrix exponential](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Analysis/Normed/Algebra/MatrixExponential.html)
 - Chapter 48 for total variation and discrete-time contraction.
 - Chapters 45 and 55–59 for reversibility, generators, and continuous-time semigroups.
+
+## 13. Lean formalization: the two-state spectral mode
+
+For two states, the stationary law and the nonconstant spectral mode can be
+computed symbolically. The following block keeps the rates `a` and `b`
+arbitrary. The hypothesis `a + b ≠ 0` is needed when the stationary weights
+are normalized by their sum. The results verify detailed balance, invariance,
+and the exact generator eigenvalue on the centered subspace. They do not yet
+formalize a matrix exponential or the general finite-state spectral theorem.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def contrast : State → Int := fun s => if s = zero then 1 else -1
+def flipActionAtZero : Int :=
+  Int.ofNat (flipKernel zero zero) * contrast zero +
+  Int.ofNat (flipKernel zero one) * contrast one
+
+theorem flipNegatesTheContrast : flipActionAtZero = -2 := by decide
+```
+
+We now use rational-valued observables so that the rates remain symbolic.
+
+```lean
+import Mathlib
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def twoStateGeneratorQ (a b : ℚ) (i j : State) : ℚ :=
+  if i = zero then (if j = zero then -a else a)
+  else if j = zero then b else -b
+
+def twoStateStationaryWeightQ (a b : ℚ) (i : State) : ℚ :=
+  if i = zero then b / (a + b) else a / (a + b)
+
+def twoStateActionQ (a b : ℚ) (f : State → ℚ) (i : State) : ℚ :=
+  twoStateGeneratorQ a b i zero * f zero +
+    twoStateGeneratorQ a b i one * f one
+
+def twoStateMeanQ (a b : ℚ) (f : State → ℚ) : ℚ :=
+  twoStateStationaryWeightQ a b zero * f zero +
+    twoStateStationaryWeightQ a b one * f one
+
+def twoStateCenterQ (a b : ℚ) (f : State → ℚ) (i : State) : ℚ :=
+  f i - twoStateMeanQ a b f
+
+def twoStateWeightedInnerQ (a b : ℚ) (f g : State → ℚ) : ℚ :=
+  twoStateStationaryWeightQ a b zero * f zero * g zero +
+    twoStateStationaryWeightQ a b one * f one * g one
+
+theorem two_state_stationary_weight_total (a b : ℚ) (h : a + b ≠ 0) :
+    twoStateStationaryWeightQ a b zero +
+      twoStateStationaryWeightQ a b one = 1 := by
+  simp [twoStateStationaryWeightQ, zero, one]; field_simp [h]; ring
+
+theorem two_state_detailed_balance (a b : ℚ) :
+    twoStateStationaryWeightQ a b zero * twoStateGeneratorQ a b zero one =
+      twoStateStationaryWeightQ a b one * twoStateGeneratorQ a b one zero := by
+  simp [twoStateStationaryWeightQ, twoStateGeneratorQ, zero, one]; ring
+
+theorem two_state_generator_rows_sum_to_zero (a b : ℚ) (i : State) :
+    twoStateGeneratorQ a b i zero + twoStateGeneratorQ a b i one = 0 := by
+  fin_cases i
+  · simp [twoStateGeneratorQ, zero, one]
+  · simp [twoStateGeneratorQ, zero, one]
+
+theorem two_state_stationary_mean_of_generator_action (a b : ℚ)
+    (h : a + b ≠ 0) (f : State → ℚ) :
+    twoStateMeanQ a b (twoStateActionQ a b f) = 0 := by
+  simp [twoStateMeanQ, twoStateStationaryWeightQ, twoStateActionQ,
+    twoStateGeneratorQ, zero, one]; field_simp [h]; ring
+
+theorem two_state_center_has_mean_zero (a b : ℚ) (h : a + b ≠ 0)
+    (f : State → ℚ) :
+    twoStateMeanQ a b (twoStateCenterQ a b f) = 0 := by
+  simp [twoStateMeanQ, twoStateCenterQ, twoStateStationaryWeightQ,
+    zero, one]; field_simp [h]; ring
+
+theorem two_state_centered_action_is_exact_eigenmode (a b : ℚ)
+    (h : a + b ≠ 0) (f : State → ℚ) (i : State) :
+    twoStateActionQ a b (twoStateCenterQ a b f) i =
+      -(a + b) * twoStateCenterQ a b f i := by
+  fin_cases i
+  · simp [twoStateActionQ, twoStateGeneratorQ, twoStateCenterQ,
+      twoStateMeanQ, twoStateStationaryWeightQ, zero, one]; field_simp [h]; ring
+  · simp [twoStateActionQ, twoStateGeneratorQ, twoStateCenterQ,
+      twoStateMeanQ, twoStateStationaryWeightQ, zero, one]; field_simp [h]; ring
+
+theorem two_state_weighted_generator_self_adjoint (a b : ℚ)
+    (h : a + b ≠ 0) (f g : State → ℚ) :
+    twoStateWeightedInnerQ a b f (twoStateActionQ a b g) =
+      twoStateWeightedInnerQ a b (twoStateActionQ a b f) g := by
+  simp [twoStateWeightedInnerQ, twoStateStationaryWeightQ,
+    twoStateActionQ, twoStateGeneratorQ, zero, one]; field_simp [h]; ring
+```
