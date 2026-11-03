@@ -272,6 +272,67 @@ Chebyshev is valid under weak assumptions but can be conservative.
 9. Explain why a stationary Markov chain does not satisfy the iid variance formula.
 10. Locate `IndepFun.variance_sum` and `meas_ge_le_variance_div_sq` in the Mathlib documentation.
 
+## 13. Lean formalization
+
+The initial block preserves the finite two-state calculation. The general statements that follow
+use Mathlib's L² and independence hypotheses to derive variance additivity, then record the square
+scaling rule, Chebyshev's deviation bound, and the bounded-range estimate. The rational calculation
+checks how a one-sample variance of `1/4` scales for an average of two independent samples.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def centeredSample : State → Int := fun s => if s = zero then -1 else 1
+def squaredSample (s : State) : Int := centeredSample s * centeredSample s
+
+theorem bernoulliSampleHasZeroMean :
+    expectationNumerator uniformWeight centeredSample = 0 := by decide
+
+theorem bernoulliSampleHasSecondMomentTwo :
+    expectationNumerator uniformWeight squaredSample = 2 := by decide
+```
+
+```lean
+open MeasureTheory ProbabilityTheory
+open scoped ProbabilityTheory ENNReal
+
+theorem exercise_52_2_independent_sum_variance
+    {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsFiniteMeasure μ]
+    {X Y : Ω → ℝ} (hX : MemLp X 2 μ) (hY : MemLp Y 2 μ)
+    (hXY : X ⟂ᵢ[μ] Y) :
+    variance (fun ω => X ω + Y ω) μ = variance X μ + variance Y μ :=
+  hXY.variance_fun_add hX hY
+
+theorem exercise_52_2_variance_scales_quadratically
+    {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) (X : Ω → ℝ) (c : ℝ) :
+    variance (fun ω => c * X ω) μ = c ^ 2 * variance X μ :=
+  variance_const_mul c X μ
+
+theorem exercise_52_4_chebyshev
+    {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsFiniteMeasure μ]
+    {X : Ω → ℝ} (hX : MemLp X 2 μ) {ε : ℝ} (hε : 0 < ε) :
+    μ {ω | ε ≤ |X ω - μ[X]|} ≤
+      ENNReal.ofReal (variance X μ / ε ^ 2) :=
+  meas_ge_le_variance_div_sq hX hε
+
+theorem exercise_52_5_bounded_variance
+    {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
+    {X : Ω → ℝ} {a b : ℝ}
+    (hRange : ∀ᵐ ω ∂μ, X ω ∈ Set.Icc a b) (hX : AEMeasurable X μ) :
+    variance X μ ≤ ((b - a) / 2) ^ 2 :=
+  variance_le_sq_of_bounded hRange hX
+
+theorem exercise_52_6_fair_bernoulli_variance :
+    (1 : ℚ) / 2 * (1 - 1 / 2) = 1 / 4 := by
+  norm_num
+
+theorem exercise_52_6_two_sample_average_variance :
+    (1 : ℚ) / 4 / 2 = 1 / 8 := by
+  norm_num
+```
+
 ## Summary
 
 For iid square-integrable samples, the sample mean is unbiased and its variance is the one-sample variance divided by the sample count. Chebyshev converts that variance into a finite-sample error probability; boundedness gives a uniform variance estimate. Bias, variance, independence, and integrability must be tracked separately. Markov-chain samples are dependent, so their error bounds require covariance, mixing, or spectral arguments beyond the iid calculation.

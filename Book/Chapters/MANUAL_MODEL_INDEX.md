@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 66 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 65 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 52: [Variance and Monte Carlo Error Bounds](Chapter52.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-52-variance-and-monte-carlo-error.md).
 - Chapter 53: [Sequential Importance Sampling and Filtering](Chapter53.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-53-sequential-importance-sampling-and-filtering.md).
 - Chapter 54: [Resampling and Particle Systems](Chapter54.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-54-resampling-and-particle-systems.md).
 - Chapter 55: [Finite-State Continuous-Time Markov Chains](Chapter55.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-55-finite-state-continuous-time-markov-chains.md).
