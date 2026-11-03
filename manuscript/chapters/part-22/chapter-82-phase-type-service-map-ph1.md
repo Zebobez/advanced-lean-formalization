@@ -309,6 +309,89 @@ The boundary matrices are rectangular, so do not force \(B_{00}\), \(B_{01}\), a
 
 The critical algebraic lemmas are small and reusable. For Kronecker products, prove the row-sum identity and the action on tensor-product vectors once. For PH data, prove the absorption vector formula and the mean expression once. The queue development should assemble those lemmas rather than re-prove matrix exponential facts in every example.
 
+### 9.1 An executable Erlang-2 moment certificate
+
+For the example in Section 8, the transient generator T has rows [-3, 3] and [0, -3], the initial service-phase weights are beta = (1, 0), and the absorption rates are (0, 3). The first two systems below solve (-T)x = 1 and (-T)y = x; pairing with beta gives the first two PH moments. The final result reuses Chapter 81's exact MAP arrival rate to verify traffic load rho = 2/3 < 1.
+
+```lean
+import Book.Chapters.Chapter81
+
+open Book.Chapters.Chapter81
+
+abbrev PHMatrix := Matrix (Fin 2) (Fin 2) ℚ
+
+def erlangT : PHMatrix := !![-3, 3; 0, -3]
+def erlangNegT : PHMatrix := !![3, -3; 0, 3]
+def erlangBeta (i : Fin 2) : ℚ := if i = 0 then 1 else 0
+def erlangExitRate (i : Fin 2) : ℚ := if i = 0 then 0 else 3
+def erlangOnes (_i : Fin 2) : ℚ := 1
+def erlangMeanSolve (i : Fin 2) : ℚ := if i = 0 then 2 / 3 else 1 / 3
+def erlangSecondSolve (i : Fin 2) : ℚ := if i = 0 then 1 / 3 else 1 / 9
+
+def matrixVector (A : PHMatrix) (x : Fin 2 → ℚ) (i : Fin 2) : ℚ :=
+  ∑ j : Fin 2, A i j * x j
+
+def rowVectorPairing (p x : Fin 2 → ℚ) : ℚ :=
+  ∑ i : Fin 2, p i * x i
+
+theorem erlangNegT_is_negative_T : erlangNegT = -erlangT := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> norm_num [erlangNegT, erlangT]
+
+theorem erlangBeta_probability : (∑ i : Fin 2, erlangBeta i) = 1 := by
+  norm_num [erlangBeta]
+
+theorem erlangT_offDiagonal_nonnegative :
+    ∀ i j : Fin 2, i ≠ j → 0 ≤ erlangT i j := by
+  intro i j hij
+  fin_cases i <;> fin_cases j <;> norm_num [erlangT] at *
+
+theorem erlang_exit_rate_matches_row_sum :
+    ∀ i : Fin 2, erlangExitRate i = -∑ j : Fin 2, erlangT i j := by
+  intro i
+  fin_cases i <;> norm_num [erlangExitRate, erlangT, Matrix.add_apply]
+
+theorem erlangMeanSolve_solves :
+    ∀ i : Fin 2, matrixVector erlangNegT erlangMeanSolve i = erlangOnes i := by
+  intro i
+  fin_cases i <;>
+    norm_num [matrixVector, erlangNegT, erlangMeanSolve, erlangOnes,
+      Matrix.mul_apply]
+
+theorem erlangSecondSolve_solves :
+    ∀ i : Fin 2,
+      matrixVector erlangNegT erlangSecondSolve i = erlangMeanSolve i := by
+  intro i
+  fin_cases i <;>
+    norm_num [matrixVector, erlangNegT, erlangSecondSolve, erlangMeanSolve,
+      Matrix.mul_apply]
+
+theorem erlangMean_is_two_thirds :
+    rowVectorPairing erlangBeta erlangMeanSolve = 2 / 3 := by
+  norm_num [rowVectorPairing, erlangBeta, erlangMeanSolve]
+
+theorem erlangSecondMoment_is_two_thirds :
+    2 * rowVectorPairing erlangBeta erlangSecondSolve = 2 / 3 := by
+  norm_num [rowVectorPairing, erlangBeta, erlangSecondSolve]
+
+theorem erlangVariance_is_two_ninths :
+    2 * rowVectorPairing erlangBeta erlangSecondSolve -
+      (rowVectorPairing erlangBeta erlangMeanSolve) ^ 2 = 2 / 9 := by
+  norm_num [rowVectorPairing, erlangBeta, erlangSecondSolve, erlangMeanSolve]
+
+theorem mmppErlangTrafficLoad :
+    mapArrivalRate * rowVectorPairing erlangBeta erlangMeanSolve = 2 / 3 := by
+  rw [mmpp_mean_arrival_rate_one, erlangMean_is_two_thirds]
+  norm_num
+
+theorem mmppErlangTrafficLoad_lt_one :
+    mapArrivalRate * rowVectorPairing erlangBeta erlangMeanSolve < 1 := by
+  rw [mmppErlangTrafficLoad]
+  norm_num
+```
+
+This proof checks the finite matrix equations and moment calculations, not the matrix-exponential survival law for arbitrary times or the generic properness theorem for phase-type distributions. Those analytic facts remain separate from this exact finite example.
+
 ## 10. Common failure modes
 
 1. **Treating the service phase as active while idle.** No job is in service at level zero, so the boundary phase dimension is smaller.
