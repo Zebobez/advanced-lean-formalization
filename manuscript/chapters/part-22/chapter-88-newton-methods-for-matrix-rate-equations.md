@@ -187,6 +187,57 @@ x_{\mathrm{new}}=0.5-\frac{-0.125}{-0.1}=-0.75.
 
 The new point is negative even though the rate equation has positive solutions. A matrix Newton step can likewise leave the nonnegative cone, and no global monotonicity follows from the nonnegative coefficients of \(F\). This is why Chapter 87's order iteration remains valuable even when Newton steps are used to accelerate computation.
 
+### 5.1 An executable Newton and noncommutative linearization certificate
+
+The scalar example is exact over the rationals: the code verifies the two Newton steps from zero and the negative step produced from 1/2. It also checks the matrix square expansion and its quadratic remainder for arbitrary two-by-two rational matrices. A concrete pair of noncommuting matrices shows that the linear term (XH+HX) cannot be replaced by (2XH). These calculations verify the finite algebra in the Newton step; they do not prove a general Fréchet-derivative theorem or convergence.
+
+```lean
+def scalarResidual (x : ℚ) : ℚ := 1 / 10 - (4 / 5) * x + (7 / 10) * x ^ 2
+def scalarResidualDerivative (x : ℚ) : ℚ := -(4 / 5) + (7 / 5) * x
+def scalarNewtonStep (x : ℚ) : ℚ := x - scalarResidual x / scalarResidualDerivative x
+
+theorem scalarResidual_factorization (x : ℚ) :
+    scalarResidual x = ((7 * x - 1) * (x - 1)) / 10 := by
+  unfold scalarResidual
+  ring
+
+theorem scalarNewton_first_step : scalarNewtonStep 0 = 1 / 8 := by
+  norm_num [scalarNewtonStep, scalarResidual, scalarResidualDerivative]
+
+theorem scalarNewton_second_step : scalarNewtonStep (1 / 8) = 57 / 400 := by
+  norm_num [scalarNewtonStep, scalarResidual, scalarResidualDerivative]
+
+theorem scalarNewton_bad_step : scalarNewtonStep (1 / 2) = -(3 / 4) := by
+  norm_num [scalarNewtonStep, scalarResidual, scalarResidualDerivative]
+
+abbrev NewtonMatrix := Matrix (Fin 2) (Fin 2) ℚ
+
+def exampleX : NewtonMatrix := !![1, 1; 0, 1]
+def exampleH : NewtonMatrix := !![0, 0; 1, 0]
+
+theorem matrix_square_increment_expansion (X H : NewtonMatrix) :
+    (X + H) ^ 2 = X ^ 2 + X * H + H * X + H ^ 2 := by
+  simp only [pow_two, add_mul, mul_add]
+  abel
+
+theorem matrix_square_first_order_remainder (X H : NewtonMatrix) :
+    (X + H) ^ 2 - X ^ 2 - (X * H + H * X) = H ^ 2 := by
+  rw [matrix_square_increment_expansion]
+  abel
+
+theorem exampleXH_order_is_not_commutative :
+    exampleX * exampleH ≠ exampleH * exampleX := by
+  intro h
+  have h11 := congrArg (fun M : NewtonMatrix => M 1 1) h
+  norm_num [exampleX, exampleH, Matrix.mul_apply] at h11
+
+theorem example_linearization_not_twice_left_product :
+    exampleX * exampleH + exampleH * exampleX ≠ 2 • (exampleX * exampleH) := by
+  intro h
+  have h00 := congrArg (fun M : NewtonMatrix => M 0 0) h
+  norm_num [exampleX, exampleH, Matrix.mul_apply] at h00
+```
+
 ## 6. Local convergence, root selection, and safeguarding
 
 For a smooth finite-dimensional residual, Newton's method converges quadratically when started sufficiently close to a simple root and when the Jacobian remains well behaved nearby. These are local hypotheses. A rate equation can have multiple roots, and the Newton basin depends on the starting point. The least nonnegative root is a global order-theoretic selection, not a consequence of local quadratic convergence.
