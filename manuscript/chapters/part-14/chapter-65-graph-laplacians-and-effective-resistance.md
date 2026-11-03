@@ -230,3 +230,106 @@ A finite reversible chain defines a symmetric conductance network. Its generator
 - Chapters 48, 60, and 63 for total variation, reversible Dirichlet forms, spectral gaps, and path networks.
 - [Mathlib’s finite simple-graph Laplacian documentation](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Combinatorics/SimpleGraph/LapMatrix.html).
 - [Mathlib’s graph incidence-matrix documentation](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Combinatorics/SimpleGraph/IncMatrix.html).
+
+## 13. Lean formalization: the three-vertex path
+
+Consider a path with vertices `0`, `1`, and `2`, and positive conductances
+`c₀` and `c₁` on its two edges. The harmonic voltage with boundary values
+one at zero and zero at two is `c₀ / (c₀ + c₁)` at the middle vertex. Its
+energy is `c₀c₁ / (c₀ + c₁)`, so the effective resistance is the series sum
+`1/c₀ + 1/c₁`. The formalization proves the Laplacian–energy identity and
+an exact completion-of-the-square formula; the latter establishes the
+Dirichlet minimum for every potential with the same boundary values.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def neighbor (s : State) : State := if s = zero then one else zero
+def contrastPotential : State → Int := fun s => if s = zero then 1 else -1
+def graphLaplacian (s : State) : Int := contrastPotential s - contrastPotential (neighbor s)
+
+theorem laplacianAtZero : graphLaplacian zero = 2 := by decide
+theorem laplacianAtOne : graphLaplacian one = -2 := by decide
+```
+
+The rational path definitions use one term for each incident edge.
+
+```lean
+import Mathlib
+
+def pathLaplacianQ (c₀ c₁ : ℚ) (f : Fin 3 → ℚ) (i : Fin 3) : ℚ :=
+  if i = 0 then c₀ * (f 0 - f 1)
+  else if i = 1 then
+    c₀ * (f 1 - f 0) + c₁ * (f 1 - f 2)
+  else c₁ * (f 2 - f 1)
+
+def pathEnergyQ (c₀ c₁ : ℚ) (f : Fin 3 → ℚ) : ℚ :=
+  c₀ * (f 0 - f 1) ^ 2 + c₁ * (f 1 - f 2) ^ 2
+
+def pathLaplacianPairingQ (c₀ c₁ : ℚ) (f : Fin 3 → ℚ) : ℚ :=
+  f 0 * pathLaplacianQ c₀ c₁ f 0 +
+    f 1 * pathLaplacianQ c₀ c₁ f 1 +
+    f 2 * pathLaplacianQ c₀ c₁ f 2
+
+def pathVoltageQ (c₀ c₁ : ℚ) (i : Fin 3) : ℚ :=
+  if i = 0 then 1 else if i = 1 then c₀ / (c₀ + c₁) else 0
+
+theorem path_energy_eq_laplacian_pairing (c₀ c₁ : ℚ) (f : Fin 3 → ℚ) :
+    pathEnergyQ c₀ c₁ f = pathLaplacianPairingQ c₀ c₁ f := by
+  simp [pathEnergyQ, pathLaplacianPairingQ, pathLaplacianQ]
+  ring
+
+theorem path_voltage_boundary_values (c₀ c₁ : ℚ) :
+    pathVoltageQ c₀ c₁ 0 = 1 ∧ pathVoltageQ c₀ c₁ 2 = 0 := by
+  simp [pathVoltageQ]
+
+theorem path_voltage_is_harmonic (c₀ c₁ : ℚ)
+    (h : c₀ + c₁ ≠ 0) :
+    pathLaplacianQ c₀ c₁ (pathVoltageQ c₀ c₁) 1 = 0 := by
+  simp [pathLaplacianQ, pathVoltageQ]
+  field_simp [h]
+  ring
+
+theorem path_voltage_energy (c₀ c₁ : ℚ) (h : c₀ + c₁ ≠ 0) :
+    pathEnergyQ c₀ c₁ (pathVoltageQ c₀ c₁) = c₀ * c₁ / (c₀ + c₁) := by
+  simp [pathEnergyQ, pathVoltageQ]
+  field_simp [h]
+  ring
+
+theorem path_energy_completion_of_square (c₀ c₁ : ℚ)
+    (h : c₀ + c₁ ≠ 0) (f : Fin 3 → ℚ)
+    (h₀ : f 0 = 1) (h₂ : f 2 = 0) :
+    pathEnergyQ c₀ c₁ f =
+      pathEnergyQ c₀ c₁ (pathVoltageQ c₀ c₁) +
+        (c₀ + c₁) * (f 1 - c₀ / (c₀ + c₁)) ^ 2 := by
+  simp only [pathEnergyQ]
+  rw [h₀, h₂]
+  simp [pathVoltageQ]
+  field_simp [h]
+  ring
+
+theorem path_voltage_minimizes_energy (c₀ c₁ : ℚ)
+    (hc₀ : 0 < c₀) (hc₁ : 0 < c₁) (f : Fin 3 → ℚ)
+    (h : c₀ + c₁ ≠ 0) (h₀ : f 0 = 1) (h₂ : f 2 = 0) :
+    pathEnergyQ c₀ c₁ (pathVoltageQ c₀ c₁) ≤ pathEnergyQ c₀ c₁ f := by
+  rw [path_energy_completion_of_square c₀ c₁ h f h₀ h₂]
+  have hsum : 0 ≤ c₀ + c₁ := by linarith
+  have hsq : 0 ≤ (f 1 - c₀ / (c₀ + c₁)) ^ 2 := sq_nonneg _
+  nlinarith [mul_nonneg hsum hsq]
+
+theorem path_effective_conductance_times_resistance (c₀ c₁ : ℚ)
+    (hc₀ : 0 < c₀) (hc₁ : 0 < c₁) :
+    (c₀ * c₁ / (c₀ + c₁)) * ((c₀ + c₁) / (c₀ * c₁)) = 1 := by
+  have hsum : c₀ + c₁ ≠ 0 := ne_of_gt (by linarith)
+  have hprod : c₀ * c₁ ≠ 0 := mul_ne_zero (ne_of_gt hc₀) (ne_of_gt hc₁)
+  field_simp [hsum, hprod]
+
+theorem path_effective_resistance_is_series_sum (c₀ c₁ : ℚ)
+    (hc₀ : 0 < c₀) (hc₁ : 0 < c₁) :
+    (c₀ + c₁) / (c₀ * c₁) = 1 / c₀ + 1 / c₁ := by
+  have hprod : c₀ * c₁ ≠ 0 := mul_ne_zero (ne_of_gt hc₀) (ne_of_gt hc₁)
+  field_simp [ne_of_gt hc₀, ne_of_gt hc₁, hprod]
+  ring
+```
