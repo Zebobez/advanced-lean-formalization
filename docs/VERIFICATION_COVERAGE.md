@@ -1,6 +1,6 @@
 # Chapter verification coverage
 
-The manuscript lists **120 numbered chapters**. Every chapter now has a corresponding `Book/Chapters/ChapterNN.lean` module imported by `Book.lean`, and the strict structural audit passes. The extractor currently produces 87 modules containing **382 complete Lean command blocks**. For the remaining 33 chapters, supplemental finite-model examples were added; the [manual model index](../Book/Chapters/MANUAL_MODEL_INDEX.md) maps each to its chapter source.
+The manuscript lists **120 numbered chapters**. Every chapter now has a corresponding `Book/Chapters/ChapterNN.lean` module imported by `Book.lean`, and the strict structural audit passes. The extractor currently produces 88 modules containing **383 complete Lean command blocks**. For the remaining 32 chapters, supplemental finite-model examples were added; the [manual model index](../Book/Chapters/MANUAL_MODEL_INDEX.md) maps each to its chapter source.
 
 ## What the checks establish
 
