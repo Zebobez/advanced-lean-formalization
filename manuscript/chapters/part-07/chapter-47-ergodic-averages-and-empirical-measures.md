@@ -228,6 +228,66 @@ The Hilbert mean theorem gives norm convergence of operator averages. A pointwis
 11. Distinguish weak convergence of measures, norm convergence, and almost-everywhere convergence.
 12. Locate `birkhoffAverage_congr_ring`, `integral_empiricalMeasure_eq_birkhoffaverage`, and `exists_measurePreserving_probabilityMeasure` in the current documentation.
 
+## 13. Lean formalization
+
+The finite-weight calculation from the earlier model remains as a compact
+two-state check. The Birkhoff API examples then make the zero-length convention
+and the fixed-orbit case explicit.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def orbitObservable : State → Int := fun s => if s = zero then 0 else 2
+
+theorem twoPointOrbitAverageNumerator :
+    expectationNumerator uniformWeight orbitObservable = 2 := by decide
+```
+
+```lean
+import Mathlib.Dynamics.BirkhoffSum.Average
+
+theorem exercise_47_2_average_at_zero_is_zero
+    {R α M : Type*} [DivisionSemiring R] [AddCommMonoid M] [Module R M]
+    (f : α → α) (g : α → M) : birkhoffAverage R f g 0 = 0 := by
+  exact birkhoffAverage_zero R f g
+
+theorem exercise_47_3_fixed_point_average
+    {R α M : Type*} [DivisionSemiring R] [AddCommMonoid M] [Module R M]
+    {f : α → α} {x : α} (hx : Function.IsFixedPt f x)
+    (g : α → M) {n : ℕ} (hn : (n : R) ≠ 0) :
+    birkhoffAverage R f g n x = g x :=
+  hx.birkhoffAverage_eq R g hn
+```
+
+An empirical measure is a probability measure even for its first orbit segment,
+and the integration identity converts its test-function integral back to a
+Birkhoff average. On compact Hausdorff spaces, the Krylov–Bogolyubov theorem
+provides an invariant probability measure for any continuous self-map.
+
+```lean
+import Mathlib.Dynamics.Ergodic.EmpiricalMeasure
+
+open MeasureTheory
+
+theorem exercise_47_6_empirical_integral_is_orbit_average
+    {X : Type*} [MeasurableSpace X] [MeasurableSingletonClass X]
+    (f : X → X) (x : X) (n : ℕ) (g : X → ℝ) :
+    ∫ y, g y ∂MeasureTheory.empiricalMeasure f x n =
+      birkhoffAverage NNReal f g (n + 1) x :=
+  MeasureTheory.integral_empiricalMeasure_eq_birkhoffaverage
+    (f := f) (x := x) (g := g) n
+
+theorem exercise_47_9_krylov_bogolyubov
+    {X : Type*} [TopologicalSpace X] [MeasurableSpace X] [BorelSpace X]
+    [T2Space X] [CompactSpace X] [Nonempty X] {f : X → X}
+    (hf : Continuous f) :
+    ∃ μ : Measure X, MeasurePreserving f μ μ ∧
+      Measure.Regular μ ∧ IsProbabilityMeasure μ :=
+  MeasureTheory.exists_measurePreserving_probabilityMeasure hf
+```
+
 ## Summary
 
 Birkhoff sums and averages encode finite orbit statistics. Empirical measures package those statistics as probability measures, and integration against them recovers orbit averages. Compactness can turn empirical measures into invariant measures, while the Hilbert-space mean ergodic theorem gives norm convergence of operator averages to a projection onto fixed vectors. Each construction has distinct assumptions and a distinct notion of limit; finite averages alone do not assert asymptotic convergence.
