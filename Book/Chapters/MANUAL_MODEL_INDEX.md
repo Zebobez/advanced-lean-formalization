@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 26 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 25 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 93: [Estimate Sequences and Accelerated Gradient](Chapter93.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-93-estimate-sequences-and-accelerated-gradient.md).
 - Chapter 94: [Mirror Descent and Bregman Geometry](Chapter94.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-94-mirror-descent-and-bregman-geometry.md).
 - Chapter 95: [Stochastic Gradient Methods and Expected Guarantees](Chapter95.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-95-stochastic-gradient-methods-and-expected-guarantees.md).
 - Chapter 96: [Control Variates and Finite-Sum Variance Reduction](Chapter96.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-96-control-variates-and-finite-sum-variance-reduction.md).
