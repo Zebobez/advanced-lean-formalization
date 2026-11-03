@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 58 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 57 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 61: [Time-Inhomogeneous Chains and Evolution Families](Chapter61.lean) — manuscript: [source](../../manuscript/chapters/part-13/chapter-61-time-inhomogeneous-chains-and-evolution-families.md).
 - Chapter 62: [Coupling and Continuous-Time Mixing](Chapter62.lean) — manuscript: [source](../../manuscript/chapters/part-13/chapter-62-coupling-and-continuous-time-mixing.md).
 - Chapter 63: [Birth–Death Chains and Hitting Problems](Chapter63.lean) — manuscript: [source](../../manuscript/chapters/part-14/chapter-63-birth-death-chains-and-hitting-problems.md).
 - Chapter 64: [Product Generators and Local Interactions](Chapter64.lean) — manuscript: [source](../../manuscript/chapters/part-14/chapter-64-product-generators-and-local-interactions.md).
