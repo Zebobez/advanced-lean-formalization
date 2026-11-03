@@ -239,3 +239,58 @@ The functional central limit theorem sends the accelerated, centered reward path
 - Chapter 74 for the centered Poisson equation, scalar martingale approximation, and asymptotic covariance.
 - Chapters 58 and 60 for generator martingales, ergodicity, and spectral estimates.
 - Chapter 73 for the regenerative route to long-time averages and scalar fluctuation limits.
+
+## 12. Lean formalization: uniform endpoint control
+
+The functional martingale approximation has an endpoint correction `h(X_{Tt}) - h(X₀)`. If `|h|` is bounded by `B`, then the correction is at most `2B` for every pair of states. The same estimate therefore holds simultaneously at every time along every path; after scaling, its bound is `2B/√T`. We formalize this deterministic estimate, which is the part of the path-level argument that does not require a probability limit theorem.
+
+The finite-state mean and variance example remains available as an executable check.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def standardizedIncrement : State → Int := fun s => if s = zero then -1 else 1
+def incrementSquare (s : State) : Int := standardizedIncrement s * standardizedIncrement s
+
+theorem limitTheoremMeanCondition :
+    expectationNumerator uniformWeight standardizedIncrement = 0 := by decide
+theorem limitTheoremVarianceNumerator :
+    expectationNumerator uniformWeight incrementSquare = 2 := by decide
+```
+
+The first theorem bounds every endpoint pair. The path-level corollary quantifies over all times, and the scaled version carries the explicit square-root horizon factor used on compact time intervals.
+
+```lean
+theorem endpointCorrection_bound {S : Type} (h : S → ℝ) (B : ℝ)
+    (x y : S) (hx : |h x| ≤ B) (hy : |h y| ≤ B) :
+    |h y - h x| ≤ 2 * B := by
+  calc
+    |h y - h x| ≤ |h y| + |h x| := abs_sub _ _
+    _ ≤ B + B := add_le_add hy hx
+    _ = 2 * B := by ring
+
+theorem pathEndpointCorrection_bound {S : Type} (h : S → ℝ) (B : ℝ)
+    (path : ℝ → S) (hBound : ∀ t, |h (path t)| ≤ B) :
+    ∀ t, |h (path t) - h (path 0)| ≤ 2 * B := by
+  intro t
+  exact endpointCorrection_bound h B (path 0) (path t)
+    (hBound 0) (hBound t)
+
+theorem scaledPathEndpointCorrection_bound {S : Type} (h : S → ℝ)
+    (B T : ℝ) (path : ℝ → S) (hT : 0 < T)
+    (hBound : ∀ t, |h (path t)| ≤ B) :
+    ∀ t,
+      |(h (path (T * t)) - h (path 0)) / Real.sqrt T| ≤
+        (2 * B) / Real.sqrt T := by
+  intro t
+  have hroot : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  rw [abs_div, abs_of_pos hroot]
+  exact div_le_div_of_nonneg_right
+    (endpointCorrection_bound h B (path 0) (path (T * t))
+      (hBound 0) (hBound (T * t)))
+    (le_of_lt hroot)
+```
+
+Because the bound is independent of `t`, it gives the same estimate for the supremum on any compact interval. Sending `T` to infinity makes the scaled correction vanish. The martingale functional central limit theorem, compact-uniform bracket convergence, and Skorokhod tightness are probabilistic and path-space results beyond these deterministic Lean lemmas.
