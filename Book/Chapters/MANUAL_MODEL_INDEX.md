@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 51 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 50 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 68: [The Markov Chain Tree Theorem](Chapter68.lean) — manuscript: [source](../../manuscript/chapters/part-16/chapter-68-markov-chain-tree-theorem.md).
 - Chapter 69: [Linear Response for Finite Markov Chains](Chapter69.lean) — manuscript: [source](../../manuscript/chapters/part-16/chapter-69-linear-response-for-finite-markov-chains.md).
 - Chapter 70: [Tilted Generators and Large Deviations](Chapter70.lean) — manuscript: [source](../../manuscript/chapters/part-17/chapter-70-tilted-generators-and-large-deviations.md).
 - Chapter 71: [Quasi-Stationary Laws and Doob Transforms](Chapter71.lean) — manuscript: [source](../../manuscript/chapters/part-17/chapter-71-quasi-stationarity-and-doob-transforms.md).

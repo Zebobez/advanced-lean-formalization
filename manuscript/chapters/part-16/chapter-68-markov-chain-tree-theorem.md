@@ -203,3 +203,64 @@ For a finite irreducible continuous-time chain, each stationary weight is propor
 - [Mathlib’s matrix adjugate documentation](https://leanprover-community.github.io/mathlib4_docs/Mathlib/LinearAlgebra/Matrix/Adjugate.html).
 - [Mathlib’s determinant documentation](https://leanprover-community.github.io/mathlib4_docs/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.html).
 - [Mathlib’s finite spanning-tree and acyclicity results](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Combinatorics/SimpleGraph/Acyclic.html).
+
+## 11. Lean formalization: tree weights on a directed cycle
+
+The oriented three-cycle from Section 4 is the smallest irreducible example with circulation and no reverse edges. Each root has exactly one inward spanning tree: the two edges that continue around the cycle until they reach that root. Their products give the three unnormalized stationary weights. We formalize the resulting equal-flux equations, which are the three coordinates of the left-kernel identity for this generator.
+
+The earlier two-state arithmetic check remains as a separate executable example.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def treeWeightAtZero : Nat := 2
+def treeWeightAtOne : Nat := 1
+
+theorem incomingTreeWeightsBalance :
+    treeWeightAtZero * 1 = treeWeightAtOne * 2 := by decide
+```
+
+For rates `a`, `b`, and `c` on `0 → 1 → 2 → 0`, the inward tree weights are `bc`, `ca`, and `ab`. Each root weight multiplied by its outgoing rate gives the same circulation product `abc`. This is stationarity without detailed balance.
+
+```lean
+inductive CycleState where
+  | zero
+  | one
+  | two
+  deriving DecidableEq
+
+def cycleTreeWeight (a b c : Nat) : CycleState → Nat
+  | .zero => b * c
+  | .one => c * a
+  | .two => a * b
+
+theorem cycleTreeWeights_balance (a b c : Nat) :
+    cycleTreeWeight a b c .zero * a =
+        cycleTreeWeight a b c .one * b ∧
+      cycleTreeWeight a b c .one * b =
+        cycleTreeWeight a b c .two * c := by
+  constructor <;> simp [cycleTreeWeight] <;> ring
+
+theorem cycleTreeWeights_all_equal_flow (a b c : Nat) :
+    cycleTreeWeight a b c .zero * a =
+        cycleTreeWeight a b c .one * b ∧
+      cycleTreeWeight a b c .one * b =
+        cycleTreeWeight a b c .two * c ∧
+      cycleTreeWeight a b c .two * c =
+        cycleTreeWeight a b c .zero * a := by
+  obtain ⟨h₀₁, h₁₂⟩ := cycleTreeWeights_balance a b c
+  refine ⟨h₀₁, h₁₂, ?_⟩
+  simp [cycleTreeWeight]
+  ring
+
+theorem cycleTreeWeight_positive (a b c : Nat)
+    (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) :
+    0 < cycleTreeWeight a b c .zero ∧
+      0 < cycleTreeWeight a b c .one ∧
+      0 < cycleTreeWeight a b c .two := by
+  simp [cycleTreeWeight, ha, hb, hc]
+```
+
+The first theorem gives two coordinates of stationarity and the final theorem closes the cycle. The positivity result supplies the nonzero denominator needed to normalize the tree weights into a probability distribution. This checks the combinatorial formula for the directed cycle; it does not formalize the general matrix-tree expansion or the adjugate argument for arbitrary finite chains.
