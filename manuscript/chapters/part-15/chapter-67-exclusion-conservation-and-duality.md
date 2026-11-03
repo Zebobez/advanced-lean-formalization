@@ -189,3 +189,75 @@ The symmetric exclusion process moves particles by exchanging occupied and vacan
 - Chapters 64–66 for local generators, graph energy, and graphical constructions.
 - [Mathlib’s finite graph edge and neighbor API](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Combinatorics/SimpleGraph/Finite.html).
 - [Mathlib’s finite graph connectivity API](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Combinatorics/SimpleGraph/Connectivity/Connected.html).
+
+## 13. Lean formalization: conservation and one-site duality
+
+The first formal model is a single edge with two sites. An event swaps the two Boolean occupations. This tiny system isolates two algebraic facts that scale to a finite graph: particle number is unchanged by an exchange, and the generator applied to the occupation at one site agrees with the generator of a single dual walker. The general finite-graph proofs require a finite sum over edges, but their local step is exactly the identity checked here.
+
+The supplemental numeric example is kept as a simple executable calculation. The following model strengthens it from one input to all configurations of the two-site system.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def exchangeOccupancies (a b : Nat) : Nat × Nat := (b, a)
+def particleCount (p : Nat × Nat) : Nat := p.1 + p.2
+
+theorem exclusionMoveConservesParticles :
+    particleCount (exchangeOccupancies 1 0) = particleCount (1, 0) := by decide
+```
+
+The update is an involution, so its event map is the same in the forward and reverse directions. An event with equal occupations is a null mark. We encode the single-edge generator as the rate-one increment `f (swapConfig η) - f η`; when the update is a null mark, that increment is zero automatically.
+
+```lean
+inductive ExclusionSite where
+  | left
+  | right
+  deriving DecidableEq
+
+abbrev ExclusionConfig := ExclusionSite → Bool
+
+def swapSite : ExclusionSite → ExclusionSite
+  | .left => .right
+  | .right => .left
+
+def swapConfig (η : ExclusionConfig) : ExclusionConfig :=
+  fun site => η (swapSite site)
+
+def siteParticleCount (η : ExclusionConfig) : Int :=
+  (if η .left then 1 else 0) + (if η .right then 1 else 0)
+
+theorem swapConfig_involutive (η : ExclusionConfig) :
+    swapConfig (swapConfig η) = η := by
+  funext site
+  cases site <;> rfl
+
+theorem swapConfig_conserves_particles (η : ExclusionConfig) :
+    siteParticleCount (swapConfig η) = siteParticleCount η := by
+  cases hLeft : η .left <;> cases hRight : η .right <;>
+    simp [siteParticleCount, swapConfig, swapSite, hLeft, hRight]
+
+def exclusionGenerator (observable : ExclusionConfig → Int)
+    (η : ExclusionConfig) : Int :=
+  observable (swapConfig η) - observable η
+
+theorem exclusionGenerator_annihilates_particleCount (η : ExclusionConfig) :
+    exclusionGenerator siteParticleCount η = 0 := by
+  simp [exclusionGenerator, swapConfig_conserves_particles]
+
+def occupationAt (site : ExclusionSite) (η : ExclusionConfig) : Int :=
+  if η site then 1 else 0
+
+def oneParticleGenerator (observable : ExclusionSite → Int)
+    (site : ExclusionSite) : Int :=
+  observable (swapSite site) - observable site
+
+theorem oneSiteGenerator_duality (η : ExclusionConfig)
+    (site : ExclusionSite) :
+    exclusionGenerator (fun config => occupationAt site config) η =
+      oneParticleGenerator (fun position => occupationAt position η) site := by
+  rfl
+```
+
+The conservation proof reduces to the two occupancy cases and shows the local update preserves the sector exactly, not merely in expectation. The duality theorem identifies the action of the exclusion generator on a one-site occupation with the walk generator acting on the site variable while the initial configuration is held fixed. The two-site model is a regression example for the local algebra; extending it to all edges and finite subsets requires summing these local identities and proving the corresponding semigroup intertwining theorem.
