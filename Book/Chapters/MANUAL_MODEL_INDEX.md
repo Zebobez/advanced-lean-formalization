@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 34 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 33 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 85: [Performance Measures from Matrix-Geometric Tails](Chapter85.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-85-performance-measures-from-matrix-geometric-tails.md).
 - Chapter 86: [Spectral Asymptotics of Matrix-Geometric Tails](Chapter86.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-86-spectral-asymptotics-of-matrix-geometric-tails.md).
 - Chapter 87: [Monotone Construction of the Rate Matrix](Chapter87.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-87-monotone-rate-matrix-iteration.md).
 - Chapter 88: [Newton Linearization for Matrix Rate Equations](Chapter88.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-88-newton-methods-for-matrix-rate-equations.md).

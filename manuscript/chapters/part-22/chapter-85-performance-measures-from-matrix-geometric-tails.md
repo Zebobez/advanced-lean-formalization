@@ -333,6 +333,99 @@ The second moment is
 
 and \(\operatorname{Var}(L)=16/9-(2/3)^2=4/3\). At a high threshold, the second phase dominates the tail because its decay factor \(1/2\) is larger than \(1/4\). The phase mixture is invisible if one retains only the average level.
 
+### 6.1 An executable two-phase performance certificate
+
+For the example above, R is diagonal with decay factors 1/4 and 1/2, and the boundary vector has entries 3/8 and 1/4. Each phase contributes total mass 1/2. The code checks the resulting tail at level three, shows that successive scalar tail ratios differ, and verifies the probability generating function and the first two moments as exact rational expressions. The closed forms use the scalar geometric-series and moment identities from Sections 2–3; this certificate checks their arithmetic, not the analytic convergence argument.
+
+```lean
+def phaseAInitialMass : ℚ := 3 / 8
+def phaseBInitialMass : ℚ := 1 / 4
+def phaseADecay : ℚ := 1 / 4
+def phaseBDecay : ℚ := 1 / 2
+
+def phaseATail (k : Nat) : ℚ := (1 / 2) * phaseADecay ^ k
+def phaseBTail (k : Nat) : ℚ := (1 / 2) * phaseBDecay ^ k
+def twoPhaseTail (k : Nat) : ℚ := phaseATail k + phaseBTail k
+
+def phaseAMeanContribution : ℚ :=
+  (1 / 2) * phaseADecay / (1 - phaseADecay)
+def phaseBMeanContribution : ℚ :=
+  (1 / 2) * phaseBDecay / (1 - phaseBDecay)
+def twoPhaseMean : ℚ := phaseAMeanContribution + phaseBMeanContribution
+
+def phaseASecondContribution : ℚ :=
+  (1 / 2) * phaseADecay * (1 + phaseADecay) / (1 - phaseADecay) ^ 2
+def phaseBSecondContribution : ℚ :=
+  (1 / 2) * phaseBDecay * (1 + phaseBDecay) / (1 - phaseBDecay) ^ 2
+def twoPhaseSecondMoment : ℚ := phaseASecondContribution + phaseBSecondContribution
+def twoPhaseVariance : ℚ := twoPhaseSecondMoment - twoPhaseMean ^ 2
+
+def twoPhasePGF (z : ℚ) : ℚ :=
+  (3 / 8) / (1 - z / 4) + (1 / 4) / (1 - z / 2)
+
+theorem phaseA_stationary_mass : phaseAInitialMass / (1 - phaseADecay) = 1 / 2 := by
+  norm_num [phaseAInitialMass, phaseADecay]
+
+theorem phaseB_stationary_mass : phaseBInitialMass / (1 - phaseBDecay) = 1 / 2 := by
+  norm_num [phaseBInitialMass, phaseBDecay]
+
+theorem twoPhase_total_mass :
+    phaseAInitialMass / (1 - phaseADecay) +
+      phaseBInitialMass / (1 - phaseBDecay) = 1 := by
+  rw [phaseA_stationary_mass, phaseB_stationary_mass]
+  norm_num
+
+theorem phaseATail_succ (k : Nat) : phaseATail (k + 1) = phaseATail k / 4 := by
+  unfold phaseATail phaseADecay
+  rw [pow_succ]
+  ring
+
+theorem phaseBTail_succ (k : Nat) : phaseBTail (k + 1) = phaseBTail k / 2 := by
+  unfold phaseBTail phaseBDecay
+  rw [pow_succ]
+  ring
+
+theorem twoPhase_tail_at_three : twoPhaseTail 3 = 9 / 128 := by
+  norm_num [twoPhaseTail, phaseATail, phaseBTail, phaseADecay, phaseBDecay]
+
+theorem twoPhase_tail_ratios_differ :
+    twoPhaseTail 1 / twoPhaseTail 0 ≠ twoPhaseTail 2 / twoPhaseTail 1 := by
+  norm_num [twoPhaseTail, phaseATail, phaseBTail, phaseADecay, phaseBDecay]
+
+theorem twoPhase_pgf_at_one : twoPhasePGF 1 = 1 := by
+  norm_num [twoPhasePGF]
+
+theorem phaseA_mean_is_one_sixth : phaseAMeanContribution = 1 / 6 := by
+  norm_num [phaseAMeanContribution, phaseADecay]
+
+theorem phaseB_mean_is_one_half : phaseBMeanContribution = 1 / 2 := by
+  norm_num [phaseBMeanContribution, phaseBDecay]
+
+theorem twoPhase_mean_is_two_thirds : twoPhaseMean = 2 / 3 := by
+  rw [twoPhaseMean, phaseA_mean_is_one_sixth, phaseB_mean_is_one_half]
+  norm_num
+
+theorem phaseA_second_moment_is_five_eighteenths :
+    phaseASecondContribution = 5 / 18 := by
+  norm_num [phaseASecondContribution, phaseADecay]
+
+theorem phaseB_second_moment_is_three_halves :
+    phaseBSecondContribution = 3 / 2 := by
+  norm_num [phaseBSecondContribution, phaseBDecay]
+
+theorem twoPhase_second_moment_is_sixteen_ninths : twoPhaseSecondMoment = 16 / 9 := by
+  rw [twoPhaseSecondMoment, phaseA_second_moment_is_five_eighteenths,
+    phaseB_second_moment_is_three_halves]
+  norm_num
+
+theorem twoPhase_variance_is_four_thirds : twoPhaseVariance = 4 / 3 := by
+  rw [twoPhaseVariance, twoPhase_second_moment_is_sixteen_ninths,
+    twoPhase_mean_is_two_thirds]
+  norm_num
+```
+
+The differing ratios are a concrete check that a phase mixture can have a tail that is not scalar-geometric even though each conditional phase tail is geometric. The moment calculation also preserves the distinction between the second moment (16/9) and the variance (4/3).
+
 ## 7. Lean proof architecture
 
 ### 7.1 Separate representation from normalization
