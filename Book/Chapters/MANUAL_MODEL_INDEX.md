@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 22 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 21 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 97: [Adaptive Subgradients and AdaGrad](Chapter97.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-97-adaptive-subgradients-and-adagrad.md).
 - Chapter 98: [Frank–Wolfe and Projection-Free Optimization](Chapter98.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-98-frank-wolfe-and-projection-free-optimization.md).
 - Chapter 99: [Away-Step Frank–Wolfe and Linear Convergence](Chapter99.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-99-away-step-frank-wolfe.md).
 - Chapter 100: [Fully Corrective Frank–Wolfe and Active-Set Optimization](Chapter100.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-100-fully-corrective-frank-wolfe.md).

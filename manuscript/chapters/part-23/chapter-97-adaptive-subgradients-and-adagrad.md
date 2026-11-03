@@ -240,6 +240,43 @@ def adaScale {d : ℕ} (δ : ℝ)
 ~~~
 
 Prove positivity from \(\delta>0\) and monotonicity by extending the finite sum with one nonnegative square. Package these facts before defining the weighted norm. The metric's positive definiteness is what makes the proximal objective strictly convex and the inverse diagonal weights meaningful.
+In the executable version below, `Finset.range t` represents the first `t` gradient observations using zero-based indexing. The stabilizer makes each scale positive, and appending one squared coordinate makes it monotone.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+def accumulatedSquares : Nat := 3 * 3 + 4 * 4
+
+theorem adagrad_accumulator_example : accumulatedSquares = 25 := by decide
+
+theorem accumulator_is_nonnegative : 0 ≤ accumulatedSquares := by omega
+
+noncomputable def adagradScale97 {d : Nat} (delta : ℝ)
+    (g : Nat → Fin d → ℝ) (t : Nat) (i : Fin d) : ℝ :=
+  Real.sqrt (delta ^ 2 + ∑ s ∈ Finset.range t, (g s i) ^ 2)
+
+theorem adagradScale97_pos {d : Nat} (delta : ℝ)
+    (g : Nat → Fin d → ℝ) (t : Nat) (i : Fin d) (hδ : 0 < delta) :
+    0 < adagradScale97 delta g t i := by
+  unfold adagradScale97
+  apply Real.sqrt_pos.2
+  have hsum : 0 ≤ ∑ s ∈ Finset.range t, (g s i) ^ 2 := by
+    apply Finset.sum_nonneg
+    intro s hs
+    exact sq_nonneg _
+  have hδsq : 0 < delta ^ 2 := sq_pos_of_pos hδ
+  nlinarith
+
+theorem adagradScale97_succ_mono {d : Nat} (delta : ℝ)
+    (g : Nat → Fin d → ℝ) (t : Nat) (i : Fin d) :
+    adagradScale97 delta g t i ≤ adagradScale97 delta g (t + 1) i := by
+  unfold adagradScale97
+  apply Real.sqrt_le_sqrt
+  rw [Finset.sum_range_succ]
+  nlinarith [sq_nonneg (g t i)]
+```
 
 ### 6.2 Separate the update certificate from metric growth
 
