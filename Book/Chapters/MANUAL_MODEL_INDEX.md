@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 36 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 35 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 83: [M/G/1-Type Chains and Batch Arrivals](Chapter83.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-83-mg1-type-chains-and-batch-arrivals.md).
 - Chapter 84: [GI/M/1-Type Chains and Geometric Stationary Tails](Chapter84.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-84-gi-m1-type-chains-and-geometric-tails.md).
 - Chapter 85: [Performance Measures from Matrix-Geometric Tails](Chapter85.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-85-performance-measures-from-matrix-geometric-tails.md).
 - Chapter 86: [Spectral Asymptotics of Matrix-Geometric Tails](Chapter86.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-86-spectral-asymptotics-of-matrix-geometric-tails.md).
