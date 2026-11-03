@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 40 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 39 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 79: [Quasi-Birth–Death Processes and Matrix-Analytic Methods](Chapter79.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-79-quasi-birth-death-processes.md).
 - Chapter 80: [Certified Computation for Matrix-Geometric Tails](Chapter80.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-80-certified-computation-qbd.md).
 - Chapter 81: [Markovian Arrival Processes and MAP/M/1 Queues](Chapter81.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-81-markovian-arrivals-map-m1.md).
 - Chapter 82: [Phase-Type Service and MAP/PH/1 Queues](Chapter82.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-82-phase-type-service-map-ph1.md).

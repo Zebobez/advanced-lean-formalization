@@ -353,6 +353,78 @@ The final layer connects level blocks to a probability measure on \(\mathbb N\ti
 
 If the development begins with finite approximations, do not silently identify the stationary law of a truncated chain with that of the infinite QBD. Truncation changes the top boundary. A convergence theorem is needed before a finite-capacity computation can justify an infinite-state claim.
 
+### 9.4 An exact two-phase recurrence certificate
+
+The next certificate isolates the finite-dimensional algebra in (79.5). For arbitrary matrices, the level-(k+2) recurrence residual factors as (R^k) times the rate-matrix polynomial. This is the precise algebraic step behind the substitution in Section 3; it preserves the displayed matrix order.
+
+The concrete blocks use two phases. In each interior row, the upward, within-level, and downward blocks sum to zero. The rate matrix is entrywise nonnegative and nilpotent, and its quadratic residual is exactly zero. This is an interior block certificate only: we do not specify a boundary or claim that it defines a normalized stationary law.
+
+```lean
+abbrev QBDMatrix := Matrix (Fin 2) (Fin 2) ℚ
+
+def qbdInteriorPolynomial (Aup Amid Adown R : QBDMatrix) : QBDMatrix :=
+  Aup + R * Amid + R ^ 2 * Adown
+
+def qbdInteriorResidual (Aup Amid Adown R : QBDMatrix) (k : Nat) : QBDMatrix :=
+  R ^ k * Aup + R ^ (k + 1) * Amid + R ^ (k + 2) * Adown
+
+theorem qbdInteriorResidual_factorization
+    (Aup Amid Adown R : QBDMatrix) (k : Nat) :
+    qbdInteriorResidual Aup Amid Adown R k =
+      R ^ k * qbdInteriorPolynomial Aup Amid Adown R := by
+  unfold qbdInteriorResidual qbdInteriorPolynomial
+  have h1 : R ^ (k + 1) = R ^ k * R := by rw [pow_succ]
+  have h2 : R ^ (k + 2) = R ^ k * R ^ 2 := by rw [pow_add]
+  rw [h1, h2]
+  noncomm_ring
+
+def qbdUp : QBDMatrix := !![0, 1; 0, 0]
+def qbdWithin : QBDMatrix := !![-2, 0; 0, -2]
+def qbdDown : QBDMatrix := !![1, 0; 0, 2]
+def qbdRate : QBDMatrix := !![0, (1 : ℚ) / 2; 0, 0]
+
+theorem qbdRate_solves_polynomial :
+    qbdInteriorPolynomial qbdUp qbdWithin qbdDown qbdRate = 0 := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    norm_num [qbdInteriorPolynomial, qbdUp, qbdWithin, qbdDown, qbdRate,
+      pow_two, Matrix.mul_apply]
+
+theorem qbdRate_square_zero : qbdRate ^ 2 = 0 := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    norm_num [qbdRate, pow_two, Matrix.mul_apply]
+
+theorem qbdInteriorResidual_zero (k : Nat) :
+    qbdInteriorResidual qbdUp qbdWithin qbdDown qbdRate k = 0 := by
+  rw [qbdInteriorResidual_factorization, qbdRate_solves_polynomial]
+  simp
+
+theorem qbdUp_nonnegative : ∀ i j, 0 ≤ qbdUp i j := by
+  intro i j
+  fin_cases i <;> fin_cases j <;> norm_num [qbdUp]
+
+theorem qbdDown_nonnegative : ∀ i j, 0 ≤ qbdDown i j := by
+  intro i j
+  fin_cases i <;> fin_cases j <;> norm_num [qbdDown]
+
+theorem qbdRate_nonnegative : ∀ i j, 0 ≤ qbdRate i j := by
+  intro i j
+  fin_cases i <;> fin_cases j <;> norm_num [qbdRate]
+
+theorem qbdWithin_offDiagonal_nonnegative :
+    ∀ i j, i ≠ j → 0 ≤ qbdWithin i j := by
+  intro i j hij
+  fin_cases i <;> fin_cases j <;> norm_num [qbdWithin] at *
+
+theorem qbdInterior_row_sum_zero (i : Fin 2) :
+    ∑ j : Fin 2, (qbdUp + qbdWithin + qbdDown) i j = 0 := by
+  fin_cases i <;>
+    norm_num [qbdUp, qbdWithin, qbdDown, Matrix.add_apply]
+```
+
+Because (R^2=0), this particular tail truncates after the first two powers, independently of spectral-radius estimates. That finite-support feature is a property of the example, not a general QBD theorem; the general normalization argument still requires a convergence hypothesis such as (79.7).
+
 ## 10. Common failure modes
 
 1. **Reversing source and target blocks.** The balance equation at target level \(n\) receives from \(n-1\) through \(A_1\) and from \(n+1\) through \(A_{-1}\).
