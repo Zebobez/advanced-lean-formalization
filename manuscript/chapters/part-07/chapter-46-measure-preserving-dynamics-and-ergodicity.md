@@ -205,6 +205,74 @@ Poincaré recurrence follows from finite measure preservation; ergodicity is not
 12. Explain why neighborhood recurrence needs a countability argument after pointwise recurrence is known.
 13. For an almost-everywhere invariant real-valued function, describe how rational threshold sets can reveal essential constancy.
 
+## 13. Lean formalization
+
+The original finite-weight example records the two-state rotation without
+introducing measure theory. The following API wrappers then state the
+measure-theoretic composition and iterate results directly.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def rotation (s : State) : State := if s = zero then one else zero
+def rotatedUniformMass (s : State) : Nat := uniformWeight (rotation s)
+
+theorem rotationPreservesMassAtZero : rotatedUniformMass zero = 1 := by decide
+theorem rotationPreservesMassAtOne : rotatedUniformMass one = 1 := by decide
+```
+
+```lean
+import Mathlib.Dynamics.Ergodic.MeasurePreserving
+
+open MeasureTheory
+
+theorem exercise_46_1_measure_preserving_comp
+    {α β γ : Type*} [MeasurableSpace α] [MeasurableSpace β] [MeasurableSpace γ]
+    {μ : Measure α} {ν : Measure β} {ξ : Measure γ}
+    {f : α → β} {g : β → γ}
+    (hg : MeasurePreserving g ν ξ) (hf : MeasurePreserving f μ ν) :
+    MeasurePreserving (g ∘ f) μ ξ :=
+  hg.comp hf
+
+theorem exercise_46_1_measure_preserving_iterate
+    {α : Type*} [MeasurableSpace α] {μ : Measure α} {f : α → α}
+    (hf : MeasurePreserving f μ μ) (n : ℕ) :
+    MeasurePreserving f^[n] μ μ :=
+  hf.iterate n
+```
+
+Ergodicity acts on sets modulo null sets. Its invariant-function consequence
+requires almost-everywhere strong measurability and a metrizable codomain.
+
+```lean
+import Mathlib.Dynamics.Ergodic.Function
+import Mathlib.Dynamics.Ergodic.Conservative
+
+open Filter MeasureTheory
+
+theorem exercise_46_2_ergodic_set_is_ae_trivial
+    {α : Type*} [MeasurableSpace α] {μ : Measure α} {f : α → α}
+    (h : Ergodic f μ) {s : Set α}
+    (hs : NullMeasurableSet s μ) (hinv : f ⁻¹' s =ᵐ[μ] s) :
+    s =ᵐ[μ] ∅ ∨ s =ᵐ[μ] Set.univ :=
+  h.toPreErgodic.ae_empty_or_univ hs hinv
+
+theorem exercise_46_5_invariant_observable_is_ae_constant
+    {α : Type*} [MeasurableSpace α] {μ : Measure α} {f : α → α}
+    (h : Ergodic f μ) {g : α → ℝ}
+    (hgm : AEStronglyMeasurable g μ) (hinv : g ∘ f =ᵐ[μ] g) :
+    ∃ c, g =ᵐ[μ] fun _ => c :=
+  h.ae_eq_const_of_ae_eq_comp_ae hgm hinv
+
+theorem exercise_46_6_finite_measure_preserving_is_conservative
+    {α : Type*} [MeasurableSpace α] {μ : Measure α} [IsFiniteMeasure μ]
+    {f : α → α} (hf : MeasurePreserving f μ μ) :
+    Conservative f μ :=
+  hf.conservative
+```
+
 ## Summary
 
 Measure preservation means `Measure.map f μ = μ`. Ergodicity adds that every almost-invariant measurable set is null or conull. On finite cyclic spaces this reduces to a single orbit, while invariant measurable functions are almost everywhere constant. Finite measure preservation also yields conservativity and Poincaré recurrence. Ergodicity remains distinct from mixing and convergence of averages, so each long-term conclusion needs its own theorem and assumptions.

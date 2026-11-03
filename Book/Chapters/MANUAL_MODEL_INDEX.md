@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 72 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 71 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 46: [Measure-Preserving Dynamics and Ergodicity](Chapter46.lean) — manuscript: [source](../../manuscript/chapters/part-07/chapter-46-measure-preserving-dynamics-and-ergodicity.md).
 - Chapter 47: [Ergodic Averages and Empirical Measures](Chapter47.lean) — manuscript: [source](../../manuscript/chapters/part-07/chapter-47-ergodic-averages-and-empirical-measures.md).
 - Chapter 48: [Total Variation and Markov Chain Convergence](Chapter48.lean) — manuscript: [source](../../manuscript/chapters/part-08/chapter-48-total-variation-and-markov-chain-convergence.md).
 - Chapter 49: [Metropolis–Hastings and Detailed Balance](Chapter49.lean) — manuscript: [source](../../manuscript/chapters/part-09/chapter-49-metropolis-hastings-and-detailed-balance.md).
