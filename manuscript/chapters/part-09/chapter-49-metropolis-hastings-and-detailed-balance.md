@@ -266,6 +266,78 @@ Invariance describes marginals when started in stationarity; it does not bound f
 9. Explain how the finite detailed-balance proof is lifted to `Kernel.IsReversible`.
 10. Locate `Kernel.IsReversible.invariant` in Mathlib's documentation.
 
+## 13. Lean formalization
+
+The central scalar lemma below turns the minimum-of-flows formula into a symmetric weighted flow.
+The positivity assumption on the current state's target weight justifies cancellation of its
+denominator. The rational example checks the asymmetric two-state chain exactly, and the final
+wrapper records the library-level consequence that reversibility implies invariance for a Markov
+kernel.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def acceptProposal (proposal target : Nat) : Nat :=
+  if proposal ≤ target then proposal else target
+
+theorem symmetricMinimumAcceptsTheSmallerWeight : acceptProposal 2 1 = 1 := by decide
+```
+
+```lean
+theorem exercise_49_3_weighted_acceptance_flow
+    (wx wy qxy qyx : ℝ) (hwx : 0 < wx) :
+    wx * min qxy (wy * qyx / wx) = min (wx * qxy) (wy * qyx) := by
+  calc
+    wx * min qxy (wy * qyx / wx) =
+        min (wx * qxy) (wx * (wy * qyx / wx)) := by
+      rw [mul_min_of_nonneg qxy (wy * qyx / wx) hwx.le]
+    _ = min (wx * qxy) (wy * qyx) := by
+      congr 1
+      field_simp
+
+theorem exercise_49_3_weighted_flow_symmetric
+    (wx wy qxy qyx : ℝ) (hwx : 0 < wx) (hwy : 0 < wy) :
+    wx * min qxy (wy * qyx / wx) = wy * min qyx (wx * qxy / wy) := by
+  calc
+    wx * min qxy (wy * qyx / wx) = min (wx * qxy) (wy * qyx) :=
+      exercise_49_3_weighted_acceptance_flow wx wy qxy qyx hwx
+    _ = min (wy * qyx) (wx * qxy) := min_comm _ _
+    _ = wy * min qyx (wx * qxy / wy) :=
+      (exercise_49_3_weighted_acceptance_flow wy wx qyx qxy hwy).symm
+
+def mhAcceptanceRational (wx wy qxy qyx : ℚ) : ℚ :=
+  min qxy (wy * qyx / wx)
+
+theorem exercise_49_4_forward_acceptance :
+    mhAcceptanceRational 1 3 1 1 = 1 := by
+  norm_num [mhAcceptanceRational]
+
+theorem exercise_49_4_reverse_acceptance :
+    mhAcceptanceRational 3 1 1 1 = 1 / 3 := by
+  norm_num [mhAcceptanceRational]
+
+theorem exercise_49_4_detailed_balance :
+    1 * mhAcceptanceRational 1 3 1 1 =
+      3 * mhAcceptanceRational 3 1 1 1 := by
+  norm_num [mhAcceptanceRational]
+
+theorem exercise_49_5_one_way_proposal_is_rejected
+    (wx wy qxy : ℝ) (hqxy : 0 ≤ qxy) :
+    min qxy (wy * (0 : ℝ) / wx) = 0 := by
+  simp [hqxy]
+```
+
+```lean
+theorem exercise_49_10_reversible_markov_kernel_is_invariant
+    {α : Type*} [MeasurableSpace α] {κ : ProbabilityTheory.Kernel α α}
+    [ProbabilityTheory.IsMarkovKernel κ] {π : MeasureTheory.Measure α}
+    (hrev : ProbabilityTheory.Kernel.IsReversible κ π) :
+    ProbabilityTheory.Kernel.Invariant κ π :=
+  hrev.invariant
+```
+
 ## Summary
 
 Metropolis–Hastings adjusts a proposal so that the target-weighted flow in each direction is the same. The finite off-diagonal transition is the minimum of the two opposing weighted proposal flows, and a leftover diagonal term makes each row stochastic. Reversibility then gives invariance through Mathlib's kernel theorem. Support, aperiodicity, and convergence remain separate obligations; correctness of the stationary law alone is not a guarantee that a finite run has mixed.

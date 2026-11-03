@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 69 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 68 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 49: [Metropolis–Hastings and Detailed Balance](Chapter49.lean) — manuscript: [source](../../manuscript/chapters/part-09/chapter-49-metropolis-hastings-and-detailed-balance.md).
 - Chapter 50: [Gibbs Sampling and Conditional Kernels](Chapter50.lean) — manuscript: [source](../../manuscript/chapters/part-09/chapter-50-gibbs-sampling-and-conditional-kernels.md).
 - Chapter 51: [Importance Sampling and Change of Measure](Chapter51.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-51-importance-sampling-and-change-of-measure.md).
 - Chapter 52: [Variance and Monte Carlo Error Bounds](Chapter52.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-52-variance-and-monte-carlo-error.md).
