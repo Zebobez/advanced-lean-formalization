@@ -347,6 +347,52 @@ The ambient completeness assumption is not needed to verify a proposed candidate
 
 Then prove a generic lemma: every candidate satisfying the certificate is the unique projection. The optimizer can compute a candidate by a closed form, numerical method, or recursive routine; Lean checks the certificate. This mirrors Chapter 89's division between numerical discovery and a small verifiable witness.
 
+The following interface packages the candidate certificate and checks it against Mathlib’s convex projection characterization. The nearest-point equivalence needs convexity. Uniqueness follows from the two candidate inequalities and positive definiteness of the inner product, so the uniqueness theorem itself does not assume convexity.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+theorem projected_step_keeps_first_feasible : projectedStep first = first := by decide
+
+theorem projected_step_reaches_minimum_from_middle : projectedStep middle = last := by decide
+
+def IsProjectionCandidate {E : Type*}
+    [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    (C : Set E) (z p : E) : Prop :=
+  p ∈ C ∧ ∀ y ∈ C, inner ℝ (z - p) (y - p) ≤ 0
+
+theorem projection_candidate_is_nearest
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    {C : Set E} (hC : Convex ℝ C) {z p : E}
+    (hp : IsProjectionCandidate C z p) :
+    ‖z - p‖ = ⨅ y : C, ‖z - y‖ := by
+  exact (norm_eq_iInf_iff_real_inner_le_zero hC hp.1).2 hp.2
+
+theorem projection_candidate_unique
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    {C : Set E} {z p q : E}
+    (hp : IsProjectionCandidate C z p)
+    (hq : IsProjectionCandidate C z q) :
+    p = q := by
+  have h₁ := hp.2 q hq.1
+  have h₂ := hq.2 p hp.1
+  have hidentity :
+      inner ℝ (q - p) (q - p) =
+        inner ℝ (z - p) (q - p) + inner ℝ (z - q) (p - q) := by
+    simp only [inner_sub_left, inner_sub_right]
+    ring
+  have hinner : inner ℝ (q - p) (q - p) ≤ 0 := by
+    rw [hidentity]
+    exact add_nonpos h₁ h₂
+  have hnorm_sq : ‖q - p‖ ^ 2 ≤ 0 := by
+    rwa [← real_inner_self_eq_norm_sq]
+  have hnorm_zero : ‖q - p‖ = 0 := by
+    nlinarith [sq_nonneg (‖q - p‖)]
+  exact (sub_eq_zero.mp (norm_eq_zero.mp hnorm_zero)).symm
+```
+
 ### 4.3 Represent proximal operators by their minimization property
 
 For a general extended-real-valued \(g\), defining the proximal map as a function requires existence for every input and a choice of a minimizer. A theorem about an arbitrary minimizer can often avoid this choice:
