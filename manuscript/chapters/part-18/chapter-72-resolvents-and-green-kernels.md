@@ -297,3 +297,91 @@ The finite-state resolvent is the exponentially discounted integral of a transit
 - Chapters 58–60 and 69 for generator identities, killed semigroups, spectral gaps, and Poisson response.
 - [Mathlib’s nonsingular matrix inverse documentation](https://leanprover-community.github.io/mathlib4_docs/Mathlib/LinearAlgebra/Matrix/NonsingularInverse.html).
 - [Mathlib’s adjugate documentation](https://leanprover-community.github.io/mathlib4_docs/Mathlib/LinearAlgebra/Matrix/Adjugate.html).
+
+## 12. Lean formalization: the two-state resolvent matrix
+
+For rates `a` and `b` and discount `α`, the inverse of `αI - Q` has denominator `α(α+a+b)` and numerator entries `α+b`, `a`, `b`, and `α+a`. We verify the four matrix-product equations over the rationals, then check that each resolvent row sums to `1/α`. These identities formalize the inverse-matrix and discounted-occupation sanity checks from Section 3 without requiring a general matrix inverse theorem.
+
+The earlier finite kernel calculation is retained.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def truncatedGreenMass : Nat :=
+  rowMass identityKernel zero + rowMass flipKernel zero
+
+theorem twoTermGreenCalculation : truncatedGreenMass = 4 := by decide
+```
+
+We state the entries explicitly. Positivity of the discount and nonnegative jump rates guarantees that the common denominator is positive, so every rational expression below is defined.
+
+```lean
+def resolvent00 (α a b : ℚ) : ℚ := (α + b) / (α * (α + a + b))
+def resolvent01 (α a b : ℚ) : ℚ := a / (α * (α + a + b))
+def resolvent10 (α a b : ℚ) : ℚ := b / (α * (α + a + b))
+def resolvent11 (α a b : ℚ) : ℚ := (α + a) / (α * (α + a + b))
+
+theorem resolvent_denominator_positive (α a b : ℚ)
+    (hα : 0 < α) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    0 < α * (α + a + b) := by
+  apply mul_pos hα
+  positivity
+
+theorem resolvent_left_product_00 (α a b : ℚ)
+    (hα : 0 < α) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    (α + a) * resolvent00 α a b - a * resolvent10 α a b = 1 := by
+  have hα' : α ≠ 0 := ne_of_gt hα
+  have hsum : 0 < α + a + b := by positivity
+  unfold resolvent00 resolvent10
+  field_simp [hα', ne_of_gt hsum]
+  ring
+
+theorem resolvent_left_product_01 (α a b : ℚ)
+    (hα : 0 < α) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    (α + a) * resolvent01 α a b - a * resolvent11 α a b = 0 := by
+  have hα' : α ≠ 0 := ne_of_gt hα
+  have hsum : 0 < α + a + b := by positivity
+  unfold resolvent01 resolvent11
+  field_simp [hα', ne_of_gt hsum]
+  ring
+
+theorem resolvent_left_product_10 (α a b : ℚ)
+    (hα : 0 < α) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    -b * resolvent00 α a b + (α + b) * resolvent10 α a b = 0 := by
+  have hα' : α ≠ 0 := ne_of_gt hα
+  have hsum : 0 < α + a + b := by positivity
+  unfold resolvent00 resolvent10
+  field_simp [hα', ne_of_gt hsum]
+  ring
+
+theorem resolvent_left_product_11 (α a b : ℚ)
+    (hα : 0 < α) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    -b * resolvent01 α a b + (α + b) * resolvent11 α a b = 1 := by
+  have hα' : α ≠ 0 := ne_of_gt hα
+  have hsum : 0 < α + a + b := by positivity
+  unfold resolvent01 resolvent11
+  field_simp [hα', ne_of_gt hsum]
+  ring
+
+theorem resolvent_row_sum_zero (α a b : ℚ)
+    (hα : 0 < α) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    resolvent00 α a b + resolvent01 α a b = 1 / α := by
+  have hα' : α ≠ 0 := ne_of_gt hα
+  have hsum : 0 < α + a + b := by positivity
+  unfold resolvent00 resolvent01
+  field_simp [hα', ne_of_gt hsum]
+  ring
+
+theorem resolvent_row_sum_one (α a b : ℚ)
+    (hα : 0 < α) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    resolvent10 α a b + resolvent11 α a b = 1 / α := by
+  have hα' : α ≠ 0 := ne_of_gt hα
+  have hsum : 0 < α + a + b := by positivity
+  unfold resolvent10 resolvent11
+  field_simp [hα', ne_of_gt hsum]
+  ring
+```
+
+The four product equations certify that the displayed matrix is a two-sided inverse candidate for `αI-Q` on the left. The row-sum identities show that applying the resolvent to the constant observable gives `1/α`, exactly the total discounted time. The integral representation, positivity for arbitrary nonnegative observables, and its convergence remain separate semigroup results.
