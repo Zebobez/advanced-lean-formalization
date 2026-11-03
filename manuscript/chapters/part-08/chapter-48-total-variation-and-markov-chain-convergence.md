@@ -314,6 +314,60 @@ Irreducibility and stationarity can hold while distributions oscillate. Check th
 11. Derive a mixing-time bound from an `m`-step geometric contraction.
 12. Locate the basic `tvDist` metric and finite-partition characterization in Mathlib's documentation.
 
+## 13. Lean formalization
+
+The first block retains the finite weight-vector calculation from the initial version of this
+chapter. The second block states the general metric facts with the hypotheses that Mathlib requires.
+The final theorem computes the distance between arbitrary distinct Dirac measures on a space with
+measurable singletons. Its proof first exhibits a measurable set separating their supports, then
+uses Mathlib's mutually singular formula. This makes the factor-of-two convention executable rather
+than leaving it as an informal normalization claim.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def pointMassZero : Weight := fun s => if s = zero then 1 else 0
+def pointMassOne : Weight := fun s => if s = one then 1 else 0
+def absoluteMassDifference (a b : Nat) : Nat := (a - b) + (b - a)
+def totalVariationNumerator : Nat :=
+  absoluteMassDifference (pointMassZero zero) (pointMassOne zero) +
+  absoluteMassDifference (pointMassZero one) (pointMassOne one)
+
+theorem distinctPointMassesHaveDistanceTwo : totalVariationNumerator = 2 := by decide
+```
+
+```lean
+theorem exercise_48_1_tvDist_triangle
+    {X : Type*} [MeasurableSpace X]
+    (μ ν ξ : MeasureTheory.Measure X) [MeasureTheory.IsFiniteMeasure ν] :
+    MeasureTheory.tvDist μ ξ ≤
+      MeasureTheory.tvDist μ ν + MeasureTheory.tvDist ν ξ :=
+  MeasureTheory.tvDist_triangle μ ν ξ
+
+theorem exercise_48_12_tvDist_zero_characterization
+    {X : Type*} [MeasurableSpace X]
+    (μ ν : MeasureTheory.Measure X)
+    [MeasureTheory.IsFiniteMeasure μ] [MeasureTheory.IsFiniteMeasure ν] :
+    MeasureTheory.tvDist μ ν = 0 ↔ μ = ν :=
+  MeasureTheory.tvDist_eq_zero_iff
+
+theorem tvDist_distinct_dirac_eq_two
+    {X : Type*} [MeasurableSpace X] [MeasurableSingletonClass X]
+    {x y : X} (hxy : x ≠ y) :
+    MeasureTheory.tvDist (MeasureTheory.Measure.dirac x)
+      (MeasureTheory.Measure.dirac y) = 2 := by
+  have hsingular :
+      MeasureTheory.Measure.MutuallySingular
+        (MeasureTheory.Measure.dirac x) (MeasureTheory.Measure.dirac y) := by
+    refine ⟨{y}, MeasurableSet.singleton y, ?_, ?_⟩
+    · simp [hxy]
+    · simp
+  rw [MeasureTheory.tvDist_of_mutuallySingular hsingular]
+  norm_num
+```
+
 ## Summary
 
 Total variation quantifies how distinguishable two laws are. Mathlib's `tvDist` is the unnormalized `ℓ¹` distance for finite probability vectors, so it is twice the common event-supremum convention. Markov kernels are nonexpansive in this metric; minorization yields strict contraction, while couplings convert meeting-time bounds into convergence estimates. Invariance identifies a fixed law, and contraction supplies the quantitative approach to it. These are separate proof obligations that combine only after their constants and hypotheses are explicit.
