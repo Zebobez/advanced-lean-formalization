@@ -271,6 +271,82 @@ An invariant target does not imply irreducibility, aperiodicity, or a finite-tim
 11. Distinguish target invariance, chain convergence, and a Monte Carlo law of large numbers.
 12. Locate `Measure.IsCondKernel` and `Kernel.IsCondKernel` in Mathlib's documentation.
 
+## 13. Lean formalization
+
+The finite calculations below check the conditional probabilities and the detailed-balance pair from
+the worked table. The systematic-scan values provide a concrete witness that the sweep preserves
+the target through composition while failing detailed balance. The final block uses Mathlib's
+measure conditional kernel: it is a Markov kernel and reconstructs the original joint measure from
+the context marginal and conditional law. This is the abstract disintegration boundary behind the
+finite update formulas.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+theorem gibbsUpdateHasUniformRowAtZero : rowMass resetKernel zero = 2 :=
+  reset_zero_row
+
+theorem gibbsUpdateHasUniformRowAtOne : rowMass resetKernel one = 2 :=
+  reset_one_row
+```
+
+```lean
+theorem exercise_50_4_x_given_y_zero :
+    (2 : ℚ) / (1 + 2) = 2 / 3 := by norm_num
+
+theorem exercise_50_4_x_given_y_one :
+    (4 : ℚ) / (3 + 4) = 4 / 7 := by norm_num
+
+theorem exercise_50_4_y_given_x_zero :
+    (3 : ℚ) / (1 + 3) = 3 / 4 := by norm_num
+
+theorem exercise_50_4_y_given_x_one :
+    (4 : ℚ) / (2 + 4) = 2 / 3 := by norm_num
+
+theorem exercise_50_3_first_pair_detailed_balance :
+    (1 : ℚ) / 10 * (2 / 3) = (2 : ℚ) / 10 * (1 / 3) := by
+  norm_num
+
+theorem exercise_50_7_systematic_sweep_forward_flow :
+    (1 : ℚ) / 10 * ((2 : ℚ) / 3 * (1 / 3)) = 1 / 45 := by
+  norm_num
+
+theorem exercise_50_7_systematic_sweep_reverse_flow :
+    (2 : ℚ) / 10 * ((1 : ℚ) / 3 * (1 / 4)) = 1 / 60 := by
+  norm_num
+
+theorem exercise_50_7_systematic_sweep_is_not_reversible_at_pair :
+    (1 : ℚ) / 45 ≠ 1 / 60 := by
+  norm_num
+```
+
+```lean
+open MeasureTheory ProbabilityTheory
+open scoped MeasureTheory
+
+theorem exercise_50_6_invariant_updates_compose
+    {α : Type*} [MeasurableSpace α] {κ η : Kernel α α} {μ : Measure α}
+    (hκ : Kernel.Invariant κ μ) (hη : Kernel.Invariant η μ) :
+    Kernel.Invariant (κ ∘ₖ η) μ :=
+  Kernel.Invariant.comp hκ hη
+
+theorem exercise_50_8_measure_conditional_kernel_is_markov
+    {Y X : Type*} [MeasurableSpace Y] [MeasurableSpace X]
+    [StandardBorelSpace X] [Nonempty X]
+    (ρ : Measure (Y × X)) [IsFiniteMeasure ρ] :
+    IsMarkovKernel (ρ.condKernel : Kernel Y X) := by
+  infer_instance
+
+theorem exercise_50_8_conditional_kernel_reconstructs_joint
+    {Y X : Type*} [MeasurableSpace Y] [MeasurableSpace X]
+    [StandardBorelSpace X] [Nonempty X]
+    (ρ : Measure (Y × X)) [IsFiniteMeasure ρ] :
+    ρ.fst ⊗ₘ ρ.condKernel = ρ :=
+  ρ.disintegrate ρ.condKernel
+```
+
 ## Summary
 
 Gibbs sampling replaces a coordinate or block with a draw from its conditional law. The conditional normalization proves the update is Markov, and factoring joint mass into marginal and conditional terms proves detailed balance. Fixed mixtures of reversible updates stay reversible; systematic compositions stay invariant but may lose reversibility. General conditional kernels arise through disintegration and are identified only almost everywhere at null contexts. As with other MCMC methods, invariance is a correctness property, while support and convergence require separate arguments.

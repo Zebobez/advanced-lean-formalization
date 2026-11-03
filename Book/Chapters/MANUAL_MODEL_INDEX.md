@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 68 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 67 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 50: [Gibbs Sampling and Conditional Kernels](Chapter50.lean) — manuscript: [source](../../manuscript/chapters/part-09/chapter-50-gibbs-sampling-and-conditional-kernels.md).
 - Chapter 51: [Importance Sampling and Change of Measure](Chapter51.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-51-importance-sampling-and-change-of-measure.md).
 - Chapter 52: [Variance and Monte Carlo Error Bounds](Chapter52.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-52-variance-and-monte-carlo-error.md).
 - Chapter 53: [Sequential Importance Sampling and Filtering](Chapter53.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-53-sequential-importance-sampling-and-filtering.md).
