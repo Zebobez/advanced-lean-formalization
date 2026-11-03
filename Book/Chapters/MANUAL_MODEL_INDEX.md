@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 30 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 29 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 89: [Certified Enclosures for Rate Matrices](Chapter89.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-89-certified-rate-matrix-enclosures.md).
 - Chapter 90: [Convexity, Subgradients, and Optimality Certificates](Chapter90.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-90-convexity-subgradients-and-optimality-certificates.md).
 - Chapter 91: [Smooth Convex Optimization and Gradient Descent](Chapter91.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-91-smooth-convex-optimization-and-gradient-descent.md).
 - Chapter 92: [Projected Gradient and Proximal Methods](Chapter92.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-92-projected-gradient-and-proximal-methods.md).
