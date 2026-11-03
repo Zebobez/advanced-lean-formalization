@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 53 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 52 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 66: [Graphical Constructions for Finite Particle Systems](Chapter66.lean) — manuscript: [source](../../manuscript/chapters/part-15/chapter-66-graphical-constructions-for-particle-systems.md).
 - Chapter 67: [Exclusion, Conservation, and Duality](Chapter67.lean) — manuscript: [source](../../manuscript/chapters/part-15/chapter-67-exclusion-conservation-and-duality.md).
 - Chapter 68: [The Markov Chain Tree Theorem](Chapter68.lean) — manuscript: [source](../../manuscript/chapters/part-16/chapter-68-markov-chain-tree-theorem.md).
 - Chapter 69: [Linear Response for Finite Markov Chains](Chapter69.lean) — manuscript: [source](../../manuscript/chapters/part-16/chapter-69-linear-response-for-finite-markov-chains.md).
