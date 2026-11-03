@@ -290,3 +290,80 @@ For a finite-state chain, the semigroup satisfies P_t f−f=∫₀ᵗP_sQf ds. T
 - [Mathlib: Optional sampling](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Probability/Martingale/OptionalSampling.html)
 - [Mathlib: Filtrations](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Probability/Process/Filtration.html)
 - Chapters 32, 35–37, and 55–57 for integration, conditional expectation, filtrations, and continuous-time chains.
+
+## 11. Lean formalization: finite generator calculations
+
+The first block retains the original finite integer-weight example. The next
+blocks use rational rates to prove the indicator drift in the symbolic
+two-state chain and verify the boundary equation for the expected absorption
+time in a one-way chain. These are finite generator calculations. They do not
+by themselves prove Dynkin’s formula or the conditional martingale theorem;
+those require the semigroup, process, and filtration interfaces developed in
+the chapter.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def stateIndicator : State → Int := fun s => if s = zero then 0 else 1
+
+theorem generatorDriftAtZero :
+    generatorAction twoStateGenerator stateIndicator zero = 1 := by decide
+```
+
+For a chain with rate `a` from zero to one and rate `b` from one to zero, the
+generator applied to the indicator of state one has drift `a` at zero and
+`-b` at one.
+
+```lean
+def rationalCTMCGenerator (a b : ℚ) (i j : State) : ℚ :=
+  if i = zero then (if j = zero then -a else a)
+  else if j = zero then b else -b
+
+def rationalGeneratorAction (a b : ℚ) (f : State → ℚ) (i : State) : ℚ :=
+  rationalCTMCGenerator a b i zero * f zero +
+    rationalCTMCGenerator a b i one * f one
+
+def indicatorOneQ (s : State) : ℚ := if s = one then 1 else 0
+
+theorem indicator_one_drift_at_zero (a b : ℚ) :
+    rationalGeneratorAction a b indicatorOneQ zero = a := by
+  simp [rationalGeneratorAction, rationalCTMCGenerator, indicatorOneQ,
+    zero, one]
+
+theorem indicator_one_drift_at_one (a b : ℚ) :
+    rationalGeneratorAction a b indicatorOneQ one = -b := by
+  simp [rationalGeneratorAction, rationalCTMCGenerator, indicatorOneQ,
+    zero, one]
+
+theorem rational_generator_kills_constants (a b c : ℚ) (i : State) :
+    rationalGeneratorAction a b (fun _ => c) i = 0 := by
+  fin_cases i <;>
+    simp [rationalGeneratorAction, rationalCTMCGenerator, zero, one]
+```
+
+For the one-way chain from one to absorbing state zero at rate `d`, the
+function `h(0)=0`, `h(1)=1/d` solves `Qh=-1` away from the absorbing state.
+This is the finite linear equation behind the expected-holding-time example.
+
+```lean
+def oneWayGenerator (d : ℚ) (i j : State) : ℚ :=
+  if i = zero then 0 else if j = zero then d else -d
+
+def oneWayGeneratorAction (d : ℚ) (f : State → ℚ) (i : State) : ℚ :=
+  oneWayGenerator d i zero * f zero + oneWayGenerator d i one * f one
+
+def oneWayAbsorptionPotential (d : ℚ) (i : State) : ℚ :=
+  if i = zero then 0 else 1 / d
+
+theorem one_way_absorption_potential_boundary (d : ℚ) :
+    oneWayAbsorptionPotential d zero = 0 := by
+  simp [oneWayAbsorptionPotential, zero]
+
+theorem one_way_absorption_potential_solves_generator (d : ℚ) (hd : d ≠ 0) :
+    oneWayGeneratorAction d (oneWayAbsorptionPotential d) one = -1 := by
+  simp [oneWayGeneratorAction, oneWayGenerator, oneWayAbsorptionPotential,
+    zero, one]
+  field_simp [hd]
+```
