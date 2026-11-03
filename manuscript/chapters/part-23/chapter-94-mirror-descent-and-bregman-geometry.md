@@ -63,6 +63,36 @@ This identity is the Bregman counterpart of the squared-norm polarization formul
 
 The right side is exactly the cross term that appears when the first-order condition of a proximal minimization is paired with a comparator. This is why the identity is central to mirror-descent proofs.
 
+The Lean example below defines the divergence with the same argument order and proves the identity without any convexity or differentiability hypotheses. Those assumptions are needed for nonnegativity and algorithmic use, but not for this algebraic cancellation.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+def bregmanSquare (x y : Int) : Int := (x - y) * (x - y)
+
+theorem bregman_example_value : bregmanSquare 3 1 = 4 := by decide
+
+theorem bregman_equal_points_vanish (x : Int) : bregmanSquare x x = 0 := by simp [bregmanSquare]
+
+def BregmanDiv {E : Type*}
+    [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    (psi : E → ℝ) (gradPsi : E → E) (x y : E) : ℝ :=
+  psi x - psi y - inner ℝ (gradPsi y) (x - y)
+
+theorem bregman_three_point_identity
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    (psi : E → ℝ) (gradPsi : E → E) (u x p : E) :
+    BregmanDiv psi gradPsi u x - BregmanDiv psi gradPsi u p -
+        BregmanDiv psi gradPsi p x =
+      inner ℝ (gradPsi p - gradPsi x) (u - p) := by
+  unfold BregmanDiv
+  have hux : u - x = (u - p) + (p - x) := by abel
+  rw [hux, inner_add_right, inner_sub_left]
+  ring
+```
+
 ### 1.2 Strong convexity supplies a norm bound
 
 Suppose \(\psi\) is \(\sigma\)-strongly convex with respect to a norm \(\|\cdot\|\), meaning
