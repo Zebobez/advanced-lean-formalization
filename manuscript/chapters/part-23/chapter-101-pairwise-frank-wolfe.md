@@ -167,6 +167,60 @@ The active set changes from \(\{e_1,e_2\}\) to \(\{e_1,e_3\}\), so its size rema
 
 The example explains why support cardinality is an incomplete progress measure for PFW. A formal proof that tracks only \(|S_t|\) will classify this iteration as neither a support growth nor a support decrease, even though both the represented point and the active atom identities change.
 
+The two rational updates can be checked with one transfer function. In the first, the away weight disappears and total mass is preserved. In the second, the old away atom is replaced by a new atom, so support size stays constant.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+theorem pairwise_update_conserves_mass :
+    pairMass (transferOne 2 1).1 (transferOne 2 1).2 = pairMass 2 1 := by decide
+
+theorem pairwise_update_stays_nonnegative : (transferOne 2 1).1 ≥ 0 := by decide
+
+def pairwiseTransfer101 (weights : Fin 3 → ℚ) (away toward : Fin 3)
+    (gamma : ℚ) (i : Fin 3) : ℚ :=
+  if i = away then weights i - gamma
+  else if i = toward then weights i + gamma
+  else weights i
+
+def dropWeights101 : Fin 3 → ℚ := fun i =>
+  if i = 0 then 11 / 20 else if i = 1 then 7 / 20 else 1 / 10
+
+theorem pairwise_drop_update_exact :
+    pairwiseTransfer101 dropWeights101 2 0 (1 / 10) =
+      fun i => if i = 0 then 13 / 20 else if i = 1 then 7 / 20 else 0 := by
+  funext i
+  fin_cases i <;> norm_num [pairwiseTransfer101, dropWeights101]
+
+theorem pairwise_drop_preserves_mass :
+    (∑ i : Fin 3, pairwiseTransfer101 dropWeights101 2 0 (1 / 10) i) = 1 := by
+  norm_num [Fin.sum_univ_succ, pairwiseTransfer101, dropWeights101]
+
+theorem pairwise_drop_removes_away_atom :
+    pairwiseTransfer101 dropWeights101 2 0 (1 / 10) 2 = 0 := by
+  norm_num [pairwiseTransfer101, dropWeights101]
+
+def swapWeights101 : Fin 3 → ℚ := fun i =>
+  if i = 0 then 1 / 5 else if i = 1 then 4 / 5 else 0
+
+theorem pairwise_swap_update_exact :
+    pairwiseTransfer101 swapWeights101 1 2 (4 / 5) =
+      fun i => if i = 0 then 1 / 5 else if i = 1 then 0 else 4 / 5 := by
+  funext i
+  fin_cases i <;> norm_num [pairwiseTransfer101, swapWeights101]
+
+theorem pairwise_swap_preserves_mass :
+    (∑ i : Fin 3, pairwiseTransfer101 swapWeights101 1 2 (4 / 5) i) = 1 := by
+  norm_num [Fin.sum_univ_succ, pairwiseTransfer101, swapWeights101]
+
+theorem pairwise_swap_replaces_away_atom :
+    pairwiseTransfer101 swapWeights101 1 2 (4 / 5) 1 = 0 ∧
+      0 < pairwiseTransfer101 swapWeights101 1 2 (4 / 5) 2 := by
+  norm_num [pairwiseTransfer101, swapWeights101]
+```
+
 ### 3.3 The step bound is representation-dependent
 
 The maximal pairwise step is the chosen coefficient \(\lambda_{v_t}^{(t)}\). It is the largest transfer that keeps the same representation nonnegative while moving mass only from \(v_t\) to \(s_t\). A different convex representation of the same point could give a different away atom or a different maximum step.
