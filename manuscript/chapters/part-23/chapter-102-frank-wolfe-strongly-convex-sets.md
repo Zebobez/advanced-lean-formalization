@@ -217,6 +217,46 @@ The oracle stays closed form, while the curvature parameter is \(1/(4R)\).
 
 As \(p\) approaches \(1\), the parameter \((p-1)/R\) approaches zero, so the \(O(1/t^2)\) guarantee deteriorates. At \(p=1\), the ball has flat faces and becomes a polytope. Chapter 99’s away-step analysis addresses that geometry through active atoms rather than a positive curvature parameter.
 
+For the unit-ball example, the oracle certificate and one-step solution reduce to rational inequalities. Any feasible point has first coordinate at most one, so the oracle chooses `e₁`; the quadratic objective is minimized there, and the line search from the origin clips its unconstrained minimizer to the endpoint.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+def discreteCurvature : Int := Int.ofNat (loss first + loss last) - 2 * Int.ofNat (loss middle)
+
+theorem discrete_curvature_is_positive : 0 < discreteCurvature := by decide
+
+def ballObjective102 (x₁ x₂ : ℚ) : ℚ := ((x₁ - 3) ^ 2 + x₂ ^ 2) / 2
+
+theorem unit_ball_first_coordinate_le_one {x₁ x₂ : ℚ}
+    (hball : x₁ ^ 2 + x₂ ^ 2 ≤ 1) : x₁ ≤ 1 := by
+  nlinarith [sq_nonneg (x₁ - 1), sq_nonneg x₂]
+
+theorem unit_ball_oracle_certificate (s₁ s₂ : ℚ)
+    (hs : s₁ ^ 2 + s₂ ^ 2 ≤ 1) :
+    (-3 : ℚ) ≤ -3 * s₁ := by
+  have hs₁ := unit_ball_first_coordinate_le_one hs
+  nlinarith
+
+theorem unit_ball_target_is_global_minimum (x₁ x₂ : ℚ)
+    (hball : x₁ ^ 2 + x₂ ^ 2 ≤ 1) :
+    ballObjective102 1 0 ≤ ballObjective102 x₁ x₂ := by
+  have hx₁ := unit_ball_first_coordinate_le_one hball
+  have hproduct : 0 ≤ (x₁ - 1) * (x₁ - 5) :=
+    mul_nonneg_of_nonpos_of_nonpos (by linarith) (by linarith)
+  unfold ballObjective102
+  nlinarith [hproduct, sq_nonneg x₂]
+
+theorem unit_ball_line_search_clips_to_endpoint (eta : ℚ) (heta1 : eta ≤ 1) :
+    ballObjective102 1 0 ≤ ballObjective102 eta 0 := by
+  have hproduct : 0 ≤ (eta - 1) * (eta - 5) :=
+    mul_nonneg_of_nonpos_of_nonpos (by linarith) (by linarith)
+  unfold ballObjective102
+  nlinarith [hproduct]
+```
+
 ## 4. Lean proof architecture
 
 ### 4.1 Package the set-curvature property
