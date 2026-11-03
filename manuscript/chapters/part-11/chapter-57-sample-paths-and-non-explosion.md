@@ -228,3 +228,45 @@ The embedded jump chain separates destination choices from state-dependent expon
 - [Mathlib: Adapted and progressively measurable processes](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Probability/Process/Adapted.html)
 - Chapter 56 for the Poisson-mixture formula and the stochastic uniformized matrix.
 - Chapters 36–37 for filtrations, stopping times, and optional sampling.
+
+## 11. Lean formalization: finite candidate-event bounds
+
+The first block retains the alternating two-state path example. The second
+block defines the number of genuine state changes along a finite sequence of
+candidate clock updates and proves that this count is at most the number of
+updates. Applied on a fixed horizon, this is the deterministic part of the
+non-explosion argument. The probability theorem still needs the separate fact
+that the Poisson candidate count is finite almost surely.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def alternatingPath (time : Nat) : State := if time % 2 = 0 then zero else one
+
+theorem pathStartsAtZero : alternatingPath 0 = zero := by decide
+theorem pathMovesToOne : alternatingPath 1 = one := by decide
+```
+
+For a path with `N+1` observed states, there are exactly `N` adjacent pairs
+where a candidate update can change the state. Count the pairs whose endpoint
+states differ; each contributes either zero or one.
+
+```lean
+open scoped BigOperators
+
+def finitePathJumpCount {α : Type*} [DecidableEq α] {N : Nat}
+    (path : Fin (N + 1) → α) : Nat :=
+  ∑ i : Fin N, if path i.castSucc = path i.succ then 0 else 1
+
+theorem genuine_changes_le_candidate_events {α : Type*} [DecidableEq α]
+    {N : Nat} (path : Fin (N + 1) → α) : finitePathJumpCount path ≤ N := by
+  unfold finitePathJumpCount
+  calc
+    _ ≤ ∑ _i : Fin N, (1 : Nat) := by
+      apply Finset.sum_le_sum
+      intro i hi
+      split_ifs <;> omega
+    _ = N := by simp
+```

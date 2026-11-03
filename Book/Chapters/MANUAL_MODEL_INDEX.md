@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 62 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 61 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 57: [Sample Paths and Non-Explosion](Chapter57.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-57-sample-paths-and-non-explosion.md).
 - Chapter 58: [Dynkin’s Formula and Generator Martingales](Chapter58.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-58-dynkins-formula-and-generator-martingales.md).
 - Chapter 59: [Feynman–Kac Semigroups and Killing](Chapter59.lean) — manuscript: [source](../../manuscript/chapters/part-12/chapter-59-feynman-kac-semigroups-and-killing.md).
 - Chapter 60: [Spectral Gaps and Continuous-Time Mixing](Chapter60.lean) — manuscript: [source](../../manuscript/chapters/part-12/chapter-60-spectral-gaps-and-continuous-time-mixing.md).
