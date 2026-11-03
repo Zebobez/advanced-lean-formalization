@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 20 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 19 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 99: [Away-Step Frank–Wolfe and Linear Convergence](Chapter99.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-99-away-step-frank-wolfe.md).
 - Chapter 100: [Fully Corrective Frank–Wolfe and Active-Set Optimization](Chapter100.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-100-fully-corrective-frank-wolfe.md).
 - Chapter 101: [Pairwise Frank–Wolfe and Sparse Support Transfers](Chapter101.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-101-pairwise-frank-wolfe.md).
 - Chapter 102: [Frank–Wolfe over Strongly Convex Sets](Chapter102.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-102-frank-wolfe-strongly-convex-sets.md).

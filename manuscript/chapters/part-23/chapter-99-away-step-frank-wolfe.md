@@ -188,6 +188,41 @@ They remain nonnegative and sum to one. The new iterate is \(0.625a+0.375b\), an
 
 A pairwise Frank–Wolfe step combines the two choices into one direction \(s_t-v_t\). Its maximal step is the away weight \(\lambda_{v_t}^{(t)}\): mass moves directly from the away atom to the toward atom. This variant can preserve sparsity particularly well, but it has swap steps where one weight reaches zero and another is added. Its convergence bookkeeping is more delicate, so the main theorem here concerns AFW.
 
+The following rational calculation checks the three-atom drop step in equation 99.10. It verifies the updated weights explicitly and confirms that they still sum to one.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+theorem away_step_preserves_pair_mass :
+    pairMass (transferOne 1 1).1 (transferOne 1 1).2 = 2 := by decide
+
+theorem away_step_removes_one_unit_from_donor :
+    (transferOne 2 1).1 = 1 := by decide
+
+def awayWeights99 : Fin 3 → ℚ := fun i =>
+  if i = 0 then 1 / 2 else if i = 1 then 3 / 10 else 1 / 5
+
+def awayWeightUpdate99 (weights : Fin 3 → ℚ) (away : Fin 3)
+    (gamma : ℚ) (i : Fin 3) : ℚ :=
+  if i = away then (1 + gamma) * weights i - gamma
+  else (1 + gamma) * weights i
+
+theorem away_weights_initial_sum : (∑ i : Fin 3, awayWeights99 i) = 1 := by
+  norm_num [Fin.sum_univ_succ, awayWeights99]
+
+theorem away_drop_weights_exact :
+    awayWeightUpdate99 awayWeights99 2 (1 / 4) =
+      fun i => if i = 0 then 5 / 8 else if i = 1 then 3 / 8 else 0 := by
+  funext i
+  fin_cases i <;> norm_num [awayWeightUpdate99, awayWeights99]
+
+theorem away_drop_weights_sum :
+    (∑ i : Fin 3, awayWeightUpdate99 awayWeights99 2 (1 / 4) i) = 1 := by
+  norm_num [Fin.sum_univ_succ, awayWeightUpdate99, awayWeights99]
+```
+
 ## 4. Why active-set removal gives a linear rate
 
 ### 4.1 The role of polytope geometry
