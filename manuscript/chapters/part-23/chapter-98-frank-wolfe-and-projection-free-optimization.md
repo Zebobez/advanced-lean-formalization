@@ -72,6 +72,49 @@ Thus a small exact gap certifies a small primal error without knowing \(f(x^\sta
 
 If \(g_{\mathrm{FW}}(x)=0\), then \(\langle\nabla f(x),u-x\rangle\ge0\) for every \(u\in X\). The convex subgradient inequality gives \(f(u)\ge f(x)\), so \(x\) is globally optimal. In computation, the same implication yields a certified stopping rule: with an exact oracle, stop when the gap is at most the requested objective tolerance. Unlike a step-size counter, this condition responds to the current geometry and gradient.
 
+The exact-oracle argument can be packaged as a small Lean certificate. The first theorem shows the gap is nonnegative; the second shows it upper-bounds the primal error whenever the convex supporting inequality is available.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+def linearMinimizer : Candidate := last
+def frankWolfeGap (x : Candidate) : Nat := loss x - loss linearMinimizer
+
+theorem frank_wolfe_gap_at_first : frankWolfeGap first = 4 := by decide
+
+theorem frank_wolfe_gap_at_solution : frankWolfeGap linearMinimizer = 0 := by decide
+
+structure LinearOracleCert {E : Type*}
+    [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    (X : Set E) (g s : E) : Prop where
+  feasible : s ∈ X
+  optimal : ∀ y, y ∈ X → inner ℝ g s ≤ inner ℝ g y
+
+theorem frankWolfe_gap_nonnegative
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    {X : Set E} {g x s : E} (hx : x ∈ X)
+    (hcert : LinearOracleCert X g s) :
+    0 ≤ inner ℝ g (x - s) := by
+  have hopt := hcert.optimal x hx
+  rw [inner_sub_right]
+  linarith
+
+theorem frankWolfe_gap_dominates_primal_error
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    {X : Set E} {f : E → ℝ} {g x xstar s : E}
+    (hstar : xstar ∈ X) (hcert : LinearOracleCert X g s)
+    (hsupport : f x - f xstar ≤ inner ℝ g (x - xstar)) :
+    f x - f xstar ≤ inner ℝ g (x - s) := by
+  calc
+    f x - f xstar ≤ inner ℝ g (x - xstar) := hsupport
+    _ ≤ inner ℝ g (x - s) := by
+      have hopt := hcert.optimal xstar hstar
+      rw [inner_sub_right, inner_sub_right]
+      linarith
+```
+
 ### 2.1 Approximate linear subproblems
 
 An exact oracle may be unavailable. Suppose the returned point \(s_t\in X\) satisfies
