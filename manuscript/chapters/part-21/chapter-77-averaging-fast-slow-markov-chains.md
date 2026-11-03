@@ -259,3 +259,109 @@ A rapidly switching finite-state environment drives a slow variable through a dr
 
 - Chapters 74–76 for Poisson equations, functional central limit theorems, and population diffusion limits.
 - G. Yin and H. Zhang, “Two-Time-Scale Markov Chains and Applications to Quasi-Birth-Death Queues,” *SIAM Journal on Applied Mathematics* 65 (2005), 1005–1026, [doi:10.1137/S003613990139756X](https://doi.org/10.1137/S003613990139756X).
+
+## 12. Lean formalization: the two-state fast corrector
+
+For a fast environment with transitions `0 → 1` at rate `a` and `1 → 0` at rate `b`, its invariant weights are `b/(a+b)` and `a/(a+b)`. Given state drifts `v₀` and `v₁`, their invariant average is `(b v₀ + a v₁)/(a+b)`. The centered Poisson equation has an explicit normalized solution, and its carré-du-champ average is the environmental covariance rate. This example checks the averaging and fluctuation coefficients in one exact rational calculation.
+
+The integer-valued centered-drift example is preserved.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def fastDrift : State → Int := fun s => if s = zero then -1 else 1
+
+theorem averagedFastDriftIsZero :
+    expectationNumerator uniformWeight fastDrift = 0 := by decide
+```
+
+The rational definitions below use positive rates, so the normalizing denominator is nonzero. The generator acts on observables by `Qh(0)=a(h₁-h₀)` and `Qh(1)=b(h₀-h₁)`.
+
+```lean
+def fastStationaryZero (a b : ℚ) : ℚ := b / (a + b)
+def fastStationaryOne (a b : ℚ) : ℚ := a / (a + b)
+
+def averagedFastDrift (a b v₀ v₁ : ℚ) : ℚ :=
+  fastStationaryZero a b * v₀ + fastStationaryOne a b * v₁
+
+def fastCorrectorZero (a b v₀ v₁ : ℚ) : ℚ :=
+  a * (v₀ - v₁) / (a + b) ^ 2
+
+def fastCorrectorOne (a b v₀ v₁ : ℚ) : ℚ :=
+  -b * (v₀ - v₁) / (a + b) ^ 2
+
+def fastGeneratorAtZero (a h₀ h₁ : ℚ) : ℚ := a * (h₁ - h₀)
+def fastGeneratorAtOne (b h₀ h₁ : ℚ) : ℚ := b * (h₀ - h₁)
+
+theorem fastStationary_normalized (a b : ℚ) (ha : 0 < a) (hb : 0 < b) :
+    fastStationaryZero a b + fastStationaryOne a b = 1 := by
+  have hs : a + b ≠ 0 := ne_of_gt (add_pos ha hb)
+  unfold fastStationaryZero fastStationaryOne
+  field_simp [hs]
+  ring
+
+theorem averagedFastDrift_centered (a b v₀ v₁ : ℚ)
+    (ha : 0 < a) (hb : 0 < b) :
+    fastStationaryZero a b * (v₀ - averagedFastDrift a b v₀ v₁) +
+      fastStationaryOne a b * (v₁ - averagedFastDrift a b v₀ v₁) = 0 := by
+  have hs : a + b ≠ 0 := ne_of_gt (add_pos ha hb)
+  unfold averagedFastDrift fastStationaryZero fastStationaryOne
+  field_simp [hs]
+  ring
+
+theorem fastCorrector_centered (a b v₀ v₁ : ℚ)
+    (ha : 0 < a) (hb : 0 < b) :
+    fastStationaryZero a b * fastCorrectorZero a b v₀ v₁ +
+      fastStationaryOne a b * fastCorrectorOne a b v₀ v₁ = 0 := by
+  have hs : a + b ≠ 0 := ne_of_gt (add_pos ha hb)
+  unfold fastStationaryZero fastStationaryOne fastCorrectorZero fastCorrectorOne
+  field_simp [hs]
+  ring
+
+theorem fastCorrector_solves_zero (a b v₀ v₁ : ℚ)
+    (ha : 0 < a) (hb : 0 < b) :
+    fastGeneratorAtZero a (fastCorrectorZero a b v₀ v₁)
+        (fastCorrectorOne a b v₀ v₁) =
+      -(v₀ - averagedFastDrift a b v₀ v₁) := by
+  have hs : a + b ≠ 0 := ne_of_gt (add_pos ha hb)
+  unfold fastGeneratorAtZero fastCorrectorZero fastCorrectorOne
+    averagedFastDrift fastStationaryZero fastStationaryOne
+  field_simp [hs]
+  ring
+
+theorem fastCorrector_solves_one (a b v₀ v₁ : ℚ)
+    (ha : 0 < a) (hb : 0 < b) :
+    fastGeneratorAtOne b (fastCorrectorZero a b v₀ v₁)
+        (fastCorrectorOne a b v₀ v₁) =
+      -(v₁ - averagedFastDrift a b v₀ v₁) := by
+  have hs : a + b ≠ 0 := ne_of_gt (add_pos ha hb)
+  unfold fastGeneratorAtOne fastCorrectorZero fastCorrectorOne
+    averagedFastDrift fastStationaryZero fastStationaryOne
+  field_simp [hs]
+  ring
+
+def fastGammaAtZero (a h₀ h₁ : ℚ) : ℚ := a * (h₁ - h₀) ^ 2
+def fastGammaAtOne (b h₀ h₁ : ℚ) : ℚ := b * (h₀ - h₁) ^ 2
+
+def fastEnvironmentalCovariance (a b v₀ v₁ : ℚ) : ℚ :=
+  fastStationaryZero a b *
+      fastGammaAtZero a (fastCorrectorZero a b v₀ v₁)
+        (fastCorrectorOne a b v₀ v₁) +
+    fastStationaryOne a b *
+      fastGammaAtOne b (fastCorrectorZero a b v₀ v₁)
+        (fastCorrectorOne a b v₀ v₁)
+
+theorem fastEnvironmentalCovariance_eq (a b v₀ v₁ : ℚ)
+    (ha : 0 < a) (hb : 0 < b) :
+    fastEnvironmentalCovariance a b v₀ v₁ =
+      2 * a * b * (v₀ - v₁) ^ 2 / (a + b) ^ 3 := by
+  have hs : a + b ≠ 0 := ne_of_gt (add_pos ha hb)
+  unfold fastEnvironmentalCovariance fastStationaryZero fastStationaryOne
+    fastGammaAtZero fastGammaAtOne fastCorrectorZero fastCorrectorOne
+  field_simp [hs]
+  ring
+```
+
+The two corrector equations are `Qh = -(v-\bar v)`, with `πh=0`. The covariance expression is the invariant average of the fast chain’s carré du champ, yielding the two-state Green–Kubo coefficient `2ab(v₀-v₁)²/(a+b)³`. The full averaging theorem still needs uniform mixing and martingale convergence as the slow state varies; this Lean example verifies its local algebraic ingredients.
