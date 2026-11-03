@@ -1,9 +1,7 @@
 # Supplemental finite-model examples
 
-These 65 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 63 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 53: [Sequential Importance Sampling and Filtering](Chapter53.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-53-sequential-importance-sampling-and-filtering.md).
-- Chapter 54: [Resampling and Particle Systems](Chapter54.lean) — manuscript: [source](../../manuscript/chapters/part-10/chapter-54-resampling-and-particle-systems.md).
 - Chapter 55: [Finite-State Continuous-Time Markov Chains](Chapter55.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-55-finite-state-continuous-time-markov-chains.md).
 - Chapter 57: [Sample Paths and Non-Explosion](Chapter57.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-57-sample-paths-and-non-explosion.md).
 - Chapter 58: [Dynkin’s Formula and Generator Martingales](Chapter58.lean) — manuscript: [source](../../manuscript/chapters/part-11/chapter-58-dynkins-formula-and-generator-martingales.md).
