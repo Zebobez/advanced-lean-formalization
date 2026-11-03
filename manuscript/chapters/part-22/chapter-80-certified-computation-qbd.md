@@ -316,6 +316,124 @@ Matrix order is a particularly important formalization detail. The identity \(X^
 
 If a development uses real-valued matrices, exact rational bounds can still certify real inequalities by coercion. It is often easier to compute the candidate entries as rationals, prove a rational interval contains the exact real solution, then use that interval in the probability estimate. Avoid turning every numerical operation into a proof by reflection before the mathematical certificate has been designed.
 
+### 8.1 An exact scalar contraction certificate
+
+The M/M/1 example can be checked entirely over the rationals. The code below proves that the fixed-point map preserves ([0,3/4]), is (9/10)-Lipschitz there, and has a unique fixed point in that interval. It then defines iteration from zero and proves the chapter's a priori error estimate for every step. The last lemma checks the rational arithmetic in the (N=20) tail estimate from Section 6, conditional on the assumed bounds (\|R\|_1\leq 7/10) and (\|\pi_1\|_1\leq1/5); those matrix norm premises are separate certificates.
+
+```lean
+def certifiedScalarMap (x : ℚ) : ℚ := (2 + 3 * x ^ 2) / 5
+
+theorem certifiedScalarMap_preserves_interval (x : ℚ)
+    (hx0 : 0 ≤ x) (hx1 : x ≤ 3 / 4) :
+    0 ≤ certifiedScalarMap x ∧ certifiedScalarMap x ≤ 3 / 4 := by
+  have hleft : 0 ≤ 3 / 4 - x := by linarith
+  have hright : 0 ≤ 3 / 4 + x := by positivity
+  have hx2 : x ^ 2 ≤ (3 / 4 : ℚ) ^ 2 := by
+    nlinarith [mul_nonneg hleft hright]
+  constructor
+  · unfold certifiedScalarMap
+    positivity
+  · have hupper : certifiedScalarMap x ≤ 59 / 80 := by
+      unfold certifiedScalarMap
+      nlinarith [hx2]
+    exact le_trans hupper (by norm_num)
+
+theorem certifiedScalarMap_difference (x y : ℚ) :
+    certifiedScalarMap x - certifiedScalarMap y =
+      (3 / 5 : ℚ) * (x - y) * (x + y) := by
+  unfold certifiedScalarMap
+  ring
+
+theorem certifiedScalarMap_contraction (x y : ℚ)
+    (hx0 : 0 ≤ x) (hx1 : x ≤ 3 / 4)
+    (hy0 : 0 ≤ y) (hy1 : y ≤ 3 / 4) :
+    |certifiedScalarMap x - certifiedScalarMap y| ≤
+      (9 / 10 : ℚ) * |x - y| := by
+  by_cases hxy : x ≤ y
+  · have hmono : certifiedScalarMap x ≤ certifiedScalarMap y := by
+      have hdiff : 0 ≤ certifiedScalarMap y - certifiedScalarMap x := by
+        rw [certifiedScalarMap_difference]
+        positivity
+      exact sub_nonneg.mp hdiff
+    have hcontract : certifiedScalarMap y - certifiedScalarMap x ≤
+        (9 / 10 : ℚ) * (y - x) := by
+      rw [certifiedScalarMap_difference]
+      have hbound : 0 ≤ (3 / 2 - (y + x)) * (y - x) :=
+        mul_nonneg (by linarith) (by linarith)
+      nlinarith
+    rw [abs_of_nonpos (sub_nonpos.mpr hmono),
+      abs_of_nonpos (sub_nonpos.mpr hxy)]
+    nlinarith [hcontract]
+  · have hyx : y ≤ x := le_of_not_ge hxy
+    have hmono : certifiedScalarMap y ≤ certifiedScalarMap x := by
+      have hdiff : 0 ≤ certifiedScalarMap x - certifiedScalarMap y := by
+        rw [certifiedScalarMap_difference]
+        positivity
+      exact sub_nonneg.mp hdiff
+    have hcontract : certifiedScalarMap x - certifiedScalarMap y ≤
+        (9 / 10 : ℚ) * (x - y) := by
+      rw [certifiedScalarMap_difference]
+      have hbound : 0 ≤ (3 / 2 - (x + y)) * (x - y) :=
+        mul_nonneg (by linarith) (by linarith)
+      nlinarith
+    rw [abs_of_nonneg (sub_nonneg.mpr hmono),
+      abs_of_nonneg (sub_nonneg.mpr hyx)]
+    nlinarith [hcontract]
+
+theorem certifiedScalarMap_fixed : certifiedScalarMap (2 / 3 : ℚ) = 2 / 3 := by
+  norm_num [certifiedScalarMap]
+
+theorem certifiedScalarMap_fixed_unique (x : ℚ)
+    (hx1 : x ≤ 3 / 4) (hfix : certifiedScalarMap x = x) : x = 2 / 3 := by
+  have hpoly : 3 * x ^ 2 - 5 * x + 2 = 0 := by
+    unfold certifiedScalarMap at hfix
+    nlinarith [hfix]
+  have hfactor : (3 * x - 2) * (x - 1) = 0 := by nlinarith [hpoly]
+  rcases mul_eq_zero.mp hfactor with h | h
+  · linarith
+  · linarith
+
+def certifiedScalarIterate : Nat → ℚ
+  | 0 => 0
+  | n + 1 => certifiedScalarMap (certifiedScalarIterate n)
+
+theorem certifiedScalarIterate_in_interval (n : Nat) :
+    0 ≤ certifiedScalarIterate n ∧ certifiedScalarIterate n ≤ 3 / 4 := by
+  induction n with
+  | zero => norm_num [certifiedScalarIterate]
+  | succ n ih =>
+      simpa [certifiedScalarIterate] using
+        certifiedScalarMap_preserves_interval (certifiedScalarIterate n) ih.1 ih.2
+
+theorem certifiedScalarIterate_error (n : Nat) :
+    |certifiedScalarIterate n - 2 / 3| ≤ 4 * (9 / 10 : ℚ) ^ n := by
+  induction n with
+  | zero => norm_num [certifiedScalarIterate]
+  | succ n ih =>
+      have hI := certifiedScalarIterate_in_interval n
+      calc
+        |certifiedScalarIterate (n + 1) - 2 / 3| =
+            |certifiedScalarMap (certifiedScalarIterate n) -
+              certifiedScalarMap (2 / 3)| := by
+                rw [certifiedScalarIterate, certifiedScalarMap_fixed]
+        _ ≤ (9 / 10 : ℚ) *
+            |certifiedScalarIterate n - 2 / 3| :=
+              certifiedScalarMap_contraction (certifiedScalarIterate n) (2 / 3)
+                hI.1 hI.2 (by norm_num) (by norm_num)
+        _ ≤ (9 / 10 : ℚ) * (4 * (9 / 10 : ℚ) ^ n) :=
+              mul_le_mul_of_nonneg_left ih (by norm_num)
+        _ = 4 * (9 / 10 : ℚ) ^ (n + 1) := by rw [pow_succ]; ring
+
+theorem certifiedFirstIterate : certifiedScalarIterate 1 = 2 / 5 := by
+  norm_num [certifiedScalarIterate, certifiedScalarMap]
+
+theorem certifiedTailBoundAtTwenty :
+    (1 / 5 : ℚ) * (7 / 10 : ℚ) ^ 20 / (1 - 7 / 10) < 532 / 1000000 := by
+  norm_num
+```
+
+The interval proof uses the endpoint estimate (F(3/4)=59/80<3/4), and the contraction proof factors (F(x)-F(y)) without approximating either value. The tail lemma certifies only the displayed rational comparison; checking a concrete model's induced matrix norm remains a separate task.
+
 ## 9. Choosing a numerical method
 
 The monotone fixed-point iteration is a good first method because the mathematical invariant is easy to state: iterates are nonnegative, increasing, and bounded by a solution. Under a contraction certificate, it also gives a direct error estimate. Its weakness is speed; a contraction factor close to one can make many iterations necessary.
