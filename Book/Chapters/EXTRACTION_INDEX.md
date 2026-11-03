@@ -67,5 +67,6 @@ Supplemental finite-model modules authored for chapters without extracted comman
 - Chapter 59: Book/Chapters/Chapter59.lean — 3 command blocks extracted.
 - Chapter 60: Book/Chapters/Chapter60.lean — 2 command blocks extracted.
 - Chapter 61: Book/Chapters/Chapter61.lean — 2 command blocks extracted.
+- Chapter 62: Book/Chapters/Chapter62.lean — 2 command blocks extracted.
 - Chapter 113: Book/Chapters/Chapter113.lean — 1 command blocks extracted.
 - Chapter 117: Book/Chapters/Chapter117.lean — 1 command blocks extracted.
