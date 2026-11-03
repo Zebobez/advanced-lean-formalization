@@ -95,6 +95,28 @@ The sample replaces \(n\) gradient evaluations with one. Its conditional varianc
 
 Even at an unconstrained minimizer of \(F\), this quantity need not vanish: the component gradients can cancel in their average while remaining individually nonzero. This explains why plain stochastic gradient descent can continue to move after reaching the empirical optimum.
 
+For a finite example, let an oracle return either component gradient `−1` or `+1` with equal weight. Its expected gradient is zero, but its second moment and variance are both one. Thus a vanishing full gradient does not imply that individual stochastic updates stop moving.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def sampledNoise : State → Int := fun s => if s = zero then -1 else 1
+
+theorem sampled_noise_has_zero_mean :
+    expectationNumerator uniformWeight sampledNoise = 0 := by decide
+
+theorem sampled_noise_second_moment :
+    expectationNumerator uniformWeight (fun s => sampledNoise s ^ 2) = 2 := by decide
+
+theorem sampled_noise_variance_is_one :
+    ((expectationNumerator uniformWeight (fun s => sampledNoise s ^ 2) : Int) : ℚ) / 2 -
+      (((expectationNumerator uniformWeight sampledNoise : Int) : ℚ) / 2) ^ 2 = 1 := by
+  rw [sampled_noise_second_moment, sampled_noise_has_zero_mean]
+  norm_num
+```
+
 ## 2. Projected stochastic subgradient descent
 
 Start from a fixed \(x_1\in C\). Given a step size \(\eta>0\), define
