@@ -248,6 +248,64 @@ ESS is a weight diagnostic; it does not certify convergence or effective indepen
 9. Compare the finite PMF-sum proof with the Radon–Nikodym proof.
 10. Locate `PMF.integral_eq_sum` and a Radon–Nikodym change-of-measure theorem in Mathlib's documentation.
 
+## 11. Lean formalization
+
+The first block keeps the initial two-state weighted-sample model. The second block connects the
+general theory to Mathlib: nonnegative integrals change measure by the Radon–Nikodym derivative,
+real-valued Bochner integrals use its real-valued density, and a finite PMF expectation is a sum over
+its point masses. The final rational identities check the three-state example and the finite-sample
+bias of the one-draw self-normalized estimator.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def proposal : Weight := uniformWeight
+def importanceLikelihood : Weight := fun s => if s = zero then 2 else 1
+def weightedSample : Weight := fun s => proposal s * importanceLikelihood s
+
+theorem importanceWeightNormalizer : totalWeight weightedSample = 3 := by decide
+theorem weightedMassAtZero : weightedSample zero = 2 := by decide
+```
+
+```lean
+open MeasureTheory
+open scoped ENNReal
+
+theorem exercise_51_1_lintegral_change_of_measure
+    {X : Type*} [MeasurableSpace X] {μ ν : Measure X}
+    [Measure.HaveLebesgueDecomposition μ ν]
+    (hμν : μ ≪ ν) {f : X → ℝ≥0∞} (hf : AEMeasurable f ν) :
+    ∫⁻ x, μ.rnDeriv ν x * f x ∂ν = ∫⁻ x, f x ∂μ :=
+  MeasureTheory.lintegral_rnDeriv_mul hμν hf
+
+theorem exercise_51_8_real_change_of_measure
+    {X : Type*} [MeasurableSpace X] {μ ν : Measure X}
+    [Measure.HaveLebesgueDecomposition μ ν] [SigmaFinite μ]
+    (hμν : μ ≪ ν) {f : X → ℝ} :
+    ∫ x, (μ.rnDeriv ν x).toReal * f x ∂ν = ∫ x, f x ∂μ :=
+  MeasureTheory.integral_toReal_rnDeriv_mul hμν
+
+theorem exercise_51_10_pmf_expectation_finite_sum
+    {X : Type*} [MeasurableSpace X] [MeasurableSingletonClass X]
+    [Fintype X] (p : PMF X) (f : X → ℝ) :
+    ∫ x, f x ∂p.toMeasure = ∑ x, (p x).toReal * f x := by
+  simpa [smul_eq_mul] using PMF.integral_eq_sum p f
+
+theorem exercise_51_4_three_state_target_normalizes :
+    (1 : ℚ) / 2 + 1 / 3 + 1 / 6 = 1 := by
+  norm_num
+
+theorem exercise_51_4_weighted_indicator_is_unbiased :
+    (1 : ℚ) / 3 * ((1 / 2 : ℚ) / (1 / 3)) = 1 / 2 := by
+  norm_num
+
+theorem exercise_51_6_one_sample_self_normalized_estimator_is_biased :
+    (1 : ℚ) / 2 ≠ 9 / 10 := by
+  norm_num
+```
+
 ## Summary
 
 Importance sampling rewrites a target expectation as a proposal expectation weighted by a Radon–Nikodym derivative. In finite spaces this becomes a pointwise mass ratio, provided the proposal covers the target support. Unnormalized targets lead to unbiased estimates of unnormalized integrals; self-normalization removes the unknown constant but generally introduces finite-sample bias. Support, integrability, and variance are separate obligations that should be formalized separately.
