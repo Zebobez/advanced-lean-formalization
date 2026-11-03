@@ -153,6 +153,47 @@ For a sum \(f_1+f_2\), if \(g_1\) and \(g_2\) support the respective functions a
 
 More delicate rules, such as the exact subdifferential of a sum, may require regularity hypotheses. The direct addition argument proves inclusion of one set of candidate subgradients in another; it does not prove equality. This is a useful example of how formal proof exposes the difference between a safe construction rule and a theorem asserting that all subgradients arise that way.
 
+The following Lean interface makes that one-way rule explicit. The first theorem turns a zero subgradient into a global minimum certificate. The sum theorem assumes certificates for both summands at the same feasible point and constructs one for their sum; it proves the inclusion direction only.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+theorem last_is_global_minimum : ∀ x : Candidate, loss last ≤ loss x := by decide
+
+theorem first_optimality_gap_is_four : objectiveGap first = 4 := by decide
+
+def IsSubgradientAt {E : Type*}
+    [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    (C : Set E) (f : E → ℝ) (x g : E) : Prop :=
+  x ∈ C ∧ ∀ y ∈ C,
+    f x + inner ℝ g (y - x) ≤ f y
+
+theorem zero_subgradient_is_minimizer
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    {C : Set E} {f : E → ℝ} {x : E}
+    (h : IsSubgradientAt C f x 0) :
+    x ∈ C ∧ ∀ y ∈ C, f x ≤ f y := by
+  rcases h with ⟨hx, hs⟩
+  refine ⟨hx, fun y hy => ?_⟩
+  simpa using hs y hy
+
+theorem subgradient_add
+    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    {C : Set E} {f₁ f₂ : E → ℝ} {x g₁ g₂ : E}
+    (h₁ : IsSubgradientAt C f₁ x g₁)
+    (h₂ : IsSubgradientAt C f₂ x g₂) :
+    IsSubgradientAt C (fun z => f₁ z + f₂ z) x (g₁ + g₂) := by
+  rcases h₁ with ⟨hx, h₁⟩
+  rcases h₂ with ⟨_, h₂⟩
+  refine ⟨hx, fun y hy => ?_⟩
+  change (f₁ x + f₂ x) + inner ℝ (g₁ + g₂) (y - x) ≤ f₁ y + f₂ y
+  rw [inner_add_left]
+  have hsum := add_le_add (h₁ y hy) (h₂ y hy)
+  linarith
+```
+
 ## 4. Constrained first-order optimality is a variational inequality
 
 Let \(C\) be convex and \(f\) differentiable. A feasible point \(x_*\in C\) is a global minimizer if
