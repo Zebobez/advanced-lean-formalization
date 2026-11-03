@@ -286,3 +286,129 @@ Sequential filtering predicts a state distribution through a transition kernel, 
 - [Mathlib: Posterior kernels](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Probability/Kernel/Posterior.html)
 - Chapters 41–43 for disintegration, posterior updating, and conditional independence.
 - Chapters 51–52 for importance weights and Monte Carlo error.
+
+## 12. Lean formalization
+
+The first block retains the integer-weighted finite model used by this
+chapter. The next blocks formalize the rational binary filter from Section 3,
+its second update, and the algebraic cancellation behind a sequential path
+weight. Keeping prediction, weighting, and normalization as named functions
+makes the update order visible in the definitions and lets `norm_num` check the
+finite calculations exactly.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def firstLikelihood : Weight := fun s => if s = zero then 2 else 1
+def secondLikelihood : Weight := fun _ => 1
+def sequentialWeight : Weight := fun s => firstLikelihood s * secondLikelihood s
+
+theorem oneStepFilterNormalizer : totalWeight sequentialWeight = 3 := by decide
+```
+
+For a `Bool` state, represent a probability distribution by its two rational
+point masses. A symmetric transition with switch probability `r` preserves the
+uniform law. The posterior update divides the likelihood-weighted mass by its
+evidence, so we state the normalizer before using the update.
+
+```lean
+def binaryUniformPrior : Bool → ℚ := fun _ => 1 / 2
+
+def binaryObservationLikelihood : Bool → ℚ := fun b =>
+  if b then 3 / 4 else 1 / 4
+
+def binarySwitchKernel (r : ℚ) (x z : Bool) : ℚ :=
+  if x = z then 1 - r else r
+
+def binaryPredict (μ : Bool → ℚ) (r : ℚ) (z : Bool) : ℚ :=
+  μ false * binarySwitchKernel r false z +
+    μ true * binarySwitchKernel r true z
+
+def binaryEvidence (μ G : Bool → ℚ) : ℚ :=
+  μ false * G false + μ true * G true
+
+def binaryUpdate (μ G : Bool → ℚ) (z : Bool) : ℚ :=
+  μ z * G z / binaryEvidence μ G
+
+theorem binary_uniform_prediction (r : ℚ) (z : Bool) :
+    binaryPredict binaryUniformPrior r z = 1 / 2 := by
+  cases z <;> simp [binaryPredict, binaryUniformPrior, binarySwitchKernel] <;> ring
+
+theorem binary_first_evidence :
+    binaryEvidence binaryUniformPrior binaryObservationLikelihood = 1 / 2 := by
+  norm_num [binaryEvidence, binaryUniformPrior, binaryObservationLikelihood]
+
+theorem binary_first_posterior_true :
+    binaryUpdate binaryUniformPrior binaryObservationLikelihood true = 3 / 4 := by
+  norm_num [binaryUpdate, binaryEvidence, binaryUniformPrior,
+    binaryObservationLikelihood]
+
+theorem binary_first_posterior_false :
+    binaryUpdate binaryUniformPrior binaryObservationLikelihood false = 1 / 4 := by
+  norm_num [binaryUpdate, binaryEvidence, binaryUniformPrior,
+    binaryObservationLikelihood]
+```
+
+The second update predicts the posterior `(1/4, 3/4)` through a transition
+with switch probability `1/4`, then applies the same observation likelihood.
+These exact equalities check the predicted masses, the next evidence, the
+updated posterior, and the product of the two evidence increments.
+
+```lean
+def binaryFirstFilter (z : Bool) : ℚ :=
+  binaryUpdate binaryUniformPrior binaryObservationLikelihood z
+
+def binarySecondPrediction (z : Bool) : ℚ :=
+  binaryPredict binaryFirstFilter (1 / 4) z
+
+def binarySecondEvidence : ℚ :=
+  binaryEvidence binarySecondPrediction binaryObservationLikelihood
+
+def binarySecondFilter (z : Bool) : ℚ :=
+  binaryUpdate binarySecondPrediction binaryObservationLikelihood z
+
+theorem binary_second_prediction_false :
+    binarySecondPrediction false = 3 / 8 := by
+  norm_num [binarySecondPrediction, binaryPredict, binaryFirstFilter,
+    binaryUpdate, binaryEvidence, binaryUniformPrior,
+    binaryObservationLikelihood, binarySwitchKernel]
+
+theorem binary_second_prediction_true :
+    binarySecondPrediction true = 5 / 8 := by
+  norm_num [binarySecondPrediction, binaryPredict, binaryFirstFilter,
+    binaryUpdate, binaryEvidence, binaryUniformPrior,
+    binaryObservationLikelihood, binarySwitchKernel]
+
+theorem binary_second_evidence : binarySecondEvidence = 9 / 16 := by
+  norm_num [binarySecondEvidence, binaryEvidence, binarySecondPrediction,
+    binaryPredict, binaryFirstFilter, binaryUpdate, binaryUniformPrior,
+    binaryObservationLikelihood, binarySwitchKernel]
+
+theorem binary_second_posterior_true : binarySecondFilter true = 5 / 6 := by
+  norm_num [binarySecondFilter, binaryUpdate, binarySecondEvidence,
+    binaryEvidence, binarySecondPrediction, binaryPredict, binaryFirstFilter,
+    binaryUniformPrior, binaryObservationLikelihood, binarySwitchKernel]
+
+theorem binary_two_step_evidence :
+    (1 / 2 : ℚ) * binarySecondEvidence = 9 / 32 := by
+  norm_num [binarySecondEvidence, binaryEvidence, binarySecondPrediction,
+    binaryPredict, binaryFirstFilter, binaryUpdate, binaryUniformPrior,
+    binaryObservationLikelihood, binarySwitchKernel]
+```
+
+Finally, the path identity in Section 5 reduces to cancellation of each
+proposal factor. The nonzero assumptions record where the finite ratios are
+defined; absolute continuity and support are still model-level obligations
+when this algebraic lemma is applied to a family of paths.
+
+```lean
+theorem sequential_path_weight_cancels
+    (η q₀ r₁ r₂ m₁ m₂ g₁ g₂ : ℚ)
+    (hq : q₀ ≠ 0) (hr₁ : r₁ ≠ 0) (hr₂ : r₂ ≠ 0) :
+    q₀ * r₁ * r₂ *
+      ((η / q₀) * (g₁ * (m₁ / r₁)) * (g₂ * (m₂ / r₂))) =
+        η * m₁ * g₁ * m₂ * g₂ := by
+  field_simp [hq, hr₁, hr₂]
+```
