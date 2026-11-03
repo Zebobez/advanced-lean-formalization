@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 41 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 40 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 78: [Aggregation and Singular Perturbation of Markov Chains](Chapter78.lean) — manuscript: [source](../../manuscript/chapters/part-21/chapter-78-aggregation-singular-perturbation-markov-chains.md).
 - Chapter 79: [Quasi-Birth–Death Processes and Matrix-Analytic Methods](Chapter79.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-79-quasi-birth-death-processes.md).
 - Chapter 80: [Certified Computation for Matrix-Geometric Tails](Chapter80.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-80-certified-computation-qbd.md).
 - Chapter 81: [Markovian Arrival Processes and MAP/M/1 Queues](Chapter81.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-81-markovian-arrivals-map-m1.md).

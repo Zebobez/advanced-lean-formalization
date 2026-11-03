@@ -245,3 +245,103 @@ For a generator \(Q^\varepsilon=Q_0/\varepsilon+Q_1\), fast irreducible classes 
 - Chapter 77 for averaging a fast environment that depends on a continuous slow state.
 - G. Yin, H. Zhang, and G. Badowski, “Singularly Perturbed Markov Chains: Convergence and Aggregation,” *Journal of Multivariate Analysis* 72 (2000), 208–229, [doi:10.1006/jmva.1999.1855](https://doi.org/10.1006/jmva.1999.1855).
 - G. Yin and H. Zhang, “Two-Time-Scale Markov Chains and Applications to Quasi-Birth-Death Queues,” *SIAM Journal on Applied Mathematics* 65 (2005), 567–586, [doi:10.1137/S003613990139756X](https://doi.org/10.1137/S003613990139756X).
+
+## 12. Lean formalization: a two-block averaged generator
+
+We formalize the four-state example from Section 5. Each fast block has two states; its invariant law weights a state by the incoming rate. Averaging the slow cross-block rates gives the reduced transition rates `(q u + p v)/(p+q)` and `(s w + r z)/(r+s)`. We also verify that the residual cross-block drift is centered in each fast block and that rate equality within each block recovers exact lumpability.
+
+The original aggregation-label calculation is retained.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def aggregateToOneClass (_s : State) : Nat := 0
+
+theorem aggregationErasesTheWithinClassLabel :
+    aggregateToOneClass zero = aggregateToOneClass one := by decide
+```
+
+All rates below are rational and assumed positive when they occur in a denominator. `p,q` govern the fast motion in block A, `r,s` in block B, and `u,v,w,z` are the slow transitions crossing between those blocks.
+
+```lean
+def blockAWeightZero (p q : ℚ) : ℚ := q / (p + q)
+def blockAWeightOne (p q : ℚ) : ℚ := p / (p + q)
+def blockBWeightZero (r s : ℚ) : ℚ := s / (r + s)
+def blockBWeightOne (r s : ℚ) : ℚ := r / (r + s)
+
+def averagedRateAB (p q u v : ℚ) : ℚ :=
+  blockAWeightZero p q * u + blockAWeightOne p q * v
+
+def averagedRateBA (r s w z : ℚ) : ℚ :=
+  blockBWeightZero r s * w + blockBWeightOne r s * z
+
+theorem blockA_weights_normalized (p q : ℚ) (hp : 0 < p) (hq : 0 < q) :
+    blockAWeightZero p q + blockAWeightOne p q = 1 := by
+  have hs : p + q ≠ 0 := ne_of_gt (add_pos hp hq)
+  unfold blockAWeightZero blockAWeightOne
+  field_simp [hs]
+  ring
+
+theorem blockB_weights_normalized (r s : ℚ) (hr : 0 < r) (hs : 0 < s) :
+    blockBWeightZero r s + blockBWeightOne r s = 1 := by
+  have hrs : r + s ≠ 0 := ne_of_gt (add_pos hr hs)
+  unfold blockBWeightZero blockBWeightOne
+  field_simp [hrs]
+  ring
+
+theorem residualA_centered (p q u v : ℚ) (hp : 0 < p) (hq : 0 < q) :
+    blockAWeightZero p q * (u - averagedRateAB p q u v) +
+      blockAWeightOne p q * (v - averagedRateAB p q u v) = 0 := by
+  have hs : p + q ≠ 0 := ne_of_gt (add_pos hp hq)
+  unfold averagedRateAB blockAWeightZero blockAWeightOne
+  field_simp [hs]
+  ring
+
+theorem residualB_centered (r s w z : ℚ) (hr : 0 < r) (hs : 0 < s) :
+    blockBWeightZero r s * (w - averagedRateBA r s w z) +
+      blockBWeightOne r s * (z - averagedRateBA r s w z) = 0 := by
+  have hrs : r + s ≠ 0 := ne_of_gt (add_pos hr hs)
+  unfold averagedRateBA blockBWeightZero blockBWeightOne
+  field_simp [hrs]
+  ring
+
+theorem averagedRateAB_exact_lumpability (p q u : ℚ) (hp : 0 < p) (hq : 0 < q) :
+    averagedRateAB p q u u = u := by
+  have hs : p + q ≠ 0 := ne_of_gt (add_pos hp hq)
+  unfold averagedRateAB blockAWeightZero blockAWeightOne
+  field_simp [hs]
+  ring
+
+theorem averagedRateBA_exact_lumpability (r s w : ℚ)
+    (hr : 0 < r) (hs : 0 < s) : averagedRateBA r s w w = w := by
+  have hrs : r + s ≠ 0 := ne_of_gt (add_pos hr hs)
+  unfold averagedRateBA blockBWeightZero blockBWeightOne
+  field_simp [hrs]
+  ring
+
+inductive ReducedBlock where
+  | A
+  | B
+  deriving DecidableEq
+
+def reducedGenerator (p q r s u v w z : ℚ) :
+    ReducedBlock → ReducedBlock → ℚ
+  | .A, .A => -averagedRateAB p q u v
+  | .A, .B => averagedRateAB p q u v
+  | .B, .A => averagedRateBA r s w z
+  | .B, .B => -averagedRateBA r s w z
+
+theorem reducedGenerator_rowA_sum (p q r s u v w z : ℚ) :
+    reducedGenerator p q r s u v w z .A .A +
+      reducedGenerator p q r s u v w z .A .B = 0 := by
+  simp [reducedGenerator]
+
+theorem reducedGenerator_rowB_sum (p q r s u v w z : ℚ) :
+    reducedGenerator p q r s u v w z .B .A +
+      reducedGenerator p q r s u v w z .B .B = 0 := by
+  simp [reducedGenerator]
+```
+
+The averaged off-diagonal rates are nonnegative combinations of the original rates, and the two row-sum identities make the reduced matrix a generator. The centered-residual lemmas are exactly the compatibility conditions for the blockwise Poisson corrector. When `u=v` and `w=z`, the rates no longer depend on the fast state, and the averaged generator agrees with the exact lumped chain at every scale. The general aggregation theorem still requires solving the corrector equations and proving convergence of the martingale problems as the fast scale diverges.
