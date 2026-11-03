@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 38 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 37 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 81: [Markovian Arrival Processes and MAP/M/1 Queues](Chapter81.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-81-markovian-arrivals-map-m1.md).
 - Chapter 82: [Phase-Type Service and MAP/PH/1 Queues](Chapter82.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-82-phase-type-service-map-ph1.md).
 - Chapter 83: [M/G/1-Type Chains and Batch Arrivals](Chapter83.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-83-mg1-type-chains-and-batch-arrivals.md).
 - Chapter 84: [GI/M/1-Type Chains and Geometric Stationary Tails](Chapter84.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-84-gi-m1-type-chains-and-geometric-tails.md).
