@@ -165,6 +165,46 @@ The new gradient is \((0.15,0.15,-0.3)\). The global oracle now returns \(e_3\),
 
 At \(x_1\), the gradient pairings on the two active vertices are equal. Thus the active-set away gap is zero: the first correction is stationary within its edge. Yet the global FW gap is \(0.45\), so stopping after the restricted solve would be incorrect. This computation exhibits the division of labor between the two certificates.
 
+The exact simplex example reduces to a one-variable quadratic on the first correction edge. Its minimizer is `7/20`, giving weights `(7/20, 13/20, 0)`. Once the third vertex is added, the target point has objective zero and is a global minimizer because the objective is a sum of squares.
+
+```lean
+import Book.Models.FiniteOptimization
+
+open Book.Models.FiniteOptimization
+
+def correctedWeights : Candidate → Nat := fun x => if x = last then 1 else 0
+def totalCorrectedWeight : Nat :=
+  correctedWeights first + correctedWeights middle + correctedWeights last
+
+theorem fully_corrective_weights_are_normalized : totalCorrectedWeight = 1 := by decide
+
+theorem fully_corrective_support_contains_minimizer : correctedWeights last = 1 := by decide
+
+def edgeObjective100 (alpha : ℚ) : ℚ :=
+  ((alpha - 1 / 5) ^ 2 + (1 / 2 - alpha) ^ 2 + (3 / 10) ^ 2) / 2
+
+theorem first_correction_edge_minimizes (alpha : ℚ) :
+    edgeObjective100 (7 / 20) ≤ edgeObjective100 alpha := by
+  unfold edgeObjective100
+  nlinarith [sq_nonneg (alpha - 7 / 20)]
+
+theorem first_correction_edge_objective : edgeObjective100 (7 / 20) = 27 / 400 := by
+  norm_num [edgeObjective100]
+
+def simplexQuadratic100 (x₁ x₂ x₃ : ℚ) : ℚ :=
+  ((x₁ - 1 / 5) ^ 2 + (x₂ - 1 / 2) ^ 2 + (x₃ - 3 / 10) ^ 2) / 2
+
+theorem simplex_target_objective_zero :
+    simplexQuadratic100 (1 / 5) (1 / 2) (3 / 10) = 0 := by
+  norm_num [simplexQuadratic100]
+
+theorem simplex_target_is_global_minimum (x₁ x₂ x₃ : ℚ) :
+    simplexQuadratic100 (1 / 5) (1 / 2) (3 / 10) ≤ simplexQuadratic100 x₁ x₂ x₃ := by
+  rw [simplex_target_objective_zero]
+  unfold simplexQuadratic100
+  positivity
+```
+
 ### 3.2 An approximate correction can beat the line segment
 
 Use the triangle with vertices \(a=(0,1)\), \(s=(0,-1)\), and \(c=(1,0)\), and the strongly convex objective
