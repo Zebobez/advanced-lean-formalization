@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 32 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 31 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 87: [Monotone Construction of the Rate Matrix](Chapter87.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-87-monotone-rate-matrix-iteration.md).
 - Chapter 88: [Newton Linearization for Matrix Rate Equations](Chapter88.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-88-newton-methods-for-matrix-rate-equations.md).
 - Chapter 89: [Certified Enclosures for Rate Matrices](Chapter89.lean) — manuscript: [source](../../manuscript/chapters/part-22/chapter-89-certified-rate-matrix-enclosures.md).
 - Chapter 90: [Convexity, Subgradients, and Optimality Certificates](Chapter90.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-90-convexity-subgradients-and-optimality-certificates.md).
