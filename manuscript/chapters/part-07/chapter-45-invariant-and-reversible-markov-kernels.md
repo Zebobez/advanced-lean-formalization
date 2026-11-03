@@ -241,6 +241,69 @@ An invariant law need not be unique, and the chain's marginal law need not conve
 12. Explain why a composition of two invariant kernels remains invariant while reversibility of the composition needs an order condition.
 13. Give the test-function identity associated with invariance and state one sufficient class of functions for which it is meaningful.
 
+## 13. Lean formalization
+
+The finite-weight model records a stationary law and a detailed-balance equation
+for the two-state flip. The rational calculations below use an asymmetric chain
+to make clear that stationarity does not require a uniform distribution.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+theorem uniformLawIsInvariantAtZero : invariantAt uniformWeight flipKernel zero :=
+  uniform_flip_invariant_zero
+
+theorem uniformLawSatisfiesDetailedBalance :
+    detailedBalanceAt uniformWeight flipKernel zero one :=
+  uniform_flip_detailed_balance
+```
+
+Take transition probabilities `p = 1/4` from state zero to one and `q = 1/2`
+from one to zero. The stationary masses are `2/3` and `1/3`. The coordinate
+equations and the off-diagonal detailed-balance equation can be checked exactly
+over `ℚ`:
+
+```lean
+import Mathlib
+
+theorem exercise_45_3_stationary_mass_zero :
+    (2 / 3 : ℚ) * (3 / 4) + (1 / 3) * (1 / 2) = 2 / 3 := by
+  norm_num
+
+theorem exercise_45_3_stationary_mass_one :
+    (2 / 3 : ℚ) * (1 / 4) + (1 / 3) * (1 / 2) = 1 / 3 := by
+  norm_num
+
+theorem exercise_45_3_off_diagonal_balance :
+    (2 / 3 : ℚ) * (1 / 4) = (1 / 3) * (1 / 2) := by
+  norm_num
+```
+
+Finally, the following wrappers expose the general Mathlib results without
+unfolding kernels into nested integrals. The Markov typeclass is an explicit
+assumption for the reversibility-to-invariance theorem; composition needs only
+the two invariant hypotheses.
+
+```lean
+import Mathlib.Probability.Kernel.Invariance
+
+open MeasureTheory ProbabilityTheory
+
+theorem exercise_45_5_reversible_markov_kernel_is_invariant
+    {α : Type*} [MeasurableSpace α] {κ : Kernel α α} [IsMarkovKernel κ]
+    {π : Measure α} (hrev : Kernel.IsReversible κ π) :
+    Kernel.Invariant κ π :=
+  hrev.invariant
+
+theorem exercise_45_6_composition_preserves_invariance
+    {α : Type*} [MeasurableSpace α] {κ η : Kernel α α} {μ : Measure α}
+    (hκ : Kernel.Invariant κ μ) (hη : Kernel.Invariant η μ) :
+    Kernel.Invariant (κ ∘ₖ η) μ :=
+  Kernel.Invariant.comp hκ hη
+```
+
 ## Summary
 
 An invariant measure satisfies `μ.bind κ = μ`. Reversibility is detailed balance: the measure flow from one set to another matches the reverse flow. For Markov kernels, reversibility implies invariance. Invariant measures persist under composition, and finite-state examples reduce to matrix equations. Stationarity, reversibility, irreducibility, and convergence are distinct properties that should be proved and used separately.
