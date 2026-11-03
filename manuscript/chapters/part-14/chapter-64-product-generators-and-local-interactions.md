@@ -204,3 +204,72 @@ Finite local systems can be represented as functions from sites to local states,
 - Chapters 55–60 for generators, semigroups, reversibility, and spectral gaps.
 - [Mathlib’s matrix Kronecker product documentation](https://leanprover-community.github.io/mathlib4_docs/Mathlib/LinearAlgebra/Matrix/Kronecker.html).
 - [Mathlib’s Markov-kernel composition documentation](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Probability/Kernel/Composition/Comp.html).
+
+## 11. Lean formalization: independent and interacting coordinates
+
+For two binary sites, flipping distinct coordinates commutes. The
+corresponding constant-rate coordinate generators also commute on every
+observable. To contrast this with interaction, let the first-site flip rate
+depend on the current value at the second site. A concrete observable then
+exhibits a nonzero commutator. The calculation isolates the algebraic reason
+that product semigroups factor for independent coordinates but not for
+general local interactions.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def updateFirst (p : State × State) : State × State :=
+  (if p.1 = zero then one else zero, p.2)
+
+theorem localUpdateLeavesSecondCoordinate : (updateFirst (zero, one)).2 = one := by decide
+```
+
+Now define both coordinate flips and their generator actions.
+
+```lean
+import Mathlib
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def updateSecond (p : State × State) : State × State :=
+  (p.1, if p.2 = zero then one else zero)
+
+def firstCoordinateGeneratorQ (r : ℚ) (f : State × State → ℚ)
+    (p : State × State) : ℚ :=
+  r * (f (updateFirst p) - f p)
+
+def secondCoordinateGeneratorQ (s : ℚ) (f : State × State → ℚ)
+    (p : State × State) : ℚ :=
+  s * (f (updateSecond p) - f p)
+
+theorem different_coordinate_updates_commute (p : State × State) :
+    updateFirst (updateSecond p) = updateSecond (updateFirst p) := by
+  cases p with
+  | mk x y => rfl
+
+theorem independent_coordinate_generators_commute (r s : ℚ)
+    (f : State × State → ℚ) (p : State × State) :
+    firstCoordinateGeneratorQ r (secondCoordinateGeneratorQ s f) p =
+      secondCoordinateGeneratorQ s (firstCoordinateGeneratorQ r f) p := by
+  simp only [firstCoordinateGeneratorQ, secondCoordinateGeneratorQ]
+  rw [← different_coordinate_updates_commute p]
+  ring
+
+def interactingFirstGeneratorQ (f : State × State → ℚ)
+    (p : State × State) : ℚ :=
+  (if p.2 = zero then 1 else 2) * (f (updateFirst p) - f p)
+
+def firstCoordinateIndicatorQ (p : State × State) : ℚ :=
+  if p.1 = zero then 1 else 0
+
+theorem local_interaction_breaks_generator_commutation :
+    interactingFirstGeneratorQ
+        (secondCoordinateGeneratorQ 1 firstCoordinateIndicatorQ) (zero, zero) ≠
+      secondCoordinateGeneratorQ 1
+        (interactingFirstGeneratorQ firstCoordinateIndicatorQ) (zero, zero) := by
+  norm_num [interactingFirstGeneratorQ, secondCoordinateGeneratorQ,
+    firstCoordinateIndicatorQ, updateFirst, updateSecond, zero, one]
+```

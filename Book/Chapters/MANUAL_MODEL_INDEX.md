@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 55 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 54 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 64: [Product Generators and Local Interactions](Chapter64.lean) — manuscript: [source](../../manuscript/chapters/part-14/chapter-64-product-generators-and-local-interactions.md).
 - Chapter 65: [Graph Laplacians and Effective Resistance](Chapter65.lean) — manuscript: [source](../../manuscript/chapters/part-14/chapter-65-graph-laplacians-and-effective-resistance.md).
 - Chapter 66: [Graphical Constructions for Finite Particle Systems](Chapter66.lean) — manuscript: [source](../../manuscript/chapters/part-15/chapter-66-graphical-constructions-for-particle-systems.md).
 - Chapter 67: [Exclusion, Conservation, and Duality](Chapter67.lean) — manuscript: [source](../../manuscript/chapters/part-15/chapter-67-exclusion-conservation-and-duality.md).
