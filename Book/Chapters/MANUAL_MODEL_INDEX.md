@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 46 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 45 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 73: [Regeneration and Renewal Rewards](Chapter73.lean) — manuscript: [source](../../manuscript/chapters/part-18/chapter-73-regeneration-and-renewal-rewards.md).
 - Chapter 74: [Martingale Approximations for Additive Functionals](Chapter74.lean) — manuscript: [source](../../manuscript/chapters/part-19/chapter-74-martingale-approximations-and-additive-functionals.md).
 - Chapter 75: [Functional Central Limit Theorems](Chapter75.lean) — manuscript: [source](../../manuscript/chapters/part-19/chapter-75-functional-central-limit-theorems.md).
 - Chapter 76: [Population Scaling and Diffusion Limits](Chapter76.lean) — manuscript: [source](../../manuscript/chapters/part-20/chapter-76-population-scaling-and-diffusion-limits.md).
