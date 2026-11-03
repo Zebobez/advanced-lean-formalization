@@ -268,3 +268,77 @@ Density-dependent jump processes have order-\(1/N\) density jumps at order-N rat
 - Chapters 55, 58, and 75 for continuous-time generators, martingales, and functional limit theorems.
 - T. G. Kurtz, “Solutions of Ordinary Differential Equations as Limits of Pure Jump Markov Processes,” *Journal of Applied Probability* 7 (1970), 49–58, [doi:10.2307/3212147](https://doi.org/10.2307/3212147).
 - T. G. Kurtz, “Limit Theorems for Sequences of Jump Markov Processes Approximating Ordinary Differential Processes,” *Journal of Applied Probability* 8 (1971), 344–356, [doi:10.2307/3211904](https://doi.org/10.2307/3211904).
+
+## 12. Lean formalization: scaling finite jump channels
+
+The density-dependent scaling in Section 1 has a simple algebraic core. Multiplying each channel rate by `N` and each density jump by `1/N` leaves the drift unchanged. For covariance, the two jump factors contribute `1/N²`, so the rate factor leaves an overall `1/N`. We prove both identities for an arbitrary finite set of channels, which packages the dimension-counting argument independently of any specific population model.
+
+The original two-state population-size calculation is retained.
+
+```lean
+import Book.Models.FiniteTwoState
+
+open Book.Models.FiniteTwoState
+
+def populationCount : State → Nat := fun s => if s = zero then 0 else 1
+def scaledPopulation (s : State) : Nat := 2 * populationCount s
+
+theorem scalingPreservesTheZeroState : scaledPopulation zero = 0 := by decide
+theorem scalingOfOneIndividual : scaledPopulation one = 2 := by decide
+```
+
+Here a channel has a rational rate and a jump vector indexed by coordinates. `channelDrift` and `channelCovariance` are the macroscopic coefficients; the scaled definitions use rate `N β` and density jump `v/N`.
+
+```lean
+def channelDrift {Coordinate : Type*}
+    (channels : List (ℚ × (Coordinate → ℚ))) (i : Coordinate) : ℚ :=
+  channels.foldr (fun channel total => channel.1 * channel.2 i + total) 0
+
+def scaledChannelDrift {Coordinate : Type*}
+    (channels : List (ℚ × (Coordinate → ℚ))) (i : Coordinate) (N : ℚ) : ℚ :=
+  channels.foldr
+    (fun channel total => (N * channel.1) * (channel.2 i / N) + total) 0
+
+def channelCovariance {Coordinate : Type*}
+    (channels : List (ℚ × (Coordinate → ℚ))) (i j : Coordinate) : ℚ :=
+  channels.foldr
+    (fun channel total => channel.1 * channel.2 i * channel.2 j + total) 0
+
+def scaledChannelCovariance {Coordinate : Type*}
+    (channels : List (ℚ × (Coordinate → ℚ))) (i j : Coordinate) (N : ℚ) : ℚ :=
+  channels.foldr
+    (fun channel total =>
+      (N * channel.1) * (channel.2 i / N) * (channel.2 j / N) + total) 0
+
+theorem scaledChannelDrift_eq {Coordinate : Type*}
+    (channels : List (ℚ × (Coordinate → ℚ))) (i : Coordinate)
+    (N : ℚ) (hN : N ≠ 0) :
+    scaledChannelDrift channels i N = channelDrift channels i := by
+  induction channels with
+  | nil => rfl
+  | cons channel channels ih =>
+      change
+        (N * channel.1 * (channel.2 i / N) +
+          scaledChannelDrift channels i N) =
+        channel.1 * channel.2 i + channelDrift channels i
+      rw [ih]
+      field_simp [hN]
+
+theorem scaledChannelCovariance_eq {Coordinate : Type*}
+    (channels : List (ℚ × (Coordinate → ℚ))) (i j : Coordinate)
+    (N : ℚ) (hN : N ≠ 0) :
+    scaledChannelCovariance channels i j N =
+      channelCovariance channels i j / N := by
+  induction channels with
+  | nil => simp [scaledChannelCovariance, channelCovariance]
+  | cons channel channels ih =>
+      change
+        (N * channel.1 * (channel.2 i / N) * (channel.2 j / N) +
+          scaledChannelCovariance channels i j N) =
+        (channel.1 * channel.2 i * channel.2 j +
+          channelCovariance channels i j) / N
+      rw [ih]
+      field_simp [hN]
+```
+
+The first identity gives an order-one density drift. The second shows that the density covariance is the macroscopic covariance divided by `N`; multiplying the martingale by `√N` therefore restores an order-one bracket. These are exact channelwise identities. They do not prove compact containment, ODE convergence, or the martingale functional limit theorem required for the diffusion approximation.
