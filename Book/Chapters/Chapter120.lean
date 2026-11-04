@@ -67,6 +67,32 @@ theorem kl_product_bound_of_certificates
   have htoDrop := mul_le_mul_of_nonneg_left hstepScaled (mul_nonneg hb hPrev)
   nlinarith [hfromFactor, htoDrop]
 
+theorem kl_recurrence_of_certificates
+    {a b sPrev sCurr slope grad gap drop : ℝ}
+    (ha : 0 < a)
+    (hb : 0 ≤ b)
+    (hPrev : 0 ≤ sPrev)
+    (hSlope : 0 ≤ slope)
+    (hGap : 0 ≤ gap)
+    (hKL : 1 ≤ slope * grad)
+    (hRelative : grad ≤ b * sPrev)
+    (hDecrease : a * sCurr ^ 2 ≤ gap)
+    (hConcavity : slope * gap ≤ drop) :
+    2 * sCurr ≤ sPrev + (b / a) * drop := by
+  have hproduct := kl_product_bound_of_certificates ha.le hb hPrev hSlope hKL
+    hRelative hDecrease hConcavity
+  have hdrop : 0 ≤ drop := le_trans (mul_nonneg hSlope hGap) hConcavity
+  have hscaled : 0 ≤ (b / a) * drop :=
+    mul_nonneg (div_nonneg hb (le_of_lt ha)) hdrop
+  have hscale : a * (sPrev * ((b / a) * drop)) = b * sPrev * drop := by
+    field_simp [ne_of_gt ha]
+  have hcross : a * sCurr ^ 2 ≤ a * (sPrev * ((b / a) * drop)) := by
+    rw [hscale]
+    exact hproduct
+  have hbound : sCurr ^ 2 ≤ sPrev * ((b / a) * drop) :=
+    (mul_le_mul_iff_of_pos_left ha).mp hcross
+  exact kl_length_recurrence hPrev hscaled hbound
+
 theorem kl_partial_sum_bound
     (s phi : ℕ → ℝ) (c : ℝ)
     (hstep : ∀ k, 2 * s (k + 1) ≤ s k + c * (phi k - phi (k + 1)))
