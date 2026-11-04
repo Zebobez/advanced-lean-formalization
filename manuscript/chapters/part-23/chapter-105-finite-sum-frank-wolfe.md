@@ -330,6 +330,36 @@ If the sampled index is 1, (105.8) gives \(0-(-1)+0=1\). If it is 2, it gives \(
 
 If instead the snapshot were \(\tilde x=1\), the estimator would also equal the exact gradient at \(x=1\) for either index, because the component differences vanish and the full snapshot gradient is already exact. The first calculation is more instructive: exactness can arise from cancellation before the snapshot reaches the current point.
 
+Here is the calculation as two scalar component-gradient functions. Each theorem fixes one shared sample index and checks that its SVRG estimate equals the full gradient at the current point.
+
+```lean
+def componentGradientOne105 (x : ℝ) : ℝ := x - 1
+def componentGradientTwo105 (x : ℝ) : ℝ := x + 1
+
+noncomputable def fullGradient105 (x : ℝ) : ℝ :=
+  (componentGradientOne105 x + componentGradientTwo105 x) / 2
+
+noncomputable def svrgOne105 (x snapshot : ℝ) : ℝ :=
+  componentGradientOne105 x - componentGradientOne105 snapshot + fullGradient105 snapshot
+
+noncomputable def svrgTwo105 (x snapshot : ℝ) : ℝ :=
+  componentGradientTwo105 x - componentGradientTwo105 snapshot + fullGradient105 snapshot
+
+theorem full_gradient_at_snapshot_is_zero : fullGradient105 0 = 0 := by
+  norm_num [fullGradient105, componentGradientOne105, componentGradientTwo105]
+
+theorem full_gradient_at_current_point_is_one : fullGradient105 1 = 1 := by
+  norm_num [fullGradient105, componentGradientOne105, componentGradientTwo105]
+
+theorem svrg_sample_one_is_exact : svrgOne105 1 0 = fullGradient105 1 := by
+  norm_num [svrgOne105, fullGradient105, componentGradientOne105,
+    componentGradientTwo105]
+
+theorem svrg_sample_two_is_exact : svrgTwo105 1 0 = fullGradient105 1 := by
+  norm_num [svrgTwo105, fullGradient105, componentGradientOne105,
+    componentGradientTwo105]
+```
+
 ### 5.2 SAGA unbiasedness depends on the old table
 
 Let \(f_1(x)=\tfrac12x^2\) and \(f_2(x)=x^2\), so their derivatives are \(x\) and \(2x\). At current point \(x=2\), let the stored table be \(\alpha_1=1\) and \(\alpha_2=0\); hence \(\bar\alpha=1/2\). The two possible SAGA estimates are
