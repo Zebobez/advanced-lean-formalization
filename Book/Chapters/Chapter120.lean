@@ -175,6 +175,27 @@ theorem closed_relation_limit_of_relative_error
   exact closed_relation_limit R hclosed x w xLimit 0 hx
     (relative_error_witness_tendsto_zero s w b hs hrelative) hR
 
+theorem kl_certificates_imply_summable
+    (s phi slope grad gap : ℕ → ℝ)
+    (a b lower : ℝ)
+    (ha : 0 < a)
+    (hb : 0 ≤ b)
+    (hphi : ∀ n, lower ≤ phi n)
+    (hs : ∀ n, 0 ≤ s n)
+    (hSlope : ∀ n, 0 ≤ slope n)
+    (hGap : ∀ n, 0 ≤ gap n)
+    (hKL : ∀ n, 1 ≤ slope n * grad n)
+    (hRelative : ∀ n, grad n ≤ b * s n)
+    (hDecrease : ∀ n, a * s (n + 1) ^ 2 ≤ gap n)
+    (hConcavity : ∀ n, slope n * gap n ≤ phi n - phi (n + 1)) :
+    Summable s := by
+  have hrecurrence : ∀ n, 2 * s (n + 1) ≤ s n + (b / a) * (phi n - phi (n + 1)) := by
+    intro n
+    exact kl_recurrence_of_certificates ha hb (hs n) (hSlope n) (hGap n)
+      (hKL n) (hRelative n) (hDecrease n) (hConcavity n)
+  exact kl_recurrence_summable s phi (b / a) lower (div_nonneg hb ha.le)
+    hphi hs hrecurrence
+
 theorem kl_certificates_imply_convergence
     {X : Type*} [PseudoMetricSpace X] [CompleteSpace X]
     (x : ℕ → X) (s phi slope grad gap : ℕ → ℝ)
@@ -201,6 +222,40 @@ theorem kl_certificates_imply_convergence
   have hcauchy : CauchySeq x :=
     cauchySeq_of_dist_le_of_summable s hstepDistance hlength
   exact cauchySeq_tendsto_of_complete hcauchy
+
+theorem kl_certificates_imply_critical_limit
+    {X E : Type*} [PseudoMetricSpace X] [CompleteSpace X]
+    [NormedAddCommGroup E]
+    (R : X → E → Prop)
+    (hclosed : IsClosed {p : X × E | R p.1 p.2})
+    (x : ℕ → X) (w : ℕ → E)
+    (s phi slope grad gap : ℕ → ℝ)
+    (a b lower : ℝ)
+    (ha : 0 < a)
+    (hb : 0 ≤ b)
+    (hphi : ∀ n, lower ≤ phi n)
+    (hs : ∀ n, 0 ≤ s n)
+    (hstepDistance : ∀ n, dist (x n) (x n.succ) ≤ s n)
+    (hSlope : ∀ n, 0 ≤ slope n)
+    (hGap : ∀ n, 0 ≤ gap n)
+    (hKL : ∀ n, 1 ≤ slope n * grad n)
+    (hRelative : ∀ n, grad n ≤ b * s n)
+    (hWitnessNorm : ∀ n, ‖w n‖ ≤ grad n)
+    (hR : ∀ n, R (x n) (w n))
+    (hDecrease : ∀ n, a * s (n + 1) ^ 2 ≤ gap n)
+    (hConcavity : ∀ n, slope n * gap n ≤ phi n - phi (n + 1)) :
+    ∃ xLimit, Tendsto x atTop (𝓝 xLimit) ∧ R xLimit 0 := by
+  have hlength : Summable s :=
+    kl_certificates_imply_summable s phi slope grad gap a b lower
+      ha hb hphi hs hSlope hGap hKL hRelative hDecrease hConcavity
+  have hcauchy : CauchySeq x :=
+    cauchySeq_of_dist_le_of_summable s hstepDistance hlength
+  obtain ⟨xLimit, hx⟩ := cauchySeq_tendsto_of_complete hcauchy
+  have hrelativeWitness : ∀ n, ‖w n‖ ≤ b * s n := fun n =>
+    (hWitnessNorm n).trans (hRelative n)
+  have hcritical := closed_relation_limit_of_relative_error R hclosed x w s b
+    xLimit hx hlength hrelativeWitness hR
+  exact ⟨xLimit, hx, hcritical⟩
 
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)

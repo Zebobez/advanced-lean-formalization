@@ -449,6 +449,27 @@ theorem closed_relation_limit_of_relative_error
   exact closed_relation_limit R hclosed x w xLimit 0 hx
     (relative_error_witness_tendsto_zero s w b hs hrelative) hR
 
+theorem kl_certificates_imply_summable
+    (s phi slope grad gap : ℕ → ℝ)
+    (a b lower : ℝ)
+    (ha : 0 < a)
+    (hb : 0 ≤ b)
+    (hphi : ∀ n, lower ≤ phi n)
+    (hs : ∀ n, 0 ≤ s n)
+    (hSlope : ∀ n, 0 ≤ slope n)
+    (hGap : ∀ n, 0 ≤ gap n)
+    (hKL : ∀ n, 1 ≤ slope n * grad n)
+    (hRelative : ∀ n, grad n ≤ b * s n)
+    (hDecrease : ∀ n, a * s (n + 1) ^ 2 ≤ gap n)
+    (hConcavity : ∀ n, slope n * gap n ≤ phi n - phi (n + 1)) :
+    Summable s := by
+  have hrecurrence : ∀ n, 2 * s (n + 1) ≤ s n + (b / a) * (phi n - phi (n + 1)) := by
+    intro n
+    exact kl_recurrence_of_certificates ha hb (hs n) (hSlope n) (hGap n)
+      (hKL n) (hRelative n) (hDecrease n) (hConcavity n)
+  exact kl_recurrence_summable s phi (b / a) lower (div_nonneg hb ha.le)
+    hphi hs hrecurrence
+
 theorem kl_certificates_imply_convergence
     {X : Type*} [PseudoMetricSpace X] [CompleteSpace X]
     (x : ℕ → X) (s phi slope grad gap : ℕ → ℝ)
@@ -476,6 +497,40 @@ theorem kl_certificates_imply_convergence
     cauchySeq_of_dist_le_of_summable s hstepDistance hlength
   exact cauchySeq_tendsto_of_complete hcauchy
 
+theorem kl_certificates_imply_critical_limit
+    {X E : Type*} [PseudoMetricSpace X] [CompleteSpace X]
+    [NormedAddCommGroup E]
+    (R : X → E → Prop)
+    (hclosed : IsClosed {p : X × E | R p.1 p.2})
+    (x : ℕ → X) (w : ℕ → E)
+    (s phi slope grad gap : ℕ → ℝ)
+    (a b lower : ℝ)
+    (ha : 0 < a)
+    (hb : 0 ≤ b)
+    (hphi : ∀ n, lower ≤ phi n)
+    (hs : ∀ n, 0 ≤ s n)
+    (hstepDistance : ∀ n, dist (x n) (x n.succ) ≤ s n)
+    (hSlope : ∀ n, 0 ≤ slope n)
+    (hGap : ∀ n, 0 ≤ gap n)
+    (hKL : ∀ n, 1 ≤ slope n * grad n)
+    (hRelative : ∀ n, grad n ≤ b * s n)
+    (hWitnessNorm : ∀ n, ‖w n‖ ≤ grad n)
+    (hR : ∀ n, R (x n) (w n))
+    (hDecrease : ∀ n, a * s (n + 1) ^ 2 ≤ gap n)
+    (hConcavity : ∀ n, slope n * gap n ≤ phi n - phi (n + 1)) :
+    ∃ xLimit, Tendsto x atTop (𝓝 xLimit) ∧ R xLimit 0 := by
+  have hlength : Summable s :=
+    kl_certificates_imply_summable s phi slope grad gap a b lower
+      ha hb hphi hs hSlope hGap hKL hRelative hDecrease hConcavity
+  have hcauchy : CauchySeq x :=
+    cauchySeq_of_dist_le_of_summable s hstepDistance hlength
+  obtain ⟨xLimit, hx⟩ := cauchySeq_tendsto_of_complete hcauchy
+  have hrelativeWitness : ∀ n, ‖w n‖ ≤ b * s n := fun n =>
+    (hWitnessNorm n).trans (hRelative n)
+  have hcritical := closed_relation_limit_of_relative_error R hclosed x w s b
+    xLimit hx hlength hrelativeWitness hR
+  exact ⟨xLimit, hx, hcritical⟩
+
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
     (h_length : Summable fun n => dist (x n) (x n.succ)) :
@@ -499,7 +554,9 @@ Two general sequence facts make the final limit passage precise. A summable real
 
 The theorem `closed_relation_limit` formalizes the closed-graph step. Let \(R(x,w)\) be a relation between a state and a residual, and suppose its graph is closed in the product topology. If \(x_k \to x_\star\), \(w_k \to 0\), and \(R(x_k,w_k)\) for every \(k\), then \(R(x_\star,0)\). Its corollary `closed_relation_limit_of_relative_error` obtains the residual convergence from a summable majorant. For a criticality argument, one may instantiate \(R(x,w)\) as membership of \(w\) in a chosen subdifferential at \(x\). The analytic hypotheses ensuring that this particular graph is closed must still be proved for the problem at hand; the abstract theorem supplies only the topological limit passage.
 
-Consequently, the scalar KL certificate theorem proves convergence, and the residual lemmas plus a suitable closed-graph result can identify the limit as critical. The present development does not derive the scalar certificates or the required graph-closedness hypotheses from a particular optimization algorithm; those analytic arguments remain separate.
+The theorem `kl_certificates_imply_summable` packages the KL recurrence as a reusable finite-length result. The companion theorem `kl_certificates_imply_critical_limit` combines that summability result with the Cauchy convergence argument and the residual closed-graph lemma. In addition to the scalar KL certificates, it accepts a selected witness sequence whose norm is bounded by the scalar subgradient estimate and whose state-witness pairs lie in a closed relation. Its conclusion is both convergence of the iterates and the limiting relation `R(x⋆, 0)`. With `R(x, w)` instantiated as subgradient membership, this is the criticality conclusion, provided the graph-closedness hypothesis has been justified.
+
+The formal theorem isolates where analytic work enters: it does not derive the scalar certificates or the required graph-closedness hypotheses from a particular optimization algorithm. Those problem-specific arguments remain separate from the finite-length and topological limit proof.
 
 In a fuller development, define a structure of descent data with fields for sufficient decrease and selected subgradient witnesses. Prove the finite-length result in a theorem that also accepts the KL modulus, neighborhood membership, and continuity evidence. Avoid encoding the entire limiting-subdifferential graph or semialgebraic geometry into the scalar telescope. A library theorem can represent those analytic facts as hypotheses and keep the Lean proof focused on the sequence-level reasoning.
 
