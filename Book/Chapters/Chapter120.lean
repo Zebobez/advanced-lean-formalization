@@ -1,26 +1,37 @@
 module
 
-public import Book.Models.FiniteOptimization
+public import Mathlib
 
 public section
 
 /-!
 # Chapter 120 — Kurdyka–Łojasiewicz Convergence and Finite Length
 
-A small, executable finite example illustrating a technique from this chapter.
-The example checks the stated computation or invariant; it is not a formal
-proof of the chapter's general analytic convergence claims.
+Extracted from manuscript/chapters/part-23/chapter-120-kurdyka-lojasiewicz-convergence.md.
+Generated for leanprover/lean4:v4.35.0 and Mathlib ref v4.35.0.
+Only complete top-level Lean commands are included. Interactive tactic fragments and diagnostic states remain in the manuscript.
 -/
 
 namespace Book.Chapters.Chapter120
 
-open Book.Models.FiniteOptimization
+-- Source Lean fence 1
 
-def klResidual (k : Nat) : Nat := 2 ^ k
-def finiteLengthBound (n : Nat) : Nat := 2 ^ (n + 1) - 1
-
-theorem kl_geometric_partial_sum_example : 1 + 2 + 4 + 8 = finiteLengthBound 3 := by decide
-
-theorem kl_residual_is_positive (k : Nat) : 0 < klResidual k := by exact Nat.pow_pos (by decide)
+theorem finite_descent_budget
+    (F q : ℕ → ℝ) (a lower : ℝ)
+    (h_lower : ∀ n, lower ≤ F n)
+    (h_step : ∀ n, F (n + 1) + a * q n ≤ F n)
+    (N : ℕ) :
+    a * ∑ n ∈ Finset.range N, q n ≤ F 0 - lower := by
+  have htel : ∀ N, F N + a * ∑ n ∈ Finset.range N, q n ≤ F 0 := by
+    intro N
+    induction N with
+    | zero =>
+        simp
+    | succ N ih =>
+        rw [Finset.sum_range_succ]
+        nlinarith [h_step N]
+  have h := htel N
+  have hl := h_lower N
+  linarith
 
 end Book.Chapters.Chapter120

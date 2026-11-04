@@ -242,7 +242,7 @@ The line-search result is not part of the algebraic rate recurrence, but it is r
 
 After analysis has produced a bound \(e_{k+1}\le C e_k^2+\eta_k e_k\), the local contraction step is elementary. Here the errors and constants are nonnegative real numbers.
 
-~~~lean
+```lean
 import Mathlib
 
 theorem local_rate_step
@@ -253,7 +253,7 @@ theorem local_rate_step
     eNext ≤ q * e := by
   have hmul := mul_le_mul_of_nonneg_right hfactor he
   nlinarith [hbound, hmul]
-~~~
+```
 
 If both \(e_k\to0\) and \(\eta_k\to0\), then \(C e_k+\eta_k\to0\). The scalar lemma supplies an eventual contraction by any chosen \(q>0\), which is the final step in the superlinear-rate argument. It does not prove the analytic recurrence; that should be a separate theorem with its model, residual, and regularity assumptions visible.
 

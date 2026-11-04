@@ -287,7 +287,7 @@ Lean is well suited to the scalar descent accounting, but the analytic hypothese
 
 A small algebraic kernel can express the finite-horizon descent budget. The objective is not to formalize the full variational-analysis theorem in one declaration; it is to make the scalar telescoping step reusable and transparent.
 
-~~~lean
+```lean
 import Mathlib
 
 theorem finite_descent_budget
@@ -307,7 +307,7 @@ theorem finite_descent_budget
   have h := htel N
   have hl := h_lower N
   linarith
-~~~
+```
 
 Use \(q_k=s_k^2\) and \(a>0\). This theorem yields a uniform finite-horizon bound on partial sums of squared steps. Passing to an infinite sum is a separate order-theoretic step. It proves finite energy, not finite length: \(\sum s_k^2<\infty\) does not by itself imply \(\sum s_k<\infty\). The desingularizing recurrence (120.13) is the additional argument that upgrades square summability to finite length.
 

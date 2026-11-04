@@ -1,14 +1,14 @@
 # Chapter verification coverage
 
-The manuscript lists **120 numbered chapters**. Every chapter now has a corresponding `Book/Chapters/ChapterNN.lean` module imported by `Book.lean`, and the strict structural audit passes. The extractor currently produces 118 modules containing **413 complete Lean command blocks**. For the remaining 2 chapters, supplemental finite-model examples were added; the [manual model index](../Book/Chapters/MANUAL_MODEL_INDEX.md) maps each to its chapter source.
+The manuscript lists **120 numbered chapters**. Every chapter now has a corresponding `Book/Chapters/ChapterNN.lean` module imported by `Book.lean`, and the strict structural audit passes. The extractor currently produces 120 modules containing **415 complete Lean command blocks**. All chapter modules are generated from complete Lean examples in the manuscript; no supplemental finite-model modules remain.
 
 ## What the checks establish
 
 - **Structural coverage:** all 120 manuscript chapters have a Lean source module and root import.
 - **Compilation:** `lake build` compiles the root library with the pinned Lean and Mathlib versions. The chapter CI uses the same root build.
-- **Executable examples:** extracted commands and the supplemental finite examples compile. The extractor still records **5 contextual fragments** in Chapters 1 and 26 that are not standalone Lean commands.
+- **Executable examples:** extracted commands compile. The extractor still records **5 contextual fragments** in Chapters 1 and 26 that are not standalone Lean commands.
 
-Compilation does not certify every mathematical claim, every prose exercise, or every displayed fragment in the manuscript. In particular, supplemental finite examples check selected computations and invariants; they do not establish general probability, queueing, or optimization theorems. No independent mathematical proof audit or chapter review is claimed here.
+Compilation does not certify every mathematical claim, every prose exercise, or every displayed fragment in the manuscript. The extracted examples check selected formal statements; they do not establish every general theorem discussed in the prose. No independent mathematical proof audit or chapter review is claimed here.
 
 ## Toolchain and packages
 

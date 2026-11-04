@@ -1,28 +1,28 @@
 module
 
-public import Book.Models.FiniteOptimization
+public import Mathlib
 
 public section
 
 /-!
 # Chapter 119 — Local Superlinear Convergence and Forcing Terms
 
-A small, executable finite example illustrating a technique from this chapter.
-The example checks the stated computation or invariant; it is not a formal
-proof of the chapter's general analytic convergence claims.
+Extracted from manuscript/chapters/part-23/chapter-119-local-superlinear-proximal-newton.md.
+Generated for leanprover/lean4:v4.35.0 and Mathlib ref v4.35.0.
+Only complete top-level Lean commands are included. Interactive tactic fragments and diagnostic states remain in the manuscript.
 -/
 
 namespace Book.Chapters.Chapter119
 
-open Book.Models.FiniteOptimization
+-- Source Lean fence 1
 
-def localError (k : Nat) : Nat := if k = 0 then 4 else if k = 1 then 1 else 0
-
-theorem local_error_reaches_zero : localError 2 = 0 := by decide
-
-theorem later_error_remains_zero (k : Nat) (hk : 2 ≤ k) : localError k = 0 := by
-  have h0 : k ≠ 0 := by omega
-  have h1 : k ≠ 1 := by omega
-  simp [localError, h0, h1]
+theorem local_rate_step
+    {e eNext C eta q : ℝ}
+    (he : 0 ≤ e)
+    (hbound : eNext ≤ C * e ^ 2 + eta * e)
+    (hfactor : C * e + eta ≤ q) :
+    eNext ≤ q * e := by
+  have hmul := mul_le_mul_of_nonneg_right hfactor he
+  nlinarith [hbound, hmul]
 
 end Book.Chapters.Chapter119
