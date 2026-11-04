@@ -1,12 +1,12 @@
 # Advanced Mathematical Formalization in Lean 4
 
-**Status:** The 120-chapter manuscript is staged in this repository. Executable examples have been extracted for chapters with complete Lean command blocks and still require full verification and editorial review.
+**Status:** The 121-chapter manuscript is staged in this repository across 24 parts. Its extracted Lean modules compile with the pinned toolchain, and the structural coverage audit passes. The mathematical exposition and proofs still need independent editorial review.
 
 An advanced textbook project for mathematicians who already know Lean 4. The goal is to explain practical and conceptual techniques for formalizing substantial mathematics, with executable examples and carefully versioned Mathlib dependencies.
 
 ## Layout
 
-- `manuscript/` — Markdown master, organized into 23 part folders with `SUMMARY.md`.
+- `manuscript/` — Markdown master, organized into 24 part folders with `SUMMARY.md`.
 - `Book/Chapter01.lean` — preserved build smoke test; `Book/Chapters/` contains executable chapter examples.
 - `scripts/extract_lean_examples.py` — copies complete Lean command blocks from the manuscript into generated modules.
 - `Book.lean` — root module importing the smoke test and extracted chapter modules.

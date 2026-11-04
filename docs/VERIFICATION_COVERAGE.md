@@ -1,10 +1,10 @@
 # Chapter verification coverage
 
-The manuscript lists **120 numbered chapters**. Every chapter now has a corresponding `Book/Chapters/ChapterNN.lean` module imported by `Book.lean`, and the strict structural audit passes. The extractor currently produces 120 modules containing **415 complete Lean command blocks**. All chapter modules are generated from complete Lean examples in the manuscript; no supplemental finite-model modules remain.
+The manuscript lists **121 numbered chapters** across 24 parts. Every chapter has a corresponding `Book/Chapters/ChapterNN.lean` module imported by `Book.lean`, and the strict structural audit passes. The extractor produces 121 modules containing **424 complete Lean command blocks**. All chapter modules are generated from complete Lean examples in the manuscript; no supplemental finite-model modules remain.
 
 ## What the checks establish
 
-- **Structural coverage:** all 120 manuscript chapters have a Lean source module and root import.
+- **Structural coverage:** all 121 manuscript chapters have a Lean source module and root import.
 - **Compilation:** `lake build` compiles the root library with the pinned Lean and Mathlib versions. The chapter CI uses the same root build.
 - **Executable examples:** extracted commands compile. The extractor still records **5 contextual fragments** in Chapters 1 and 26 that are not standalone Lean commands.
 
