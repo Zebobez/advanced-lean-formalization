@@ -16,6 +16,9 @@ namespace Book.Chapters.Chapter120
 
 -- Source Lean fence 1
 
+open Filter
+open scoped Topology
+
 theorem finite_descent_budget
     (F q : ℕ → ℝ) (a lower : ℝ)
     (h_lower : ∀ n, lower ≤ F n)
@@ -33,5 +36,17 @@ theorem finite_descent_budget
   have h := htel N
   have hl := h_lower N
   linarith
+
+theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
+    (x : ℕ → X)
+    (h_length : Summable fun n => dist (x n) (x n.succ)) :
+    CauchySeq x :=
+  cauchySeq_of_summable_dist h_length
+
+theorem finite_length_sequence_converges {X : Type*} [PseudoMetricSpace X]
+    [CompleteSpace X] (x : ℕ → X)
+    (h_length : Summable fun n => dist (x n) (x n.succ)) :
+    ∃ xLimit, Tendsto x atTop (𝓝 xLimit) :=
+  cauchySeq_tendsto_of_complete (finite_length_sequence_is_cauchy x h_length)
 
 end Book.Chapters.Chapter120
