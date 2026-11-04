@@ -37,6 +37,14 @@ theorem finite_descent_budget
   have hl := h_lower N
   linarith
 
+theorem kl_length_recurrence
+    {sPrev sCurr scaledDrop : ℝ}
+    (hPrev : 0 ≤ sPrev)
+    (hDrop : 0 ≤ scaledDrop)
+    (hProduct : sCurr ^ 2 ≤ sPrev * scaledDrop) :
+    2 * sCurr ≤ sPrev + scaledDrop := by
+  nlinarith [sq_nonneg (sPrev - scaledDrop)]
+
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
     (h_length : Summable fun n => dist (x n) (x n.succ)) :

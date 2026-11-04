@@ -285,7 +285,7 @@ Lean is well suited to the scalar descent accounting, but the analytic hypothese
 - the KL inequality and its neighborhood conditions;
 - the finite-dimensional completeness argument.
 
-A small algebraic kernel can express the finite-horizon descent budget. The objective is not to formalize the full variational-analysis theorem in one declaration; it is to make the scalar telescoping step reusable and transparent.
+A small algebraic kernel can express the finite-horizon descent budget and isolate the AM–GM step that turns (120.12) into (120.13). The objective is not to formalize the full variational-analysis theorem in one declaration; it is to make these scalar steps reusable and transparent.
 
 ```lean
 import Mathlib
@@ -310,6 +310,14 @@ theorem finite_descent_budget
   have h := htel N
   have hl := h_lower N
   linarith
+
+theorem kl_length_recurrence
+    {sPrev sCurr scaledDrop : ℝ}
+    (hPrev : 0 ≤ sPrev)
+    (hDrop : 0 ≤ scaledDrop)
+    (hProduct : sCurr ^ 2 ≤ sPrev * scaledDrop) :
+    2 * sCurr ≤ sPrev + scaledDrop := by
+  nlinarith [sq_nonneg (sPrev - scaledDrop)]
 
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
