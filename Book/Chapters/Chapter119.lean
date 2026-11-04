@@ -25,4 +25,18 @@ theorem local_rate_step
   have hmul := mul_le_mul_of_nonneg_right hfactor he
   nlinarith [hbound, hmul]
 
+theorem geometric_error_bound
+    {e : ℕ → ℝ} {q : ℝ}
+    (hq : 0 ≤ q)
+    (hstep : ∀ k, e (k + 1) ≤ q * e k)
+    (n : ℕ) :
+    e n ≤ q ^ n * e 0 := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      calc
+        e (n + 1) ≤ q * e n := hstep n
+        _ ≤ q * (q ^ n * e 0) := mul_le_mul_of_nonneg_left ih hq
+        _ = q ^ (n + 1) * e 0 := by rw [pow_succ]; ring
+
 end Book.Chapters.Chapter119

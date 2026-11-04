@@ -253,9 +253,23 @@ theorem local_rate_step
     eNext ≤ q * e := by
   have hmul := mul_le_mul_of_nonneg_right hfactor he
   nlinarith [hbound, hmul]
+
+theorem geometric_error_bound
+    {e : ℕ → ℝ} {q : ℝ}
+    (hq : 0 ≤ q)
+    (hstep : ∀ k, e (k + 1) ≤ q * e k)
+    (n : ℕ) :
+    e n ≤ q ^ n * e 0 := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      calc
+        e (n + 1) ≤ q * e n := hstep n
+        _ ≤ q * (q ^ n * e 0) := mul_le_mul_of_nonneg_left ih hq
+        _ = q ^ (n + 1) * e 0 := by rw [pow_succ]; ring
 ```
 
-If both \(e_k\to0\) and \(\eta_k\to0\), then \(C e_k+\eta_k\to0\). The scalar lemma supplies an eventual contraction by any chosen \(q>0\), which is the final step in the superlinear-rate argument. It does not prove the analytic recurrence; that should be a separate theorem with its model, residual, and regularity assumptions visible.
+If both \(e_k\to0\) and \(\eta_k\to0\), then \(C e_k+\eta_k\to0\). The scalar lemma supplies an eventual contraction by any chosen \(q>0\), which is the final step in the superlinear-rate argument. The second lemma propagates a uniform contraction into the explicit bound \(e_n\le q^n e_0\); when \(q<1\), this is the usual geometric rate estimate. These lemmas do not prove the analytic recurrence; that should be a separate theorem with its model, residual, and regularity assumptions visible.
 
 ## 8. Common failure modes
 
