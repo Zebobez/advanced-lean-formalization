@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 12 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 11 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 107: [Nonconvex Stationarity with Cached Frank–Wolfe Gradients](Chapter107.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-107-nonconvex-cached-frank-wolfe.md).
 - Chapter 108: [Frank–Wolfe, Fenchel Duality, and Saddle-Point Certificates](Chapter108.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-108-frank-wolfe-fenchel-duality.md).
 - Chapter 109: [Primal–Dual Hybrid Gradient and Proximal Splitting](Chapter109.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-109-primal-dual-hybrid-gradient.md).
 - Chapter 110: [ADMM, Augmented Lagrangians, and Residual Certificates](Chapter110.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-110-admm-and-augmented-lagrangians.md).
