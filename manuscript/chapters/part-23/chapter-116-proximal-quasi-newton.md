@@ -184,6 +184,55 @@ The scalar value \(q=-\tfrac14\) satisfies the equation: \(x(q)=(\tfrac74,0)\), 
 
 The Euclidean proximal point would be \((\tfrac32,0)\). The low-rank coupling shifts the solution because the metric penalizes the sum of the coordinate displacements in addition to their separate squared lengths. This example is small enough to verify by hand and illustrates why a generic separable soft-thresholding formula cannot be reused unchanged in a coupled metric.
 
+The Lean development below verifies the scalar dual equation and proves the resulting point is a global minimizer of the coupled metric proximal objective. The comparison with the Euclidean soft-threshold point is also computed exactly.
+
+```lean
+def softThreshold116 (z threshold : ℚ) : ℚ :=
+  if z < 0 then -max (-z - threshold) 0 else max (z - threshold) 0
+
+def lowRankPrimal116 (q : ℚ) : ℚ × ℚ :=
+  (softThreshold116 (2 - q) (1 / 2), softThreshold116 (-q) (1 / 2))
+
+def lowRankDualMap116 (q : ℚ) : ℚ :=
+  (lowRankPrimal116 q).1 + (lowRankPrimal116 q).2 - 2
+
+def lowRankCandidate116 : ℚ × ℚ := ((7 : ℚ) / 4, 0)
+
+theorem dual_variable_solves_low_rank_equation :
+    lowRankDualMap116 (-(1 : ℚ) / 4) = -(1 : ℚ) / 4 := by
+  norm_num [lowRankDualMap116, lowRankPrimal116, softThreshold116]
+
+theorem low_rank_primal_point :
+    lowRankPrimal116 (-(1 : ℚ) / 4) = lowRankCandidate116 := by
+  norm_num [lowRankPrimal116, lowRankCandidate116, softThreshold116]
+
+theorem euclidean_proximal_point_is_different :
+    (softThreshold116 2 (1 / 2), softThreshold116 0 (1 / 2)) =
+      ((3 : ℚ) / 2, 0) := by
+  norm_num [softThreshold116]
+
+def lowRankMetricObjective116 (x : ℚ × ℚ) : ℚ :=
+  ((x.1 - 2) ^ 2 + x.2 ^ 2 + (x.1 + x.2 - 2) ^ 2) / 2 +
+    (|x.1| + |x.2|) / 2
+
+theorem low_rank_point_is_global_metric_proximum (x : ℚ × ℚ) :
+    lowRankMetricObjective116 lowRankCandidate116 ≤
+      lowRankMetricObjective116 x := by
+  have hFirst : 0 ≤ |x.1| - (7 : ℚ) / 4 - (x.1 - 7 / 4) := by
+    have h := le_abs_self x.1
+    linarith
+  have hSecond : 0 ≤ |x.2| - x.2 / 2 := by
+    by_cases hx : 0 ≤ x.2
+    · rw [abs_of_nonneg hx]
+      nlinarith
+    · have hx' : x.2 ≤ 0 := le_of_not_ge hx
+      rw [abs_of_nonpos hx']
+      nlinarith
+  norm_num [lowRankMetricObjective116, lowRankCandidate116]
+  nlinarith [hFirst, hSecond, sq_nonneg (x.1 - 7 / 4),
+    sq_nonneg x.2, sq_nonneg (x.1 + x.2 - 7 / 4)]
+```
+
 ### 3.3 An exact scalar proximal Newton step
 
 Let \(f(x)=\tfrac12a(x-b)^2\) and \(g(x)=\lambda|x|\), with \(a>0\). The Hessian model is exact, so its metric is \(H=a\), and the proximal Newton candidate is
