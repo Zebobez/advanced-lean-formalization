@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 15 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 14 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 104: [Stochastic Frank–Wolfe and Noisy Linear Oracles](Chapter104.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-104-stochastic-frank-wolfe.md).
 - Chapter 105: [Finite-Sum Frank–Wolfe: Variance Reduction and Gap Estimation](Chapter105.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-105-finite-sum-frank-wolfe.md).
 - Chapter 106: [Structured Gap Estimation for Generalized Linear Frank–Wolfe](Chapter106.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-106-structured-frank-wolfe-gap-estimation.md).
 - Chapter 107: [Nonconvex Stationarity with Cached Frank–Wolfe Gradients](Chapter107.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-107-nonconvex-cached-frank-wolfe.md).

@@ -215,6 +215,77 @@ Q=\langle(0,1),(1/2,-1/2)\rangle=-1/2.
 
 The update moves uphill for the true objective. This does not contradict the expected theorem: the estimator noise is large on this sample, and (104.9) explicitly permits negative one-step progress. Averaging and controlling the error term is essential.
 
+The following coordinate calculation checks the competing oracle choices and follows the noisy update for any step size in ([0,1]). The simplex is the convex hull of the two vertices, so comparing their linear objective values identifies each exact vertex oracle.
+
+```lean
+def inner104 (u v : ℝ × ℝ) : ℝ := u.1 * v.1 + u.2 * v.2
+
+noncomputable def current104 : ℝ × ℝ := ((1 : ℝ) / 2, (1 : ℝ) / 2)
+def vertexOne104 : ℝ × ℝ := (1, 0)
+def vertexTwo104 : ℝ × ℝ := (0, 1)
+def trueGradient104 : ℝ × ℝ := (0, 1)
+def noisyGradient104 : ℝ × ℝ := (1, 0)
+
+def progress104 (gradient point atom : ℝ × ℝ) : ℝ :=
+  inner104 gradient (point - atom)
+
+theorem exact_oracle_prefers_first_vertex :
+    inner104 trueGradient104 vertexOne104 <
+      inner104 trueGradient104 vertexTwo104 := by
+  norm_num [inner104, trueGradient104, vertexOne104, vertexTwo104]
+
+theorem noisy_oracle_prefers_second_vertex :
+    inner104 noisyGradient104 vertexTwo104 <
+      inner104 noisyGradient104 vertexOne104 := by
+  norm_num [inner104, noisyGradient104, vertexOne104, vertexTwo104]
+
+theorem exact_gap_over_vertices_is_one_half :
+    max (progress104 trueGradient104 current104 vertexOne104)
+      (progress104 trueGradient104 current104 vertexTwo104) = (1 : ℝ) / 2 := by
+  norm_num [progress104, inner104, trueGradient104, current104,
+    vertexOne104, vertexTwo104]
+
+theorem noisy_gap_over_vertices_is_one_half :
+    max (progress104 noisyGradient104 current104 vertexOne104)
+      (progress104 noisyGradient104 current104 vertexTwo104) = (1 : ℝ) / 2 := by
+  norm_num [progress104, inner104, noisyGradient104, current104,
+    vertexOne104, vertexTwo104]
+
+theorem true_progress_of_noisy_atom_is_negative_one_half :
+    progress104 trueGradient104 current104 vertexTwo104 = -(1 : ℝ) / 2 := by
+  norm_num [progress104, inner104, trueGradient104, current104, vertexTwo104]
+
+noncomputable def noisyUpdate104 (γ : ℝ) : ℝ × ℝ :=
+  ((1 - γ) / 2, (1 + γ) / 2)
+
+def objective104 (point : ℝ × ℝ) : ℝ := point.2
+
+theorem noisy_update_stays_in_simplex (γ : ℝ) (hγ₀ : 0 ≤ γ) (hγ₁ : γ ≤ 1) :
+    0 ≤ (noisyUpdate104 γ).1 ∧ (noisyUpdate104 γ).1 ≤ 1 ∧
+    0 ≤ (noisyUpdate104 γ).2 ∧ (noisyUpdate104 γ).2 ≤ 1 ∧
+    (noisyUpdate104 γ).1 + (noisyUpdate104 γ).2 = 1 := by
+  simp only [noisyUpdate104]
+  constructor
+  · nlinarith
+  constructor
+  · nlinarith
+  constructor
+  · nlinarith
+  constructor
+  · nlinarith
+  · ring
+
+theorem noisy_update_increases_true_objective (γ : ℝ) :
+    objective104 (noisyUpdate104 γ) = objective104 current104 + γ / 2 := by
+  norm_num [objective104, noisyUpdate104, current104]
+  ring
+
+theorem positive_noisy_step_moves_uphill (γ : ℝ) (hγ : 0 < γ) :
+    objective104 current104 < objective104 (noisyUpdate104 γ) := by
+  rw [noisy_update_increases_true_objective]
+  nlinarith
+```
+
 ### 3.2 Read the minibatch bound numerically
 
 Suppose \(h_0=1\), \(D=1\), \(L=1\), \(\sigma=1\), \(T=100\), and \(b=100\). With \(\gamma=0.1\), the three terms in (104.13) are \(0.1\), \(0.2\), and \(0.05\), respectively. A uniformly sampled iterate therefore satisfies
