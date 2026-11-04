@@ -126,6 +126,33 @@ theorem kl_recurrence_summable
     summable_of_sum_range_le (fun n => hs (n + 1)) hbound
   exact (summable_nat_add_iff (f := s) 1).mp htail
 
+theorem kl_certificates_imply_convergence
+    {X : Type*} [PseudoMetricSpace X] [CompleteSpace X]
+    (x : ℕ → X) (s phi slope grad gap : ℕ → ℝ)
+    (a b lower : ℝ)
+    (ha : 0 < a)
+    (hb : 0 ≤ b)
+    (hphi : ∀ n, lower ≤ phi n)
+    (hs : ∀ n, 0 ≤ s n)
+    (hstepDistance : ∀ n, dist (x n) (x n.succ) ≤ s n)
+    (hSlope : ∀ n, 0 ≤ slope n)
+    (hGap : ∀ n, 0 ≤ gap n)
+    (hKL : ∀ n, 1 ≤ slope n * grad n)
+    (hRelative : ∀ n, grad n ≤ b * s n)
+    (hDecrease : ∀ n, a * s (n + 1) ^ 2 ≤ gap n)
+    (hConcavity : ∀ n, slope n * gap n ≤ phi n - phi (n + 1)) :
+    ∃ xLimit, Tendsto x atTop (𝓝 xLimit) := by
+  have hrecurrence : ∀ n, 2 * s (n + 1) ≤ s n + (b / a) * (phi n - phi (n + 1)) := by
+    intro n
+    exact kl_recurrence_of_certificates ha hb (hs n) (hSlope n) (hGap n)
+      (hKL n) (hRelative n) (hDecrease n) (hConcavity n)
+  have hlength : Summable s :=
+    kl_recurrence_summable s phi (b / a) lower (div_nonneg hb ha.le)
+      hphi hs hrecurrence
+  have hcauchy : CauchySeq x :=
+    cauchySeq_of_dist_le_of_summable s hstepDistance hlength
+  exact cauchySeq_tendsto_of_complete hcauchy
+
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
     (h_length : Summable fun n => dist (x n) (x n.succ)) :

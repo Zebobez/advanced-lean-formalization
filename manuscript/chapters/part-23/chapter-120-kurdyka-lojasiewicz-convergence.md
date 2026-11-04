@@ -400,6 +400,33 @@ theorem kl_recurrence_summable
     summable_of_sum_range_le (fun n => hs (n + 1)) hbound
   exact (summable_nat_add_iff (f := s) 1).mp htail
 
+theorem kl_certificates_imply_convergence
+    {X : Type*} [PseudoMetricSpace X] [CompleteSpace X]
+    (x : ℕ → X) (s phi slope grad gap : ℕ → ℝ)
+    (a b lower : ℝ)
+    (ha : 0 < a)
+    (hb : 0 ≤ b)
+    (hphi : ∀ n, lower ≤ phi n)
+    (hs : ∀ n, 0 ≤ s n)
+    (hstepDistance : ∀ n, dist (x n) (x n.succ) ≤ s n)
+    (hSlope : ∀ n, 0 ≤ slope n)
+    (hGap : ∀ n, 0 ≤ gap n)
+    (hKL : ∀ n, 1 ≤ slope n * grad n)
+    (hRelative : ∀ n, grad n ≤ b * s n)
+    (hDecrease : ∀ n, a * s (n + 1) ^ 2 ≤ gap n)
+    (hConcavity : ∀ n, slope n * gap n ≤ phi n - phi (n + 1)) :
+    ∃ xLimit, Tendsto x atTop (𝓝 xLimit) := by
+  have hrecurrence : ∀ n, 2 * s (n + 1) ≤ s n + (b / a) * (phi n - phi (n + 1)) := by
+    intro n
+    exact kl_recurrence_of_certificates ha hb (hs n) (hSlope n) (hGap n)
+      (hKL n) (hRelative n) (hDecrease n) (hConcavity n)
+  have hlength : Summable s :=
+    kl_recurrence_summable s phi (b / a) lower (div_nonneg hb ha.le)
+      hphi hs hrecurrence
+  have hcauchy : CauchySeq x :=
+    cauchySeq_of_dist_le_of_summable s hstepDistance hlength
+  exact cauchySeq_tendsto_of_complete hcauchy
+
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
     (h_length : Summable fun n => dist (x n) (x n.succ)) :
@@ -415,7 +442,7 @@ theorem finite_length_sequence_converges {X : Type*} [PseudoMetricSpace X]
 
 Use \(q_k=s_k^2\) and \(a>0\). This theorem yields a uniform finite-horizon bound on partial sums of squared steps. Passing to an infinite sum is a separate order-theoretic step. It proves finite energy, not finite length: \(\sum s_k^2<\infty\) does not by itself imply \(\sum s_k<\infty\). The desingularizing recurrence (120.13) is the additional argument that upgrades square summability to finite length.
 
-The product-bound theorem combines the scalar certificates: `hKL` is the desingularized subgradient lower bound, `hRelative` is relative error, `hDecrease` is sufficient decrease, and `hConcavity` bounds the desingularized value drop. Its conclusion is the denominator-free form of (120.12). The next theorem applies AM–GM to obtain (120.13). The finite-sum theorem formalizes the telescoping step after (120.13): every partial sum is bounded by the initial step and the desingularized objective drop, with the endpoint step retained in an intermediate inequality. The summability theorem then uses a lower bound on the desingularized values and nonnegative steps to prove that the step lengths are summable. The two sequence lemmas formalize the next topological step in Exercise 1: once the consecutive distances are summable, the iterates are Cauchy; in a complete space they converge. These results leave the function-space facts that establish the scalar certificates as hypotheses, rather than proving the full variational-analysis theorem.
+The product-bound theorem combines the scalar certificates: `hKL` is the desingularized subgradient lower bound, `hRelative` is relative error, `hDecrease` is sufficient decrease, and `hConcavity` bounds the desingularized value drop. Its conclusion is the denominator-free form of (120.12). The next theorem applies AM–GM to obtain (120.13). The finite-sum theorem formalizes the telescoping step after (120.13); the summability theorem uses a lower bound on desingularized values to prove that the step lengths are summable. The combined `kl_certificates_imply_convergence` theorem carries these scalar assumptions through to convergence of the full iterate sequence in a complete space. It does not prove criticality, or derive the scalar certificates from a particular optimization algorithm; those analytic arguments remain separate.
 
 In a fuller development, define a structure of descent data with fields for sufficient decrease and selected subgradient witnesses. Prove the finite-length result in a theorem that also accepts the KL modulus, neighborhood membership, and continuity evidence. Avoid encoding the entire limiting-subdifferential graph or semialgebraic geometry into the scalar telescope. A library theorem can represent those analytic facts as hypotheses and keep the Lean proof focused on the sequence-level reasoning.
 
