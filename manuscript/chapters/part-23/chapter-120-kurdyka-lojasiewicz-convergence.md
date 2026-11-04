@@ -285,7 +285,7 @@ Lean is well suited to the scalar descent accounting, but the analytic hypothese
 - the KL inequality and its neighborhood conditions;
 - the finite-dimensional completeness argument.
 
-A small algebraic kernel can express the finite-horizon descent budget and isolate the AM–GM step that turns (120.12) into (120.13). The objective is not to formalize the full variational-analysis theorem in one declaration; it is to make these scalar steps reusable and transparent.
+A small algebraic kernel can express the finite-horizon descent budget, isolate the AM–GM step that turns (120.12) into (120.13), and telescope the resulting recurrence. The objective is not to formalize the full variational-analysis theorem in one declaration; it is to make these scalar steps reusable and transparent.
 
 ```lean
 import Mathlib
@@ -319,6 +319,22 @@ theorem kl_length_recurrence
     2 * sCurr ≤ sPrev + scaledDrop := by
   nlinarith [sq_nonneg (sPrev - scaledDrop)]
 
+theorem kl_partial_sum_bound
+    (s phi : ℕ → ℝ) (c : ℝ)
+    (hstep : ∀ k, 2 * s (k + 1) ≤ s k + c * (phi k - phi (k + 1)))
+    (hs : ∀ k, 0 ≤ s k) (N : ℕ) :
+    ∑ k ∈ Finset.range N, s (k + 1) ≤ s 0 + c * (phi 0 - phi N) := by
+  have htel : ∀ N, (∑ k ∈ Finset.range N, s (k + 1)) + s N ≤
+      s 0 + c * (phi 0 - phi N) := by
+    intro N
+    induction N with
+    | zero => simp
+    | succ N ih =>
+        rw [Finset.sum_range_succ]
+        nlinarith [hstep N]
+  have h := htel N
+  linarith [hs N]
+
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
     (h_length : Summable fun n => dist (x n) (x n.succ)) :
@@ -334,7 +350,7 @@ theorem finite_length_sequence_converges {X : Type*} [PseudoMetricSpace X]
 
 Use \(q_k=s_k^2\) and \(a>0\). This theorem yields a uniform finite-horizon bound on partial sums of squared steps. Passing to an infinite sum is a separate order-theoretic step. It proves finite energy, not finite length: \(\sum s_k^2<\infty\) does not by itself imply \(\sum s_k<\infty\). The desingularizing recurrence (120.13) is the additional argument that upgrades square summability to finite length.
 
-The two sequence lemmas formalize the next topological step in Exercise 1: once the consecutive distances are summable, the iterates are Cauchy; in a complete space they converge. They do not derive finite length from the KL recurrence, which remains the central analytic argument of this chapter.
+The finite-sum theorem formalizes the telescoping step after (120.13): every partial sum is bounded by the initial step and the desingularized objective drop, with the endpoint step retained in an intermediate inequality. The two sequence lemmas formalize the next topological step in Exercise 1: once the consecutive distances are summable, the iterates are Cauchy; in a complete space they converge. These results do not derive the KL recurrence from the analytic hypotheses, which remains the central variational-analysis argument of this chapter.
 
 In a fuller development, define a structure of descent data with fields for sufficient decrease and selected subgradient witnesses. Prove the finite-length result in a theorem that also accepts the KL modulus, neighborhood membership, and continuity evidence. Avoid encoding the entire limiting-subdifferential graph or semialgebraic geometry into the scalar telescope. A library theorem can represent those analytic facts as hypotheses and keep the Lean proof focused on the sequence-level reasoning.
 

@@ -45,6 +45,22 @@ theorem kl_length_recurrence
     2 * sCurr ≤ sPrev + scaledDrop := by
   nlinarith [sq_nonneg (sPrev - scaledDrop)]
 
+theorem kl_partial_sum_bound
+    (s phi : ℕ → ℝ) (c : ℝ)
+    (hstep : ∀ k, 2 * s (k + 1) ≤ s k + c * (phi k - phi (k + 1)))
+    (hs : ∀ k, 0 ≤ s k) (N : ℕ) :
+    ∑ k ∈ Finset.range N, s (k + 1) ≤ s 0 + c * (phi 0 - phi N) := by
+  have htel : ∀ N, (∑ k ∈ Finset.range N, s (k + 1)) + s N ≤
+      s 0 + c * (phi 0 - phi N) := by
+    intro N
+    induction N with
+    | zero => simp
+    | succ N ih =>
+        rw [Finset.sum_range_succ]
+        nlinarith [hstep N]
+  have h := htel N
+  linarith [hs N]
+
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
     (h_length : Summable fun n => dist (x n) (x n.succ)) :
