@@ -162,6 +162,60 @@ The shadow values begin \(0,0,1,\tfrac32,\ldots\) and converge to \(2\). The sta
 
 After the first update, the closed-form recurrence is \(z^{k+1}=(z^k+2)/2\), hence \(z^k=2-2^{2-k}\) for \(k\ge1\). The residual \(z^{k+1}-z^k\) halves on each step. This gives a compact exact example for checking both the resolvent scaling and the reflected input.
 
+The Lean model keeps the state update and shadow map separate. It checks the reflected-resolvent calculations, the first state and shadow values, the fixed point, and the recurrence that contracts the state error.
+
+```lean
+def resolventA112 (v : ℚ) : ℚ := max v 0
+def reflectedA112 (v : ℚ) : ℚ := 2 * resolventA112 v - v
+def resolventB112 (v : ℚ) : ℚ := (v + 2) / 2
+
+def douglasRachford112 (z : ℚ) : ℚ :=
+  z - resolventA112 z + resolventB112 (reflectedA112 z)
+
+def shadow112 (z : ℚ) : ℚ := resolventA112 z
+
+theorem dr_step_on_nonnegative_state (z : ℚ) (hz : 0 ≤ z) :
+    douglasRachford112 z = (z + 2) / 2 := by
+  simp [douglasRachford112, resolventA112, reflectedA112,
+    resolventB112, max_eq_left hz]
+  ring
+
+theorem first_state_is_zero : douglasRachford112 (-(2 : ℚ)) = 0 := by
+  norm_num [douglasRachford112, resolventA112, reflectedA112,
+    resolventB112]
+
+theorem second_state_is_one : douglasRachford112 0 = 1 := by
+  norm_num [douglasRachford112, resolventA112, reflectedA112,
+    resolventB112]
+
+theorem third_state_is_three_halves : douglasRachford112 1 = (3 : ℚ) / 2 := by
+  norm_num [douglasRachford112, resolventA112, reflectedA112,
+    resolventB112]
+
+theorem fourth_state_is_seven_fourths :
+    douglasRachford112 (3 / 2) = (7 : ℚ) / 4 := by
+  norm_num [douglasRachford112, resolventA112, reflectedA112,
+    resolventB112]
+
+theorem initial_shadow_is_zero : shadow112 (-(2 : ℚ)) = 0 := by
+  norm_num [shadow112, resolventA112]
+
+theorem shadow_at_second_state_is_zero : shadow112 0 = 0 := by
+  norm_num [shadow112, resolventA112]
+
+theorem shadow_at_third_state_is_one : shadow112 1 = 1 := by
+  norm_num [shadow112, resolventA112]
+
+theorem dr_state_two_is_fixed : douglasRachford112 2 = 2 := by
+  norm_num [douglasRachford112, resolventA112, reflectedA112,
+    resolventB112]
+
+theorem state_error_halves_toward_solution (z : ℚ) (hz : 0 ≤ z) :
+    2 - douglasRachford112 z = (2 - z) / 2 := by
+  rw [dr_step_on_nonnegative_state z hz]
+  ring
+```
+
 ### 3.2 Projection onto an interval intersection
 
 Let \(C=[0,\infty)\) and \(D=(-\infty,2]\). The inclusion \(0\in N_C(x)+N_D(x)\) is solved by every \(x\in[0,2]\). Set \(A=N_C\), \(B=N_D\), so the resolvents are projections. With \(\gamma=1\), start from \(z^0=4\):
