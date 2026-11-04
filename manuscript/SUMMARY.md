@@ -191,3 +191,7 @@
 - [Chapter 119 — Local Superlinear Convergence and Forcing Terms](chapters/part-23/chapter-119-local-superlinear-proximal-newton.md)
 - [Chapter 120 — Kurdyka–Łojasiewicz Convergence and Finite Length](chapters/part-23/chapter-120-kurdyka-lojasiewicz-convergence.md)
 
+# Part XXIV — Fixed-Point Methods and Variational Convergence
+
+- [Chapter 121 — Fejér Monotonicity and Fixed-Point Convergence](chapters/part-24/chapter-121-fejer-monotonicity.md)
+
