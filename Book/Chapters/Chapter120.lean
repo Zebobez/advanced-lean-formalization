@@ -61,6 +61,23 @@ theorem kl_partial_sum_bound
   have h := htel N
   linarith [hs N]
 
+theorem kl_recurrence_summable
+    (s phi : ℕ → ℝ) (c lower : ℝ)
+    (hc : 0 ≤ c)
+    (hphi : ∀ n, lower ≤ phi n)
+    (hs : ∀ n, 0 ≤ s n)
+    (hstep : ∀ k, 2 * s (k + 1) ≤ s k + c * (phi k - phi (k + 1))) :
+    Summable s := by
+  have hbound : ∀ N, ∑ k ∈ Finset.range N, s (k + 1) ≤
+      s 0 + c * (phi 0 - lower) := by
+    intro N
+    have htel := kl_partial_sum_bound s phi c hstep hs N
+    have hmul := mul_le_mul_of_nonneg_left (hphi N) hc
+    nlinarith [htel, hs N]
+  have htail : Summable fun n => s (n + 1) :=
+    summable_of_sum_range_le (fun n => hs (n + 1)) hbound
+  exact (summable_nat_add_iff (f := s) 1).mp htail
+
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
     (h_length : Summable fun n => dist (x n) (x n.succ)) :

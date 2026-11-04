@@ -335,6 +335,23 @@ theorem kl_partial_sum_bound
   have h := htel N
   linarith [hs N]
 
+theorem kl_recurrence_summable
+    (s phi : ℕ → ℝ) (c lower : ℝ)
+    (hc : 0 ≤ c)
+    (hphi : ∀ n, lower ≤ phi n)
+    (hs : ∀ n, 0 ≤ s n)
+    (hstep : ∀ k, 2 * s (k + 1) ≤ s k + c * (phi k - phi (k + 1))) :
+    Summable s := by
+  have hbound : ∀ N, ∑ k ∈ Finset.range N, s (k + 1) ≤
+      s 0 + c * (phi 0 - lower) := by
+    intro N
+    have htel := kl_partial_sum_bound s phi c hstep hs N
+    have hmul := mul_le_mul_of_nonneg_left (hphi N) hc
+    nlinarith [htel, hs N]
+  have htail : Summable fun n => s (n + 1) :=
+    summable_of_sum_range_le (fun n => hs (n + 1)) hbound
+  exact (summable_nat_add_iff (f := s) 1).mp htail
+
 theorem finite_length_sequence_is_cauchy {X : Type*} [PseudoMetricSpace X]
     (x : ℕ → X)
     (h_length : Summable fun n => dist (x n) (x n.succ)) :
@@ -350,7 +367,7 @@ theorem finite_length_sequence_converges {X : Type*} [PseudoMetricSpace X]
 
 Use \(q_k=s_k^2\) and \(a>0\). This theorem yields a uniform finite-horizon bound on partial sums of squared steps. Passing to an infinite sum is a separate order-theoretic step. It proves finite energy, not finite length: \(\sum s_k^2<\infty\) does not by itself imply \(\sum s_k<\infty\). The desingularizing recurrence (120.13) is the additional argument that upgrades square summability to finite length.
 
-The finite-sum theorem formalizes the telescoping step after (120.13): every partial sum is bounded by the initial step and the desingularized objective drop, with the endpoint step retained in an intermediate inequality. The two sequence lemmas formalize the next topological step in Exercise 1: once the consecutive distances are summable, the iterates are Cauchy; in a complete space they converge. These results do not derive the KL recurrence from the analytic hypotheses, which remains the central variational-analysis argument of this chapter.
+The finite-sum theorem formalizes the telescoping step after (120.13): every partial sum is bounded by the initial step and the desingularized objective drop, with the endpoint step retained in an intermediate inequality. The summability theorem then uses a lower bound on the desingularized values and nonnegative steps to prove that the step lengths are summable. The two sequence lemmas formalize the next topological step in Exercise 1: once the consecutive distances are summable, the iterates are Cauchy; in a complete space they converge. These results do not derive the KL recurrence from the analytic hypotheses, which remains the central variational-analysis argument of this chapter.
 
 In a fuller development, define a structure of descent data with fields for sufficient decrease and selected subgradient witnesses. Prove the finite-length result in a theorem that also accepts the KL modulus, neighborhood membership, and continuity evidence. Avoid encoding the entire limiting-subdifferential graph or semialgebraic geometry into the scalar telescope. A library theorem can represent those analytic facts as hypotheses and keep the Lean proof focused on the sequence-level reasoning.
 
