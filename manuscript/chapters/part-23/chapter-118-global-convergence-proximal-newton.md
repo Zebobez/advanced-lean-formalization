@@ -218,7 +218,7 @@ The finite-sum argument does not need vector spaces or optimization types. It ca
 
 The following Lean lemma captures the algebraic core. The function \(q_k\) stands for a nonnegative measure of step size, such as \(\|d_k\|_{H_k}^2\); the one-step estimate can absorb the positive Armijo and forcing constants into \(c\).
 
-~~~lean
+```lean
 import Mathlib
 
 theorem finite_energy_bound
@@ -235,7 +235,7 @@ theorem finite_energy_bound
         rw [Finset.sum_range_succ]
         nlinarith [ih, h_step N]
   nlinarith [htel N, h_lower N]
-~~~
+```
 
 The optimizer-specific theorem should establish h_step from (118.10). Do not put the entire matrix, subgradient, and line-search argument into this induction: doing so obscures the simple invariant and makes it harder to reuse the finite-energy result.
 
