@@ -222,6 +222,75 @@ At a solution \(x_1=x_2=z\), minimizing the original objective gives \(z=(a+b)/2
 
 For a numerical check, set \(a=0\), \(b=2\), \(\rho=1\), and initialize \(z^0=u_1^0=u_2^0=0\). The first local updates are \(x_1^1=0\), \(x_2^1=1\); then \(z^1=\tfrac12\), and the dual variables become \((u_1^1,u_2^1)=(-\tfrac12,\tfrac12)\). On the next step, \(x_1^2=\tfrac12\), \(x_2^2=1\), and \(z^2=\tfrac34\). The primal residual vectors are \((-\tfrac12,\tfrac12)\) and \((-\tfrac14,\tfrac14)\). This finite calculation catches a frequent implementation error: the second local update uses the previous consensus value and dual state, while the consensus update uses the new local values.
 
+The exact rational Lean version names each update in its dependency order. It checks the two local updates, consensus values, scaled dual states, and primal residual vectors.
+
+```lean
+def localUpdate110 (datum ρ z u : ℚ) : ℚ :=
+  (datum + ρ * (z - u)) / (1 + ρ)
+
+def consensusUpdate110 (xOne uOne xTwo uTwo : ℚ) : ℚ :=
+  (xOne + uOne + xTwo + uTwo) / 2
+
+def scaledDualUpdate110 (u x z : ℚ) : ℚ := u + x - z
+
+def xOneFirst110 : ℚ := localUpdate110 0 1 0 0
+def xTwoFirst110 : ℚ := localUpdate110 2 1 0 0
+def zFirst110 : ℚ := consensusUpdate110 xOneFirst110 0 xTwoFirst110 0
+def uOneFirst110 : ℚ := scaledDualUpdate110 0 xOneFirst110 zFirst110
+def uTwoFirst110 : ℚ := scaledDualUpdate110 0 xTwoFirst110 zFirst110
+
+def xOneSecond110 : ℚ := localUpdate110 0 1 zFirst110 uOneFirst110
+def xTwoSecond110 : ℚ := localUpdate110 2 1 zFirst110 uTwoFirst110
+def zSecond110 : ℚ :=
+  consensusUpdate110 xOneSecond110 uOneFirst110 xTwoSecond110 uTwoFirst110
+def uOneSecond110 : ℚ :=
+  scaledDualUpdate110 uOneFirst110 xOneSecond110 zSecond110
+def uTwoSecond110 : ℚ :=
+  scaledDualUpdate110 uTwoFirst110 xTwoSecond110 zSecond110
+
+theorem first_local_updates :
+    xOneFirst110 = 0 ∧ xTwoFirst110 = 1 := by
+  norm_num [xOneFirst110, xTwoFirst110, localUpdate110]
+
+theorem first_consensus_and_dual_state :
+    zFirst110 = 1 / 2 ∧ uOneFirst110 = -(1 : ℚ) / 2 ∧
+      uTwoFirst110 = 1 / 2 := by
+  norm_num [zFirst110, uOneFirst110, uTwoFirst110,
+    xOneFirst110, xTwoFirst110, localUpdate110,
+    consensusUpdate110, scaledDualUpdate110]
+
+theorem second_local_updates :
+    xOneSecond110 = 1 / 2 ∧ xTwoSecond110 = 1 := by
+  norm_num [xOneSecond110, xTwoSecond110, zFirst110,
+    uOneFirst110, uTwoFirst110, xOneFirst110, xTwoFirst110,
+    localUpdate110, consensusUpdate110, scaledDualUpdate110]
+
+theorem second_consensus_and_dual_state :
+    zSecond110 = 3 / 4 ∧ uOneSecond110 = -(3 : ℚ) / 4 ∧
+      uTwoSecond110 = 3 / 4 := by
+  norm_num [zSecond110, uOneSecond110, uTwoSecond110,
+    xOneSecond110, xTwoSecond110, zFirst110,
+    uOneFirst110, uTwoFirst110, xOneFirst110, xTwoFirst110,
+    localUpdate110, consensusUpdate110, scaledDualUpdate110]
+
+theorem first_primal_residual :
+    (xOneFirst110 - zFirst110, xTwoFirst110 - zFirst110) =
+      (-(1 : ℚ) / 2, 1 / 2) := by
+  norm_num [zFirst110, xOneFirst110, xTwoFirst110,
+    localUpdate110, consensusUpdate110]
+
+theorem second_primal_residual :
+    (xOneSecond110 - zSecond110, xTwoSecond110 - zSecond110) =
+      (-(1 : ℚ) / 4, 1 / 4) := by
+  norm_num [zSecond110, xOneSecond110, xTwoSecond110,
+    zFirst110, uOneFirst110, uTwoFirst110, xOneFirst110, xTwoFirst110,
+    localUpdate110, consensusUpdate110, scaledDualUpdate110]
+
+theorem consensus_solution_is_the_data_average :
+    ((0 : ℚ) + 2) / 2 = 1 := by
+  norm_num
+```
+
 ## 5. Lean proof architecture
 
 ### 5.1 Model updates as certificates, not opaque argmin operators

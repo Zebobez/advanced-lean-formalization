@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 9 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 8 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 110: [ADMM, Augmented Lagrangians, and Residual Certificates](Chapter110.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-110-admm-and-augmented-lagrangians.md).
 - Chapter 111: [Dykstra’s Algorithm and Projection onto Intersections](Chapter111.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-111-dykstra-projection-algorithm.md).
 - Chapter 112: [Douglas–Rachford Splitting and Monotone Inclusions](Chapter112.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-112-douglas-rachford-splitting.md).
 - Chapter 114: [Backtracking Proximal Gradient and Local Curvature Certificates](Chapter114.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-114-backtracking-proximal-gradient.md).
