@@ -54,4 +54,21 @@ theorem geometric_error_tendsto_zero
     simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one hq0 hq1).mul_const (e 0)
   exact squeeze_zero (fun n => he n) (fun n => hbound n) hpow
 
+theorem superlinear_error_ratio
+    {e eta : ℕ → ℝ} {C : ℝ}
+    (hepos : ∀ n, 0 < e n)
+    (he_tendsto : Tendsto e atTop (𝓝 0))
+    (heta_tendsto : Tendsto eta atTop (𝓝 0))
+    (hstep : ∀ n, e (n + 1) ≤ C * e n ^ 2 + eta n * e n) :
+    Tendsto (fun n => e (n + 1) / e n) atTop (𝓝 0) := by
+  have hratio : ∀ n, e (n + 1) / e n ≤ C * e n + eta n := by
+    intro n
+    apply (div_le_iff₀ (hepos n)).2
+    nlinarith [hstep n]
+  have hupper : Tendsto (fun n => C * e n + eta n) atTop (𝓝 0) := by
+    simpa using (tendsto_const_nhds.mul he_tendsto).add heta_tendsto
+  exact squeeze_zero
+    (fun n => div_nonneg (le_of_lt (hepos (n + 1))) (le_of_lt (hepos n)))
+    hratio hupper
+
 end Book.Chapters.Chapter119

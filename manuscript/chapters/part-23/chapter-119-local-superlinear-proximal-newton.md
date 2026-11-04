@@ -282,9 +282,26 @@ theorem geometric_error_tendsto_zero
   have hpow : Tendsto (fun n : ℕ => q ^ n * e 0) atTop (𝓝 0) := by
     simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one hq0 hq1).mul_const (e 0)
   exact squeeze_zero (fun n => he n) (fun n => hbound n) hpow
+
+theorem superlinear_error_ratio
+    {e eta : ℕ → ℝ} {C : ℝ}
+    (hepos : ∀ n, 0 < e n)
+    (he_tendsto : Tendsto e atTop (𝓝 0))
+    (heta_tendsto : Tendsto eta atTop (𝓝 0))
+    (hstep : ∀ n, e (n + 1) ≤ C * e n ^ 2 + eta n * e n) :
+    Tendsto (fun n => e (n + 1) / e n) atTop (𝓝 0) := by
+  have hratio : ∀ n, e (n + 1) / e n ≤ C * e n + eta n := by
+    intro n
+    apply (div_le_iff₀ (hepos n)).2
+    nlinarith [hstep n]
+  have hupper : Tendsto (fun n => C * e n + eta n) atTop (𝓝 0) := by
+    simpa using (tendsto_const_nhds.mul he_tendsto).add heta_tendsto
+  exact squeeze_zero
+    (fun n => div_nonneg (le_of_lt (hepos (n + 1))) (le_of_lt (hepos n)))
+    hratio hupper
 ```
 
-If both \(e_k\to0\) and \(\eta_k\to0\), then \(C e_k+\eta_k\to0\). The scalar lemma supplies an eventual contraction by any chosen \(q>0\), which is the final step in the superlinear-rate argument. The next lemma propagates a uniform contraction into the explicit bound \(e_n\le q^n e_0\); the final lemma proves convergence to zero when \(0\le q<1\) and the errors are nonnegative. These lemmas do not prove the analytic recurrence; that should be a separate theorem with its model, residual, and regularity assumptions visible.
+If both \(e_k\to0\) and \(\eta_k\to0\), then \(C e_k+\eta_k\to0\). The scalar lemma supplies an eventual contraction by any chosen \(q>0\), which is the final step in the superlinear-rate argument. The next lemma propagates a uniform contraction into the explicit bound \(e_n\le q^n e_0\); the following lemma proves convergence to zero when \(0\le q<1\) and the errors are nonnegative. The final theorem shows that the relative error ratio tends to zero when \(e_k\to0\), \(\eta_k\to0\), and the local error recurrence holds with positive errors. These lemmas do not prove the analytic recurrence; that should be a separate theorem with its model, residual, and regularity assumptions visible.
 
 ## 8. Common failure modes
 
