@@ -21,7 +21,10 @@
 ## Suggested publication deliverables
 
 - A professionally typeset PDF or print master.
+- A reflowable EPUB 3 review build generated from the repository's canonical Markdown and checked in Kindle Previewer.
 - Verified Lean source files with a pinned toolchain and committed Lake manifest.
 - A documented change log for edition-specific updates.
+
+The Kindle export workflow lives in `publishing/` and reads `manuscript/SUMMARY.md`. Keep exported files as review artifacts; the Markdown remains the source of truth.
 
 This file is a planning document; it does not certify that any chapter has been formally or editorially reviewed.

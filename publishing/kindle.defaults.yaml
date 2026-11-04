@@ -1,0 +1,10 @@
+from: markdown+tex_math_double_backslash
+to: epub3
+standalone: true
+toc: true
+toc-depth: 2
+css: ${.}/kindle.css
+metadata:
+  title: Advanced Lean for Mathematics
+  lang: en-US
+  description: A practical textbook on advanced techniques for formalizing mathematics in Lean 4.

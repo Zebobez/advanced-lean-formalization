@@ -1,6 +1,7 @@
 # Lake and Lean generated artifacts
 .lake/
 .build/
+/build/
 lake-packages/
 *.olean
 *.ilean

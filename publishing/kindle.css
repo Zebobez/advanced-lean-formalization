@@ -1,0 +1,5 @@
+/* Keep Lean examples readable in narrow, reflowable Kindle views. */
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

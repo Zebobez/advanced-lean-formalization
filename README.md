@@ -10,6 +10,7 @@ An advanced textbook project for mathematicians who already know Lean 4. The goa
 - `Book/Chapter01.lean` — preserved build smoke test; `Book/Chapters/` contains executable chapter examples.
 - `scripts/extract_lean_examples.py` — copies complete Lean command blocks from the manuscript into generated modules.
 - `Book.lean` — root module importing the smoke test and extracted chapter modules.
+- `publishing/` — reflowable EPUB 3 export instructions and script, sourced from `manuscript/`.
 - `docs/EDITORIAL_WORKFLOW.md` — procedure for verifying and publishing material.
 - `.github/workflows/lean.yml` — compile check on pushes and pull requests.
 - `lean-toolchain` and `lakefile.lean` — pinned Lean/Mathlib setup.
@@ -24,6 +25,8 @@ lake build
 ```
 
 This project pins Lean and Mathlib to **v4.35.0**. Use `lake update` only when intentionally changing dependencies; review the resulting `lake-manifest.json` before staging it.
+
+To create a Kindle review EPUB, install Pandoc and run `./publishing/build-kindle.ps1` in PowerShell. It reads the ordered chapters from `manuscript/SUMMARY.md` and writes an ignored review artifact under `build/kindle/`. See `publishing/README.md` for preview and release checks.
 
 The GitHub Actions workflow also attempts to build the Lean modules. **A successful Lean build is not a complete mathematical review**: all statements, assumptions, dependencies, and examples still require human verification.
 
