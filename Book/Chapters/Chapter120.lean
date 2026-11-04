@@ -126,6 +126,55 @@ theorem kl_recurrence_summable
     summable_of_sum_range_le (fun n => hs (n + 1)) hbound
   exact (summable_nat_add_iff (f := s) 1).mp htail
 
+theorem summable_real_tendsto_zero {f : ℕ → ℝ} (hf : Summable f) :
+    Tendsto f atTop (𝓝 0) := by
+  have hsum := hf.hasSum.tendsto_sum_nat
+  have hsumSucc := hsum.comp (tendsto_add_atTop_nat 1)
+  have hdiff : Tendsto
+      (fun n => (∑ i ∈ Finset.range (n + 1), f i) - ∑ i ∈ Finset.range n, f i)
+      atTop (𝓝 0) := by
+    simpa using hsumSucc.sub hsum
+  simpa only [Finset.sum_range_succ, add_sub_cancel_left] using hdiff
+
+theorem relative_error_witness_tendsto_zero
+    {E : Type*} [NormedAddCommGroup E]
+    (s : ℕ → ℝ) (w : ℕ → E) (b : ℝ)
+    (hs : Summable s)
+    (hrelative : ∀ n, ‖w n‖ ≤ b * s n) :
+    Tendsto w atTop (𝓝 0) := by
+  have hs0 := summable_real_tendsto_zero hs
+  have hbound : Tendsto (fun n => b * s n) atTop (𝓝 0) := by
+    simpa using (tendsto_const_nhds.mul hs0)
+  have hwnorm := squeeze_zero (fun n => norm_nonneg (w n)) hrelative hbound
+  apply tendsto_iff_dist_tendsto_zero.mpr
+  simpa [dist_eq_norm] using hwnorm
+
+theorem closed_relation_limit
+    {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    (R : X → Y → Prop)
+    (hclosed : IsClosed {p : X × Y | R p.1 p.2})
+    (x : ℕ → X) (w : ℕ → Y) (xLimit : X) (yLimit : Y)
+    (hx : Tendsto x atTop (𝓝 xLimit))
+    (hw : Tendsto w atTop (𝓝 yLimit))
+    (hR : ∀ n, R (x n) (w n)) :
+    R xLimit yLimit := by
+  have hpair : Tendsto (fun n => (x n, w n)) atTop (𝓝 (xLimit, yLimit)) :=
+    hx.prodMk_nhds hw
+  exact hclosed.mem_of_tendsto hpair (Filter.Eventually.of_forall hR)
+
+theorem closed_relation_limit_of_relative_error
+    {X E : Type*} [TopologicalSpace X] [NormedAddCommGroup E]
+    (R : X → E → Prop)
+    (hclosed : IsClosed {p : X × E | R p.1 p.2})
+    (x : ℕ → X) (w : ℕ → E) (s : ℕ → ℝ) (b : ℝ) (xLimit : X)
+    (hx : Tendsto x atTop (𝓝 xLimit))
+    (hs : Summable s)
+    (hrelative : ∀ n, ‖w n‖ ≤ b * s n)
+    (hR : ∀ n, R (x n) (w n)) :
+    R xLimit 0 := by
+  exact closed_relation_limit R hclosed x w xLimit 0 hx
+    (relative_error_witness_tendsto_zero s w b hs hrelative) hR
+
 theorem kl_certificates_imply_convergence
     {X : Type*} [PseudoMetricSpace X] [CompleteSpace X]
     (x : ℕ → X) (s phi slope grad gap : ℕ → ℝ)

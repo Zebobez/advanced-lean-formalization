@@ -400,6 +400,55 @@ theorem kl_recurrence_summable
     summable_of_sum_range_le (fun n => hs (n + 1)) hbound
   exact (summable_nat_add_iff (f := s) 1).mp htail
 
+theorem summable_real_tendsto_zero {f : ℕ → ℝ} (hf : Summable f) :
+    Tendsto f atTop (𝓝 0) := by
+  have hsum := hf.hasSum.tendsto_sum_nat
+  have hsumSucc := hsum.comp (tendsto_add_atTop_nat 1)
+  have hdiff : Tendsto
+      (fun n => (∑ i ∈ Finset.range (n + 1), f i) - ∑ i ∈ Finset.range n, f i)
+      atTop (𝓝 0) := by
+    simpa using hsumSucc.sub hsum
+  simpa only [Finset.sum_range_succ, add_sub_cancel_left] using hdiff
+
+theorem relative_error_witness_tendsto_zero
+    {E : Type*} [NormedAddCommGroup E]
+    (s : ℕ → ℝ) (w : ℕ → E) (b : ℝ)
+    (hs : Summable s)
+    (hrelative : ∀ n, ‖w n‖ ≤ b * s n) :
+    Tendsto w atTop (𝓝 0) := by
+  have hs0 := summable_real_tendsto_zero hs
+  have hbound : Tendsto (fun n => b * s n) atTop (𝓝 0) := by
+    simpa using (tendsto_const_nhds.mul hs0)
+  have hwnorm := squeeze_zero (fun n => norm_nonneg (w n)) hrelative hbound
+  apply tendsto_iff_dist_tendsto_zero.mpr
+  simpa [dist_eq_norm] using hwnorm
+
+theorem closed_relation_limit
+    {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    (R : X → Y → Prop)
+    (hclosed : IsClosed {p : X × Y | R p.1 p.2})
+    (x : ℕ → X) (w : ℕ → Y) (xLimit : X) (yLimit : Y)
+    (hx : Tendsto x atTop (𝓝 xLimit))
+    (hw : Tendsto w atTop (𝓝 yLimit))
+    (hR : ∀ n, R (x n) (w n)) :
+    R xLimit yLimit := by
+  have hpair : Tendsto (fun n => (x n, w n)) atTop (𝓝 (xLimit, yLimit)) :=
+    hx.prodMk_nhds hw
+  exact hclosed.mem_of_tendsto hpair (Filter.Eventually.of_forall hR)
+
+theorem closed_relation_limit_of_relative_error
+    {X E : Type*} [TopologicalSpace X] [NormedAddCommGroup E]
+    (R : X → E → Prop)
+    (hclosed : IsClosed {p : X × E | R p.1 p.2})
+    (x : ℕ → X) (w : ℕ → E) (s : ℕ → ℝ) (b : ℝ) (xLimit : X)
+    (hx : Tendsto x atTop (𝓝 xLimit))
+    (hs : Summable s)
+    (hrelative : ∀ n, ‖w n‖ ≤ b * s n)
+    (hR : ∀ n, R (x n) (w n)) :
+    R xLimit 0 := by
+  exact closed_relation_limit R hclosed x w xLimit 0 hx
+    (relative_error_witness_tendsto_zero s w b hs hrelative) hR
+
 theorem kl_certificates_imply_convergence
     {X : Type*} [PseudoMetricSpace X] [CompleteSpace X]
     (x : ℕ → X) (s phi slope grad gap : ℕ → ℝ)
@@ -442,7 +491,15 @@ theorem finite_length_sequence_converges {X : Type*} [PseudoMetricSpace X]
 
 Use \(q_k=s_k^2\) and \(a>0\). This theorem yields a uniform finite-horizon bound on partial sums of squared steps. Passing to an infinite sum is a separate order-theoretic step. It proves finite energy, not finite length: \(\sum s_k^2<\infty\) does not by itself imply \(\sum s_k<\infty\). The desingularizing recurrence (120.13) is the additional argument that upgrades square summability to finite length.
 
-The product-bound theorem combines the scalar certificates: `hKL` is the desingularized subgradient lower bound, `hRelative` is relative error, `hDecrease` is sufficient decrease, and `hConcavity` bounds the desingularized value drop. Its conclusion is the denominator-free form of (120.12). The next theorem applies AM–GM to obtain (120.13). The finite-sum theorem formalizes the telescoping step after (120.13); the summability theorem uses a lower bound on desingularized values to prove that the step lengths are summable. The combined `kl_certificates_imply_convergence` theorem carries these scalar assumptions through to convergence of the full iterate sequence in a complete space. It does not prove criticality, or derive the scalar certificates from a particular optimization algorithm; those analytic arguments remain separate.
+The product-bound theorem combines the scalar certificates: `hKL` is the desingularized subgradient lower bound, `hRelative` is relative error, `hDecrease` is sufficient decrease, and `hConcavity` bounds the desingularized value drop. Its conclusion is the denominator-free form of (120.12). The next theorem applies AM–GM to obtain (120.13). The finite-sum theorem formalizes the telescoping step after (120.13); the summability theorem uses a lower bound on desingularized values to prove that the step lengths are summable. The combined `kl_certificates_imply_convergence` theorem carries these scalar assumptions through to convergence of the full iterate sequence in a complete space.
+
+### Residuals and closed graphs
+
+Two general sequence facts make the final limit passage precise. A summable real sequence tends to zero: its partial sums converge, and the difference between consecutive partial sums is exactly the next term. The normed-space version of the squeeze argument then shows that a residual sequence \(w_k\) tends to zero whenever \(\lVert w_k\rVert \le b s_k\) and the step majorant \((s_k)\) is summable. The Lean lemmas `summable_real_tendsto_zero` and `relative_error_witness_tendsto_zero` isolate these arguments.
+
+The theorem `closed_relation_limit` formalizes the closed-graph step. Let \(R(x,w)\) be a relation between a state and a residual, and suppose its graph is closed in the product topology. If \(x_k \to x_\star\), \(w_k \to 0\), and \(R(x_k,w_k)\) for every \(k\), then \(R(x_\star,0)\). Its corollary `closed_relation_limit_of_relative_error` obtains the residual convergence from a summable majorant. For a criticality argument, one may instantiate \(R(x,w)\) as membership of \(w\) in a chosen subdifferential at \(x\). The analytic hypotheses ensuring that this particular graph is closed must still be proved for the problem at hand; the abstract theorem supplies only the topological limit passage.
+
+Consequently, the scalar KL certificate theorem proves convergence, and the residual lemmas plus a suitable closed-graph result can identify the limit as critical. The present development does not derive the scalar certificates or the required graph-closedness hypotheses from a particular optimization algorithm; those analytic arguments remain separate.
 
 In a fuller development, define a structure of descent data with fields for sufficient decrease and selected subgradient witnesses. Prove the finite-length result in a theorem that also accepts the KL modulus, neighborhood membership, and continuity evidence. Avoid encoding the entire limiting-subdifferential graph or semialgebraic geometry into the scalar telescope. A library theorem can represent those analytic facts as hypotheses and keep the Lean proof focused on the sequence-level reasoning.
 
