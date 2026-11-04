@@ -45,6 +45,28 @@ theorem kl_length_recurrence
     2 * sCurr ≤ sPrev + scaledDrop := by
   nlinarith [sq_nonneg (sPrev - scaledDrop)]
 
+theorem kl_product_bound_of_certificates
+    {a b sPrev sCurr slope grad gap drop : ℝ}
+    (ha : 0 ≤ a)
+    (hb : 0 ≤ b)
+    (hPrev : 0 ≤ sPrev)
+    (hSlope : 0 ≤ slope)
+    (hKL : 1 ≤ slope * grad)
+    (hRelative : grad ≤ b * sPrev)
+    (hDecrease : a * sCurr ^ 2 ≤ gap)
+    (hConcavity : slope * gap ≤ drop) :
+    a * sCurr ^ 2 ≤ b * sPrev * drop := by
+  have hgradScaled := mul_le_mul_of_nonneg_left hRelative hSlope
+  have hfactor : 1 ≤ slope * (b * sPrev) := by
+    nlinarith [hKL, hgradScaled]
+  have hdecreaseScaled := mul_le_mul_of_nonneg_left hDecrease hSlope
+  have hstepScaled : slope * (a * sCurr ^ 2) ≤ drop := by
+    nlinarith [hdecreaseScaled, hConcavity]
+  have hfromFactor :=
+    mul_le_mul_of_nonneg_right hfactor (mul_nonneg ha (sq_nonneg sCurr))
+  have htoDrop := mul_le_mul_of_nonneg_left hstepScaled (mul_nonneg hb hPrev)
+  nlinarith [hfromFactor, htoDrop]
+
 theorem kl_partial_sum_bound
     (s phi : ℕ → ℝ) (c : ℝ)
     (hstep : ∀ k, 2 * s (k + 1) ≤ s k + c * (phi k - phi (k + 1)))

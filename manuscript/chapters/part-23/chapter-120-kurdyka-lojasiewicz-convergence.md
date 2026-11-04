@@ -285,7 +285,7 @@ Lean is well suited to the scalar descent accounting, but the analytic hypothese
 - the KL inequality and its neighborhood conditions;
 - the finite-dimensional completeness argument.
 
-A small algebraic kernel can express the finite-horizon descent budget, isolate the AM–GM step that turns (120.12) into (120.13), and telescope the resulting recurrence. The objective is not to formalize the full variational-analysis theorem in one declaration; it is to make these scalar steps reusable and transparent.
+A small algebraic kernel can combine the scalar KL, relative-error, sufficient-decrease, and concavity certificates into the product estimate, isolate the AM–GM step that turns (120.12) into (120.13), and telescope the resulting recurrence. The objective is not to formalize the full variational-analysis theorem in one declaration; it is to make these scalar steps reusable and transparent.
 
 ```lean
 import Mathlib
@@ -318,6 +318,28 @@ theorem kl_length_recurrence
     (hProduct : sCurr ^ 2 ≤ sPrev * scaledDrop) :
     2 * sCurr ≤ sPrev + scaledDrop := by
   nlinarith [sq_nonneg (sPrev - scaledDrop)]
+
+theorem kl_product_bound_of_certificates
+    {a b sPrev sCurr slope grad gap drop : ℝ}
+    (ha : 0 ≤ a)
+    (hb : 0 ≤ b)
+    (hPrev : 0 ≤ sPrev)
+    (hSlope : 0 ≤ slope)
+    (hKL : 1 ≤ slope * grad)
+    (hRelative : grad ≤ b * sPrev)
+    (hDecrease : a * sCurr ^ 2 ≤ gap)
+    (hConcavity : slope * gap ≤ drop) :
+    a * sCurr ^ 2 ≤ b * sPrev * drop := by
+  have hgradScaled := mul_le_mul_of_nonneg_left hRelative hSlope
+  have hfactor : 1 ≤ slope * (b * sPrev) := by
+    nlinarith [hKL, hgradScaled]
+  have hdecreaseScaled := mul_le_mul_of_nonneg_left hDecrease hSlope
+  have hstepScaled : slope * (a * sCurr ^ 2) ≤ drop := by
+    nlinarith [hdecreaseScaled, hConcavity]
+  have hfromFactor :=
+    mul_le_mul_of_nonneg_right hfactor (mul_nonneg ha (sq_nonneg sCurr))
+  have htoDrop := mul_le_mul_of_nonneg_left hstepScaled (mul_nonneg hb hPrev)
+  nlinarith [hfromFactor, htoDrop]
 
 theorem kl_partial_sum_bound
     (s phi : ℕ → ℝ) (c : ℝ)
@@ -367,7 +389,7 @@ theorem finite_length_sequence_converges {X : Type*} [PseudoMetricSpace X]
 
 Use \(q_k=s_k^2\) and \(a>0\). This theorem yields a uniform finite-horizon bound on partial sums of squared steps. Passing to an infinite sum is a separate order-theoretic step. It proves finite energy, not finite length: \(\sum s_k^2<\infty\) does not by itself imply \(\sum s_k<\infty\). The desingularizing recurrence (120.13) is the additional argument that upgrades square summability to finite length.
 
-The finite-sum theorem formalizes the telescoping step after (120.13): every partial sum is bounded by the initial step and the desingularized objective drop, with the endpoint step retained in an intermediate inequality. The summability theorem then uses a lower bound on the desingularized values and nonnegative steps to prove that the step lengths are summable. The two sequence lemmas formalize the next topological step in Exercise 1: once the consecutive distances are summable, the iterates are Cauchy; in a complete space they converge. These results do not derive the KL recurrence from the analytic hypotheses, which remains the central variational-analysis argument of this chapter.
+The product-bound theorem combines the scalar certificates: `hKL` is the desingularized subgradient lower bound, `hRelative` is relative error, `hDecrease` is sufficient decrease, and `hConcavity` bounds the desingularized value drop. Its conclusion is the denominator-free form of (120.12). The next theorem applies AM–GM to obtain (120.13). The finite-sum theorem formalizes the telescoping step after (120.13): every partial sum is bounded by the initial step and the desingularized objective drop, with the endpoint step retained in an intermediate inequality. The summability theorem then uses a lower bound on the desingularized values and nonnegative steps to prove that the step lengths are summable. The two sequence lemmas formalize the next topological step in Exercise 1: once the consecutive distances are summable, the iterates are Cauchy; in a complete space they converge. These results leave the function-space facts that establish the scalar certificates as hypotheses, rather than proving the full variational-analysis theorem.
 
 In a fuller development, define a structure of descent data with fields for sufficient decrease and selected subgradient witnesses. Prove the finite-length result in a theorem that also accepts the KL modulus, neighborhood membership, and continuity evidence. Avoid encoding the entire limiting-subdifferential graph or semialgebraic geometry into the scalar telescope. A library theorem can represent those analytic facts as hypotheses and keep the Lean proof focused on the sequence-level reasoning.
 
