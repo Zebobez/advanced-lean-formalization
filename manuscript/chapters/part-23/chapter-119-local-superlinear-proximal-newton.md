@@ -245,6 +245,9 @@ After analysis has produced a bound \(e_{k+1}\le C e_k^2+\eta_k e_k\), the local
 ```lean
 import Mathlib
 
+open Filter
+open scoped Topology
+
 theorem local_rate_step
     {e eNext C eta q : ℝ}
     (he : 0 ≤ e)
@@ -267,9 +270,21 @@ theorem geometric_error_bound
         e (n + 1) ≤ q * e n := hstep n
         _ ≤ q * (q ^ n * e 0) := mul_le_mul_of_nonneg_left ih hq
         _ = q ^ (n + 1) * e 0 := by rw [pow_succ]; ring
+
+theorem geometric_error_tendsto_zero
+    {e : ℕ → ℝ} {q : ℝ}
+    (hq0 : 0 ≤ q)
+    (hq1 : q < 1)
+    (he : ∀ n, 0 ≤ e n)
+    (hstep : ∀ k, e (k + 1) ≤ q * e k) :
+    Tendsto e atTop (𝓝 0) := by
+  have hbound := geometric_error_bound hq0 hstep
+  have hpow : Tendsto (fun n : ℕ => q ^ n * e 0) atTop (𝓝 0) := by
+    simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one hq0 hq1).mul_const (e 0)
+  exact squeeze_zero (fun n => he n) (fun n => hbound n) hpow
 ```
 
-If both \(e_k\to0\) and \(\eta_k\to0\), then \(C e_k+\eta_k\to0\). The scalar lemma supplies an eventual contraction by any chosen \(q>0\), which is the final step in the superlinear-rate argument. The second lemma propagates a uniform contraction into the explicit bound \(e_n\le q^n e_0\); when \(q<1\), this is the usual geometric rate estimate. These lemmas do not prove the analytic recurrence; that should be a separate theorem with its model, residual, and regularity assumptions visible.
+If both \(e_k\to0\) and \(\eta_k\to0\), then \(C e_k+\eta_k\to0\). The scalar lemma supplies an eventual contraction by any chosen \(q>0\), which is the final step in the superlinear-rate argument. The next lemma propagates a uniform contraction into the explicit bound \(e_n\le q^n e_0\); the final lemma proves convergence to zero when \(0\le q<1\) and the errors are nonnegative. These lemmas do not prove the analytic recurrence; that should be a separate theorem with its model, residual, and regularity assumptions visible.
 
 ## 8. Common failure modes
 

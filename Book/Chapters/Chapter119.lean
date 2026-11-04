@@ -16,6 +16,9 @@ namespace Book.Chapters.Chapter119
 
 -- Source Lean fence 1
 
+open Filter
+open scoped Topology
+
 theorem local_rate_step
     {e eNext C eta q : ℝ}
     (he : 0 ≤ e)
@@ -38,5 +41,17 @@ theorem geometric_error_bound
         e (n + 1) ≤ q * e n := hstep n
         _ ≤ q * (q ^ n * e 0) := mul_le_mul_of_nonneg_left ih hq
         _ = q ^ (n + 1) * e 0 := by rw [pow_succ]; ring
+
+theorem geometric_error_tendsto_zero
+    {e : ℕ → ℝ} {q : ℝ}
+    (hq0 : 0 ≤ q)
+    (hq1 : q < 1)
+    (he : ∀ n, 0 ≤ e n)
+    (hstep : ∀ k, e (k + 1) ≤ q * e k) :
+    Tendsto e atTop (𝓝 0) := by
+  have hbound := geometric_error_bound hq0 hstep
+  have hpow : Tendsto (fun n : ℕ => q ^ n * e 0) atTop (𝓝 0) := by
+    simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one hq0 hq1).mul_const (e 0)
+  exact squeeze_zero (fun n => he n) (fun n => hbound n) hpow
 
 end Book.Chapters.Chapter119
