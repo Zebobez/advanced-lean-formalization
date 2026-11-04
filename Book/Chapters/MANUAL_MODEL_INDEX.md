@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 13 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 12 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 106: [Structured Gap Estimation for Generalized Linear Frank–Wolfe](Chapter106.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-106-structured-frank-wolfe-gap-estimation.md).
 - Chapter 107: [Nonconvex Stationarity with Cached Frank–Wolfe Gradients](Chapter107.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-107-nonconvex-cached-frank-wolfe.md).
 - Chapter 108: [Frank–Wolfe, Fenchel Duality, and Saddle-Point Certificates](Chapter108.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-108-frank-wolfe-fenchel-duality.md).
 - Chapter 109: [Primal–Dual Hybrid Gradient and Proximal Splitting](Chapter109.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-109-primal-dual-hybrid-gradient.md).
