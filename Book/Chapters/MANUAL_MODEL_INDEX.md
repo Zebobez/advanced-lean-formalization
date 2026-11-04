@@ -1,8 +1,7 @@
 # Supplemental finite-model examples
 
-These 5 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
+These 4 modules were added to provide executable finite examples for chapters that did not have extracted Lean commands. They compile against the pinned project toolchain and illustrate selected calculations or invariants. They do not formalize every exercise or prove the chapters’ general analytic theorems; see the chapter Markdown for the full exposition.
 
-- Chapter 115: [Variable-Metric Forward–Backward Splitting](Chapter115.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-115-variable-metric-forward-backward.md).
 - Chapter 116: [Proximal Quasi-Newton Methods and Structured Metrics](Chapter116.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-116-proximal-quasi-newton.md).
 - Chapter 118: [Global Convergence of Proximal Newton Iterations](Chapter118.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-118-global-convergence-proximal-newton.md).
 - Chapter 119: [Local Superlinear Convergence and Forcing Terms](Chapter119.lean) — manuscript: [source](../../manuscript/chapters/part-23/chapter-119-local-superlinear-proximal-newton.md).

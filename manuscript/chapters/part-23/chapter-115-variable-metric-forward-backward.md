@@ -205,6 +205,36 @@ This is exactly the minimizer of each summand in \(f+g\). The chosen metric remo
 
 This example is deliberately favorable: \(f\) is diagonal quadratic and \(g\) is separable in the same coordinates. If \(g\) couples coordinates, the diagonal metric proximal map may not split, even though the gradient update is cheap.
 
+The rational Lean calculation keeps the forward map and the metric proximal map separate. It verifies that diagonal scaling sends every starting point to \(b\), then applies the coordinate thresholds \(\lambda/a_i\) to obtain the exact minimizer.
+
+```lean
+def softThreshold115 (z threshold : ℚ) : ℚ :=
+  if z < 0 then -max (-z - threshold) 0 else max (z - threshold) 0
+
+def diagonalForward115 (x1 x2 : ℚ) : ℚ × ℚ :=
+  (x1 - 1 * (x1 - 2), x2 - (1 / 4) * (4 * (x2 + 1)))
+
+def diagonalMetricProx115 (v : ℚ × ℚ) : ℚ × ℚ :=
+  (softThreshold115 v.1 (1 / 2), softThreshold115 v.2 (1 / 8))
+
+def variableMetricStep115 (x1 x2 : ℚ) : ℚ × ℚ :=
+  diagonalMetricProx115 (diagonalForward115 x1 x2)
+
+theorem diagonal_forward_point_is_data (x1 x2 : ℚ) :
+    diagonalForward115 x1 x2 = (2, -1) := by
+  ext <;> simp [diagonalForward115]
+
+theorem diagonal_metric_prox_at_data :
+    diagonalMetricProx115 (2, -1) = ((3 : ℚ) / 2, -(7 : ℚ) / 8) := by
+  norm_num [diagonalMetricProx115, softThreshold115]
+
+theorem one_variable_metric_step_solves_example (x1 x2 : ℚ) :
+    variableMetricStep115 x1 x2 = ((3 : ℚ) / 2, -(7 : ℚ) / 8) := by
+  unfold variableMetricStep115
+  rw [diagonal_forward_point_is_data]
+  exact diagonal_metric_prox_at_data
+```
+
 ### 4.2 A slowly varying metric on an anisotropic quadratic
 
 Take \(f(x)=\tfrac12(x_1^2+9x_2^2)\), \(g=0\), and
